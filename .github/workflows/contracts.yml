@@ -1,0 +1,69 @@
+name: Contracts
+
+on:
+  push:
+    branches: [main, next-contracts, next-bindings]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  tests:
+    name: Contracts Tests
+    runs-on: macos-latest
+    env:
+      FOUNDRY_PROFILE: ci
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Install just
+        uses: extractions/setup-just@v3
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: v1.7.0
+
+      - name: Show Foundry version
+        run: forge --version
+
+      - name: Show Soldeer version
+        run: forge soldeer version
+
+      - name: Install dependencies
+        run: just contracts-deps
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v1
+
+      - name: Show Bun version
+        run: bun --version
+        working-directory: ./contracts
+
+      - name: Install Solhint
+        run: bun install solhint
+        working-directory: ./contracts
+
+      - name: Run Forge Lint
+        run: just contracts-lint
+
+      - name: Install Slither
+        run: pip install slither-analyzer
+
+      - name: Show Slither version
+        run: slither --version
+
+      - name: Run Slither Static Analyzer
+        run: just contracts-static-analysis
+
+      - name: Run Forge fmt
+        run: just contracts-fmt-check
+
+      - name: Check that bindings are up-to-date
+        run: just bindings-check
+
+      - name: Run Forge tests
+        run: just contracts-test
+        env:
+          ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}

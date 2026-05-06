@@ -1,0 +1,76 @@
+# Full reference https://github.com/foundry-rs/foundry/tree/master/crates/config
+[profile.default]
+solc = "0.8.35"
+auto_detect_solc = false
+evm_version = "osaka"
+gas_reports = ["GenericCallForwarder"]
+optimizer = true
+via_ir = true
+optimizer_runs = 10_000
+allow_internal_expect_revert = true
+# Deterministic deployment settings (https://book.getfoundry.sh/guides/deterministic-deployments-using-create2#configuring-your-foundrytoml)
+# We intentionally omit `cbor_metadata = false` since the metadata helps verification. 
+# Instead we ensure that only the files required for the deploy script are built within the justfile.
+bytecode_hash = "none"
+
+
+src = "src"
+test = "test"
+out = "out"
+script = "script"
+fs_permissions = [{ access = "read", path = "./" }]
+libs = ["dependencies"]
+auto_detect_remappings = false
+remappings = [
+    "@openzeppelin-contracts-5.6.1/=dependencies/@openzeppelin-contracts-5.6.1/",
+    "anoma-forwarder-bases-1.0.0-rc.2/=dependencies/anoma-forwarder-bases-1.0.0-rc.2/",
+    "anoma-pa-evm-1.2.0-rc.0/=dependencies/anomapay-erc20-forwarder-1.1.0-rc.1/dependencies/anoma-pa-evm-1.2.0-rc.0/",
+    "anomapay-erc20-forwarder-1.1.0-rc.1/=dependencies/anomapay-erc20-forwarder-1.1.0-rc.1/",
+    "elliptic-curve-solidity-0.2.5/=dependencies/anomapay-erc20-forwarder-1.1.0-rc.1/dependencies/anoma-pa-evm-1.2.0-rc.0/dependencies/elliptic-curve-solidity-0.2.5/",
+    "forge-std-1.16.1/=dependencies/forge-std-1.16.1/",
+    "openzeppelin/contracts/=dependencies/anomapay-erc20-forwarder-1.1.0-rc.1/dependencies/anoma-pa-evm-1.2.0-rc.0/dependencies/risc0-risc0-ethereum-3.0.1/lib/openzeppelin-contracts/contracts/",
+    "solady-0.1.26/=dependencies/solady-0.1.26/",
+    "solmate/=dependencies/uniswap-permit2-0x000000000022D473030F116dDEE9F6B43aC78BA3/lib/solmate/",
+    "uniswap-permit2-0x000000000022D473030F116dDEE9F6B43aC78BA3/=dependencies/uniswap-permit2-0x000000000022D473030F116dDEE9F6B43aC78BA3/",
+]
+ignored_warnings_from = [
+    "dependencies/@openzeppelin-contracts-5.6.1/utils", # Warning 6335: "error" will be promoted to keyword in the future and will not be allowed as an identifier anymore.
+    "dependencies/anomapay-erc20-forwarder-1.1.0-rc.1/dependencies/anoma-pa-evm-1.2.0-rc.0/dependencies/risc0-risc0-ethereum-3.0.1/contracts/src", # Warning 9170: Comparison of variables of contract type is deprecated
+]
+
+[dependencies]
+"@openzeppelin-contracts" = "5.6.1"
+"anoma-forwarder-bases" = "1.0.0-rc.2"
+"anomapay-erc20-forwarder" = "1.1.0-rc.1"
+"forge-std" = "1.16.1"
+"solady" = "0.1.26"
+"uniswap-permit2" = "0x000000000022D473030F116dDEE9F6B43aC78BA3"
+
+[soldeer]
+recursive_deps = true
+remappings_location = "config"
+remappings_generate = true
+remappings_version = true
+
+[fuzz]
+runs = 1_000
+
+[profile.ci]
+fuzz = { runs = 1_000 }
+verbosity = 3
+
+[rpc_endpoints]
+mainnet = "https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}"
+sepolia = "https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}"
+arbitrum = "https://arb-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}"
+arbitrum-sepolia = "https://arb-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}"
+base = "https://base-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}"
+base-sepolia = "https://base-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}"
+optimism = "https://opt-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}"
+optimism-sepolia = "https://opt-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}"
+bsc = "https://bnb-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}"
+bsc-testnet = "https://bnb-testnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}"
+tempo = "https://tempo-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}"
+tempo-moderato = "https://tempo-moderato.g.alchemy.com/v2/${ALCHEMY_API_KEY}"
+
+localhost = "http://localhost:8545"
