@@ -51,8 +51,8 @@ contracts-test *args:
 # Regenerate Rust bindings from contracts
 contracts-gen-bindings:
     cd contracts && forge clean && forge bind \
-        --skip test --skip script \
-        --select '^(GenericCallForwarder|INativeTokenReceiver|IFallbackHandler)$' \
+        --skip script \
+        --select '^(GenericCallForwarder|INativeTokenReceiver|IFallbackHandler|IERC20|WETH)$' \
         --bindings-path ../bindings/src/generated/ \
         --module \
         --overwrite

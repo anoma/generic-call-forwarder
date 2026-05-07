@@ -4,5 +4,7 @@
 //! Do not manually edit these files.
 //! These files may be overwritten by the codegen system at any time.
 pub mod generic_call_forwarder;
+pub mod ierc20;
 pub mod i_fallback_handler;
 pub mod i_native_token_receiver;
+pub mod weth;
