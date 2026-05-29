@@ -26,5 +26,9 @@
   {
     "chainId": 56,
     "contractAddress": "0x396C820F17891182662554D61F31e4cBdDb07d75"
+  },
+  {
+    "chainId": 143,
+    "contractAddress": "0x6f4588F829Cce530c6A2ae4D16FA49F0b1e8F5A5"
   }
 ]
