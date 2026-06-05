@@ -10,7 +10,17 @@ import {TransientFallbackHandler} from "anoma-forwarder-bases-1.0.0-rc.2/src/Tra
 
 /// @title GenericCallForwarder
 /// @author Anoma Foundation, 2026
-/// @notice A generic call forwarder contract that is a fully functional wallet.
+/// @notice The generic call forwarder contract - a smart account controlled by Anoma resource machine applications via
+/// the protocol adapter. The contract provides the following capabilities:
+/// * Execution of arbitrary calls.
+/// * Receipt and transfer of tokens, including:
+///   * ERC-20 tokens.
+///   * Tokens of other ERC standards that require callbacks, which can be supported transiently.
+///   * Native assets (e.g., ETH on Ethereum L1 and L2s, BNB on BSC).
+/// * ERC-1271 support: All signature validation request are accepted.
+///! IMPORTANT: Because any caller can forward and execute arbitrary calls through this contract, funds and other
+///! state held by it are only under a given user's control transiently, i.e., for the duration of that user's action.
+///! Any funds or state remaining after the action may be modified by subsequent callers.
 /// @custom:security-contact security@anoma.foundation
 contract GenericCallForwarder is IERC1271, IVersion, ForwarderBase, NativeTokenReceiver, TransientFallbackHandler {
     using Address for address;
@@ -44,7 +54,8 @@ contract GenericCallForwarder is IERC1271, IVersion, ForwarderBase, NativeTokenR
     }
 
     /// @inheritdoc IERC1271
-    /// @dev This method will accept every signature request by returning the expected magic number.
+    /// @dev This method accepts every signature unconditionally by returning the ERC-1271 magic value, without
+    /// performing any signer verification. Any required authorization is expected to be enforced on the Anoma.
     function isValidSignature(bytes32 hash, bytes calldata signature)
         external
         pure
@@ -53,13 +64,16 @@ contract GenericCallForwarder is IERC1271, IVersion, ForwarderBase, NativeTokenR
     {
         (hash, signature);
 
+        //! IMPORTANT
+        //! This method accepts every signature unconditionally by returning the ERC-1271 magic value, without
+        //! performing any signer verification. Any required authorization is expected to be enforced on the Anoma.
         magicValue = IERC1271.isValidSignature.selector;
     }
 
     /// @notice Executes an array of generic calls.
     /// @param input Contains the calls to make.
     /// @return output The empty string signaling that the function call has succeeded.
-    // @dev Note: This method is reentrancy-protected by the `nonReentrant` modifier in `ForwarderBase.forwardCall`.
+    // @dev This method is reentrancy-protected by the `nonReentrant` modifier in `ForwarderBase.forwardCall`.
     function _forwardCall(bytes calldata input) internal virtual override returns (bytes memory output) {
         (Call[] memory calls) = abi.decode(input, (Call[]));
 
