@@ -66,7 +66,8 @@ contract GenericCallForwarder is IERC1271, IVersion, ForwarderBase, NativeTokenR
 
         //! IMPORTANT
         //! This method accepts every signature unconditionally by returning the ERC-1271 magic value, without
-        //! performing any signer verification. Any required authorization is expected to be enforced on the Anoma.
+        //! performing any signer verification. Any required authorization is expected to be enforced on the Anoma
+        //! resource machine side through other resources within the same action.
         magicValue = IERC1271.isValidSignature.selector;
     }
 
