@@ -74,15 +74,12 @@ contract GenericCallForwarderTest is Test {
         _permit2 = new DeployPermit2().run();
 
         // Deploy the generic call forwarder
-        _erc20Fwd = IForwarder( // TODO! replace when anoma/anomapay-erc20-forwarder uses anoma/forwarder-bases
-            address(
-                new ERC20Forwarder({
-                    protocolAdapter: _PROTOCOL_ADAPTER,
-                    emergencyCommittee: _EMERGENCY_COMMITTEE,
-                    logicRef: _erc20ResourceLogicRef
-                })
-            )
-        );
+        _erc20Fwd = new ERC20Forwarder({
+            protocolAdapter: _PROTOCOL_ADAPTER,
+            emergencyCommittee: _EMERGENCY_COMMITTEE,
+            logicRef: _erc20ResourceLogicRef
+        });
+
         _genericCallFwd =
             new GenericCallForwarder({protocolAdapter: _PROTOCOL_ADAPTER, logicRef: _genericCallResourceLogicRef});
 
