@@ -50,7 +50,7 @@ contract GenericCallForwarder is IERC1271, IVersion, ForwarderBase, NativeTokenR
 
     /// @inheritdoc IVersion
     function getVersion() external pure override returns (bytes32 version) {
-        version = "1.0.0-rc.0";
+        version = "1.0.0-rc.1";
     }
 
     /// @inheritdoc IERC1271
