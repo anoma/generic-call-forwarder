@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
-import {IForwarder} from "anoma-forwarder-bases-1.0.0-rc.2/src/interfaces/IForwarder.sol";
+import {IForwarder} from "anoma-forwarder-bases-1.0.0-rc.3/src/interfaces/IForwarder.sol";
 
 contract ReentrantCallerMock {
     IForwarder internal immutable _FORWARDER;
