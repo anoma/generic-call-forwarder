@@ -12,9 +12,9 @@ use anoma_generic_call_forwarder_bindings::contract::generic_call_forwarder;
 use anoma_generic_call_forwarder_bindings::generated::generic_call_forwarder::GenericCallForwarder::GenericCallForwarderInstance;
 
 // The token transfer circuit verifying key taken from
-// https://github.com/anoma/generic-call-resource/blob/fa02c3d5ed2c2bdb8a516f554388d4c5d9e5653b/generic_call_library/src/lib.rs#L21.
+// https://github.com/anoma/generic-call-resource/blob/d42619e5225ba4bf314d32775a3c408540b63bc5/generic_call_library/src/lib.rs#L21.
 const GENERIC_CALL_CIRCUIT_ID: B256 =
-    b256!("0xaff59206f08cf2bd5ad8d6e688cc1e57a4a41dd4c384c2f21cea676ba080dd6d");
+    b256!("9297d442214bc0f2e97125106df27b946482754e56c15fd34a6fc3c54b5deaf8");
 
 #[tokio::test]
 async fn deployed_forwarders_point_to_the_current_protocol_adapter_contract() {
