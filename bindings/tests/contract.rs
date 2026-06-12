@@ -1,7 +1,7 @@
 #[cfg(test)]
 extern crate dotenvy;
 
-use alloy::primitives::{Address, B256, b256};
+use alloy::primitives::{Address, B256};
 use alloy::providers::{DynProvider, Provider, ProviderBuilder};
 use alloy_chains::NamedChain;
 use anoma_generic_call_forwarder_bindings::generated::generic_call_forwarder;
@@ -11,10 +11,9 @@ use anoma_generic_call_forwarder_bindings::addresses::generic_call_forwarder_dep
 use anoma_generic_call_forwarder_bindings::contract::generic_call_forwarder;
 use anoma_generic_call_forwarder_bindings::generated::generic_call_forwarder::GenericCallForwarder::GenericCallForwarderInstance;
 
-// The token transfer circuit verifying key taken from
-// https://github.com/anoma/generic-call-resource/blob/d42619e5225ba4bf314d32775a3c408540b63bc5/generic_call_library/src/lib.rs#L21.
-const GENERIC_CALL_CIRCUIT_ID: B256 =
-    b256!("9297d442214bc0f2e97125106df27b946482754e56c15fd34a6fc3c54b5deaf8");
+fn generic_call_id() -> B256 {
+    B256::from_slice(anoma_generic_call_library::GENERIC_CALL_ID.as_bytes())
+}
 
 #[tokio::test]
 async fn deployed_forwarders_point_to_the_current_protocol_adapter_contract() {
@@ -50,8 +49,10 @@ async fn deployed_forwarders_reference_the_expected_logic_ref() {
 
         // Check that the logic ref in the deployed forwarder matches the expected one from the transfer library.
         assert_eq!(
-            actual_logic_ref, GENERIC_CALL_CIRCUIT_ID,
-            "Logic address mismatch on network '{chain}': expected {GENERIC_CALL_CIRCUIT_ID}, actual: {actual_logic_ref}."
+            actual_logic_ref,
+            generic_call_id(),
+            "Logic address mismatch on network '{chain}': expected {}, actual: {actual_logic_ref}.",
+            generic_call_id()
         );
     }
 }
@@ -69,7 +70,7 @@ async fn versions_of_deployed_forwarders_match_the_expected_version() {
                 .call()
                 .await
                 .expect("Couldn't get protocol adapter"),
-            GENERIC_CALL_CIRCUIT_ID,
+            generic_call_id(),
         )
         .await
         .expect("Couldn't deploy generic call forwarder");

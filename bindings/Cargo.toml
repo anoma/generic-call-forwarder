@@ -17,5 +17,6 @@ thiserror = { workspace = true }
 dotenvy = { workspace = true }
 
 [dev-dependencies]
+anoma-generic-call-library = { workspace = true }
 anoma-pa-evm-bindings = { workspace = true }
 tokio = { workspace = true }
