@@ -6,28 +6,20 @@ import {Time} from "@openzeppelin-contracts-5.6.1/utils/types/Time.sol";
 import {IForwarder} from "anoma-forwarder-bases-1.0.0-rc.3/src/interfaces/IForwarder.sol";
 import {INativeTokenReceiver} from "anoma-forwarder-bases-1.0.0-rc.3/src/interfaces/INativeTokenReceiver.sol";
 import {ERC20Forwarder} from "anomapay-erc20-forwarder-1.1.0-rc.2/src/ERC20Forwarder.sol";
-import {ERC20ForwarderPermit2} from "anomapay-erc20-forwarder-1.1.0-rc.2/src/ERC20ForwarderPermit2.sol";
 import {ERC20Example} from "anomapay-erc20-forwarder-1.1.0-rc.2/test/examples/ERC20.e.sol";
-import {Permit2Signature} from "anomapay-erc20-forwarder-1.1.0-rc.2/test/libs/Permit2Signature.sol";
 import {DeployPermit2} from "anomapay-erc20-forwarder-1.1.0-rc.2/test/script/DeployPermit2.s.sol";
-import {Test, Vm} from "forge-std-1.16.1/src/Test.sol";
+import {Test} from "forge-std-1.16.1/src/Test.sol";
 
 import {WETH} from "solady-0.1.26/src/tokens/WETH.sol";
 import {
     IAllowanceTransfer
 } from "uniswap-permit2-0x000000000022D473030F116dDEE9F6B43aC78BA3/src/interfaces/IAllowanceTransfer.sol";
-import {
-    IPermit2,
-    ISignatureTransfer
-} from "uniswap-permit2-0x000000000022D473030F116dDEE9F6B43aC78BA3/src/interfaces/IPermit2.sol";
+import {IPermit2} from "uniswap-permit2-0x000000000022D473030F116dDEE9F6B43aC78BA3/src/interfaces/IPermit2.sol";
 
 import {GenericCallForwarder} from "../src/GenericCallForwarder.sol";
 import {DexRouterMock} from "./mocks/DexRouter.m.sol";
 
 contract GenericCallForwarderTest is Test {
-    using ERC20ForwarderPermit2 for ERC20ForwarderPermit2.Witness;
-    using Permit2Signature for Vm;
-
     address internal constant _PROTOCOL_ADAPTER = address(uint160(1));
     address internal constant _EMERGENCY_COMMITTEE = address(uint160(2));
     uint128 internal constant _TRANSFER_AMOUNT = 1000;
@@ -38,7 +30,6 @@ contract GenericCallForwarderTest is Test {
     bytes32 internal _genericCallResourceLogicRef;
 
     address internal _alice;
-    uint256 internal _alicePrivateKey;
 
     IForwarder internal _erc20Fwd;
     IForwarder internal _genericCallFwd;
@@ -46,19 +37,13 @@ contract GenericCallForwarderTest is Test {
     IPermit2 internal _permit2;
     WETH internal _weth;
 
-    ISignatureTransfer.PermitTransferFrom internal _defaultPermit;
-    bytes32 internal _defaultPermitSigR;
-    bytes32 internal _defaultPermitSigS;
-    uint8 internal _defaultPermitSigV;
-    bytes internal _defaultWrapInput;
     bytes internal _defaultUnwrapInput;
 
     function setUp() public {
         _erc20ResourceLogicRef = bytes32(uint256(1));
         _genericCallResourceLogicRef = bytes32(uint256(2));
 
-        _alicePrivateKey = 0xc522337787f3037e9d0dcba4dc4c0e3d4eb7b1c65598d51c425574e8ce64d140;
-        _alice = vm.addr(_alicePrivateKey);
+        _alice = makeAddr("alice");
 
         _weth = new WETH();
 
@@ -75,39 +60,6 @@ contract GenericCallForwarderTest is Test {
         _genericCallFwd =
             new GenericCallForwarder({protocolAdapter: _PROTOCOL_ADAPTER, logicRef: _genericCallResourceLogicRef});
 
-        _defaultPermit = ISignatureTransfer.PermitTransferFrom({
-            permitted: ISignatureTransfer.TokenPermissions({token: address(_weth), amount: _TRANSFER_AMOUNT}),
-            nonce: 123,
-            deadline: Time.timestamp() + 5 minutes
-        });
-
-        (_defaultPermitSigR, _defaultPermitSigS, _defaultPermitSigV) = vm.permitWitnessTransferFromSignature({
-            domainSeparator: _permit2.DOMAIN_SEPARATOR(),
-            permit: _defaultPermit,
-            privateKey: _alicePrivateKey,
-            spender: address(_erc20Fwd),
-            witness: ERC20ForwarderPermit2.Witness(_ACTION_TREE_ROOT).hash()
-        });
-
-        _defaultWrapInput = abi.encode(
-            /*       callType */
-            ERC20Forwarder.CallType.Wrap,
-            /*          token */
-            _defaultPermit.permitted.token,
-            /*         amount */
-            _defaultPermit.permitted.amount,
-            /*      wrap data */
-            ERC20Forwarder.WrapData({
-                nonce: _defaultPermit.nonce,
-                deadline: _defaultPermit.deadline,
-                owner: _alice,
-                actionTreeRoot: _ACTION_TREE_ROOT,
-                r: _defaultPermitSigR,
-                s: _defaultPermitSigS,
-                v: _defaultPermitSigV
-            })
-        );
-
         _defaultUnwrapInput = abi.encode( /* callType */
             ERC20Forwarder.CallType.Unwrap,
             /*       token */
@@ -119,7 +71,7 @@ contract GenericCallForwarderTest is Test {
         );
     }
 
-    function test_calls_allow_swapping_fund_on_a_dex() public {
+    function test_calls_allow_to_swap_erc20s_on_a_dex() public {
         uint128 minAmountOut = _TRANSFER_AMOUNT / 2;
         ERC20Example tokenA = new ERC20Example();
         ERC20Example tokenB = new ERC20Example();
