@@ -8,25 +8,64 @@ import {SafeCast} from "@openzeppelin-contracts-5.6.1/utils/math/SafeCast.sol";
 import {
     IAllowanceTransfer
 } from "uniswap-permit2-0x000000000022D473030F116dDEE9F6B43aC78BA3/src/interfaces/IAllowanceTransfer.sol";
+import {
+    ISignatureTransfer
+} from "uniswap-permit2-0x000000000022D473030F116dDEE9F6B43aC78BA3/src/interfaces/ISignatureTransfer.sol";
 
 contract DexRouterMock {
     using SafeERC20 for IERC20;
 
-    IAllowanceTransfer internal immutable _PERMIT2;
+    address internal immutable _PERMIT2;
 
     constructor(address permit2) {
-        _PERMIT2 = IAllowanceTransfer(permit2);
+        _PERMIT2 = permit2;
     }
 
-    function swapExactTokensForTokens(
+    /// @notice Swaps pulling the input token via a classic ERC-20 allowance (`approve` + `transferFrom`).
+    function swapExactTokensForTokensWithErc20Approval(
         uint256 amountIn,
         uint256 amountOutMin,
-        address[] calldata path,
-        address to,
-        uint256 /*deadline*/
+        address tokenIn,
+        address tokenOut,
+        address to
     ) external returns (uint256 amountOut) {
-        _PERMIT2.transferFrom(msg.sender, address(this), SafeCast.toUint160(amountIn), path[0]);
+        IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountIn);
         amountOut = amountOutMin;
-        IERC20(path[path.length - 1]).safeTransfer(to, amountOut);
+        IERC20(tokenOut).safeTransfer(to, amountOut);
+    }
+
+    /// @notice Swaps pulling the input token via a Permit2 allowance (`IAllowanceTransfer.approve` + `transferFrom`).
+    function swapExactTokensForTokensWithPermit2Allowance(
+        uint256 amountIn,
+        uint256 amountOutMin,
+        address tokenIn,
+        address tokenOut,
+        address to
+    ) external returns (uint256 amountOut) {
+        IAllowanceTransfer(_PERMIT2).transferFrom(msg.sender, address(this), SafeCast.toUint160(amountIn), tokenIn);
+        amountOut = amountOutMin;
+        IERC20(tokenOut).safeTransfer(to, amountOut);
+    }
+
+    /// @notice Swaps pulling the input token via a Permit2 signature (`ISignatureTransfer.permitTransferFrom`).
+    /// The input token is taken from `permit.permitted.token`.
+    function swapExactTokensForTokensWithPermit2Signature(
+        uint256 amountOutMin,
+        address tokenOut,
+        address to,
+        ISignatureTransfer.PermitTransferFrom calldata permit,
+        bytes calldata signature
+    ) external returns (uint256 amountOut) {
+        ISignatureTransfer(_PERMIT2)
+            .permitTransferFrom({
+            permit: permit,
+            transferDetails: ISignatureTransfer.SignatureTransferDetails({
+            to: address(this), requestedAmount: permit.permitted.amount
+        }),
+            owner: msg.sender,
+            signature: signature
+        });
+        amountOut = amountOutMin;
+        IERC20(tokenOut).safeTransfer(to, amountOut);
     }
 }
