@@ -43,7 +43,7 @@ contract GenericCallForwarder is IERC1271, IVersion, ForwarderBase, NativeTokenR
 
     error NoOpNotAllowed();
 
-    /// @notice Initializes the ERC-20 forwarder contract.
+    /// @notice Initializes the generic call forwarder contract.
     /// @param protocolAdapter The protocol adapter contract that can forward calls.
     /// @param logicRef The reference to the logic function of the resource kind triggering the forward call.
     constructor(address protocolAdapter, bytes32 logicRef) ForwarderBase(protocolAdapter, logicRef) {}
