@@ -6,7 +6,6 @@ import {IERC1271} from "@openzeppelin-contracts-5.6.1/interfaces/IERC1271.sol";
 import {IERC20} from "@openzeppelin-contracts-5.6.1/token/ERC20/IERC20.sol";
 import {Errors} from "@openzeppelin-contracts-5.6.1/utils/Errors.sol";
 import {ReentrancyGuardTransient} from "@openzeppelin-contracts-5.6.1/utils/ReentrancyGuardTransient.sol";
-import {IForwarder} from "anoma-forwarder-bases-1.0.0-rc.3/src/interfaces/IForwarder.sol";
 import {IVersion} from "anoma-forwarder-bases-1.0.0-rc.3/src/interfaces/IVersion.sol";
 import {ERC20Example} from "anomapay-erc20-forwarder-1.1.0-rc.2/test/examples/ERC20.e.sol";
 import {Test} from "forge-std-1.16.1/src/Test.sol";
@@ -26,7 +25,7 @@ contract GenericCallForwarderTest is Test {
 
     address internal _alice;
 
-    IForwarder internal _genericCallFwd;
+    GenericCallForwarder internal _genericCallFwd;
 
     WETH internal _weth;
 
@@ -182,12 +181,11 @@ contract GenericCallForwarderTest is Test {
         _genericCallFwd.forwardCall({logicRef: _genericCallResourceLogicRef, input: abi.encode(calls)});
     }
 
-    function test_isValidSignature_always_returns_the_ERC1271_magic_value() public view {
-        bytes4 magic = IERC1271.isValidSignature.selector;
-
-        assertEq(IERC1271(address(_genericCallFwd)).isValidSignature(bytes32(0), ""), magic);
-        assertEq(IERC1271(address(_genericCallFwd)).isValidSignature(keccak256("anoma"), hex"cafe"), magic);
-        assertEq(IERC1271(address(_genericCallFwd)).isValidSignature(bytes32(type(uint256).max), hex"00"), magic);
+    function testFuzz_isValidSignature_always_returns_the_ERC1271_magic_value(bytes32 hash, bytes calldata signature)
+        public
+        view
+    {
+        assertEq(_genericCallFwd.isValidSignature(hash, signature), IERC1271.isValidSignature.selector);
     }
 
     function test_check_that_the_current_version_is_a_pre_release_of_v1_0_0() public view {
