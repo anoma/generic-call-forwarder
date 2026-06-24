@@ -4,6 +4,7 @@ pragma solidity ^0.8.30;
 import {IERC20} from "@openzeppelin-contracts-5.6.1/token/ERC20/IERC20.sol";
 import {Time} from "@openzeppelin-contracts-5.6.1/utils/types/Time.sol";
 import {IForwarder} from "anoma-forwarder-bases-1.0.0-rc.4/src/interfaces/IForwarder.sol";
+import {ISweepable} from "anoma-forwarder-bases-1.0.0-rc.4/src/interfaces/ISweepable.sol";
 import {ERC20Forwarder} from "anomapay-erc20-forwarder-1.1.0-rc.3/src/ERC20Forwarder.sol";
 import {ERC20Example} from "anomapay-erc20-forwarder-1.1.0-rc.3/test/examples/ERC20.e.sol";
 import {DeployPermit2} from "anomapay-erc20-forwarder-1.1.0-rc.3/test/script/DeployPermit2.s.sol";
@@ -196,6 +197,68 @@ contract GenericCallForwarderSwapTest is Test {
         assertEq(_tokenB.balanceOf(address(_genericCallFwd)), _minAmountOut);
 
         _wrapTokenFromGenericCallForwarder({token: _tokenB, amount: _minAmountOut});
+    }
+
+    /// @notice A swap returning more than the committed minimum leaves the surplus as residual dust in the generic
+    /// call forwarder, which can be swept out with a generic `withdraw` call after the wrap.
+    function test_calls_allow_to_withdraw_residual_after_swap() public {
+        uint128 surplus = _TRANSFER_AMOUNT / 5;
+        address residualRecipient = makeAddr("residualRecipient");
+
+        // Make the DEX pay out `surplus` more than the minimum and fund it to cover the larger payout.
+        _dexRouter.setSurplusOut(surplus);
+        _tokenB.mint(address(_dexRouter), surplus);
+
+        _unwrapTokenIntoGenericCallForwarder({token: _tokenA, amount: _TRANSFER_AMOUNT});
+
+        // Approve the DEX router to spend tokenA, swap it for tokenB, and approve Permit2 to pull the committed
+        // `_minAmountOut` for the wrap.
+        {
+            GenericCallForwarder.Call[] memory calls = new GenericCallForwarder.Call[](3);
+            calls[0] = GenericCallForwarder.Call({
+                to: address(_tokenA),
+                value: 0,
+                data: abi.encodeCall(IERC20.approve, (address(_dexRouter), _TRANSFER_AMOUNT))
+            });
+            calls[1] = GenericCallForwarder.Call({
+                to: address(_dexRouter),
+                value: 0,
+                data: abi.encodeCall(
+                    DexRouterMock.swapExactTokensForTokensWithErc20Approval,
+                    (_TRANSFER_AMOUNT, _minAmountOut, address(_tokenA), address(_tokenB), address(_genericCallFwd))
+                )
+            });
+            calls[2] = GenericCallForwarder.Call({
+                to: address(_tokenB), value: 0, data: abi.encodeCall(IERC20.approve, (address(_permit2), _minAmountOut))
+            });
+
+            vm.prank(_PROTOCOL_ADAPTER);
+            _genericCallFwd.forwardCall({logicRef: _genericCallResourceLogicRef, input: abi.encode(calls)});
+        }
+        // The forwarder received more tokenB than the committed minimum.
+        assertEq(_tokenB.balanceOf(address(_genericCallFwd)), _minAmountOut + surplus);
+
+        // Wrap the committed `_minAmountOut` back into the ERC20 forwarder, leaving `surplus` as residual dust.
+        _wrapTokenFromGenericCallForwarder({token: _tokenB, amount: _minAmountOut});
+
+        assertEq(_tokenB.balanceOf(address(_erc20Fwd)), _minAmountOut);
+        assertEq(_tokenB.balanceOf(address(_genericCallFwd)), surplus);
+        assertEq(_tokenB.balanceOf(residualRecipient), 0);
+
+        // Sweep the residual dust out to a recipient via a generic call.
+        {
+            GenericCallForwarder.Call[] memory calls = new GenericCallForwarder.Call[](1);
+            calls[0] = GenericCallForwarder.Call({
+                to: address(_genericCallFwd),
+                value: 0,
+                data: abi.encodeCall(ISweepable.sweep, (address(_tokenB), residualRecipient))
+            });
+
+            vm.prank(_PROTOCOL_ADAPTER);
+            _genericCallFwd.forwardCall({logicRef: _genericCallResourceLogicRef, input: abi.encode(calls)});
+        }
+        assertEq(_tokenB.balanceOf(address(_genericCallFwd)), 0);
+        assertEq(_tokenB.balanceOf(residualRecipient), surplus);
     }
 
     /// @notice Unwraps `_TRANSFER_AMOUNT` of `token` from the ERC20 forwarder into the generic call forwarder
