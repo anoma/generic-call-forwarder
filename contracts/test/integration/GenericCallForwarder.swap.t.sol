@@ -3,10 +3,10 @@ pragma solidity ^0.8.30;
 
 import {IERC20} from "@openzeppelin-contracts-5.6.1/token/ERC20/IERC20.sol";
 import {Time} from "@openzeppelin-contracts-5.6.1/utils/types/Time.sol";
-import {IForwarder} from "anoma-forwarder-bases-1.0.0-rc.3/src/interfaces/IForwarder.sol";
-import {ERC20Forwarder} from "anomapay-erc20-forwarder-1.1.0-rc.2/src/ERC20Forwarder.sol";
-import {ERC20Example} from "anomapay-erc20-forwarder-1.1.0-rc.2/test/examples/ERC20.e.sol";
-import {DeployPermit2} from "anomapay-erc20-forwarder-1.1.0-rc.2/test/script/DeployPermit2.s.sol";
+import {IForwarder} from "anoma-forwarder-bases-1.0.0-rc.4/src/interfaces/IForwarder.sol";
+import {ERC20Forwarder} from "anomapay-erc20-forwarder-1.1.0-rc.3/src/ERC20Forwarder.sol";
+import {ERC20Example} from "anomapay-erc20-forwarder-1.1.0-rc.3/test/examples/ERC20.e.sol";
+import {DeployPermit2} from "anomapay-erc20-forwarder-1.1.0-rc.3/test/script/DeployPermit2.s.sol";
 import {Test} from "forge-std-1.16.1/src/Test.sol";
 
 import {

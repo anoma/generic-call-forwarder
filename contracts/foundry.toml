@@ -23,25 +23,25 @@ libs = ["dependencies"]
 auto_detect_remappings = false
 remappings = [
     "@openzeppelin-contracts-5.6.1/=dependencies/@openzeppelin-contracts-5.6.1/",
-    "anoma-forwarder-bases-1.0.0-rc.3/=dependencies/anoma-forwarder-bases-1.0.0-rc.3/",
-    "anoma-pa-evm-1.2.0-rc.0/=dependencies/anomapay-erc20-forwarder-1.1.0-rc.2/dependencies/anoma-pa-evm-1.2.0-rc.0/",
-    "anomapay-erc20-forwarder-1.1.0-rc.2/=dependencies/anomapay-erc20-forwarder-1.1.0-rc.2/",
-    "elliptic-curve-solidity-0.2.5/=dependencies/anomapay-erc20-forwarder-1.1.0-rc.2/dependencies/anoma-pa-evm-1.2.0-rc.0/dependencies/elliptic-curve-solidity-0.2.5/",
+    "anoma-forwarder-bases-1.0.0-rc.4/=dependencies/anoma-forwarder-bases-1.0.0-rc.4/",
+    "anoma-pa-evm-1.2.0-rc.0/=dependencies/anomapay-erc20-forwarder-1.1.0-rc.3/dependencies/anoma-pa-evm-1.2.0-rc.0/",
+    "anomapay-erc20-forwarder-1.1.0-rc.3/=dependencies/anomapay-erc20-forwarder-1.1.0-rc.3/",
+    "elliptic-curve-solidity-0.2.5/=dependencies/anomapay-erc20-forwarder-1.1.0-rc.3/dependencies/anoma-pa-evm-1.2.0-rc.0/dependencies/elliptic-curve-solidity-0.2.5/",
     "forge-std-1.16.1/=dependencies/forge-std-1.16.1/",
-    "openzeppelin/contracts/=dependencies/anomapay-erc20-forwarder-1.1.0-rc.2/dependencies/anoma-pa-evm-1.2.0-rc.0/dependencies/risc0-risc0-ethereum-3.0.1/lib/openzeppelin-contracts/contracts/",
+    "openzeppelin/contracts/=dependencies/anomapay-erc20-forwarder-1.1.0-rc.3/dependencies/anoma-pa-evm-1.2.0-rc.0/dependencies/risc0-risc0-ethereum-3.0.1/lib/openzeppelin-contracts/contracts/",
     "solady-0.1.26/=dependencies/solady-0.1.26/",
     "solmate/=dependencies/uniswap-permit2-0x000000000022D473030F116dDEE9F6B43aC78BA3/lib/solmate/",
     "uniswap-permit2-0x000000000022D473030F116dDEE9F6B43aC78BA3/=dependencies/uniswap-permit2-0x000000000022D473030F116dDEE9F6B43aC78BA3/",
 ]
 ignored_warnings_from = [
     "dependencies/@openzeppelin-contracts-5.6.1/utils", # Warning 6335: "error" will be promoted to keyword in the future and will not be allowed as an identifier anymore.
-    "dependencies/anomapay-erc20-forwarder-1.1.0-rc.2/dependencies/anoma-pa-evm-1.2.0-rc.0/dependencies/risc0-risc0-ethereum-3.0.1/contracts/src", # Warning 9170: Comparison of variables of contract type is deprecated
+    "dependencies/anomapay-erc20-forwarder-1.1.0-rc.3/dependencies/anoma-pa-evm-1.2.0-rc.0/dependencies/risc0-risc0-ethereum-3.0.1/contracts/src", # Warning 9170: Comparison of variables of contract type is deprecated
 ]
 
 [dependencies]
 "@openzeppelin-contracts" = "5.6.1"
-"anoma-forwarder-bases" = "1.0.0-rc.3"
-"anomapay-erc20-forwarder" = "1.1.0-rc.2"
+"anoma-forwarder-bases" = "1.0.0-rc.4"
+"anomapay-erc20-forwarder" = "1.1.0-rc.3"
 "forge-std" = "1.16.1"
 "solady" = "0.1.26"
 "uniswap-permit2" = "0x000000000022D473030F116dDEE9F6B43aC78BA3"

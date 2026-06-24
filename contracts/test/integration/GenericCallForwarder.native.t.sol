@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
-import {IForwarder} from "anoma-forwarder-bases-1.0.0-rc.3/src/interfaces/IForwarder.sol";
-import {INativeTokenReceiver} from "anoma-forwarder-bases-1.0.0-rc.3/src/interfaces/INativeTokenReceiver.sol";
-import {ERC20Forwarder} from "anomapay-erc20-forwarder-1.1.0-rc.2/src/ERC20Forwarder.sol";
+import {IForwarder} from "anoma-forwarder-bases-1.0.0-rc.4/src/interfaces/IForwarder.sol";
+import {INativeTokenReceiver} from "anoma-forwarder-bases-1.0.0-rc.4/src/interfaces/INativeTokenReceiver.sol";
+import {ERC20Forwarder} from "anomapay-erc20-forwarder-1.1.0-rc.3/src/ERC20Forwarder.sol";
 import {Test} from "forge-std-1.16.1/src/Test.sol";
 
 import {WETH} from "solady-0.1.26/src/tokens/WETH.sol";
