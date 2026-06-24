@@ -17,8 +17,18 @@ contract DexRouterMock {
 
     address internal immutable _PERMIT2;
 
+    /// @notice The amount paid out on top of `amountOutMin`, modeling a real swap returning more than the minimum and
+    /// thereby leaving residual dust in the recipient. Defaults to zero (output equals the minimum).
+    uint256 internal _surplusOut;
+
     constructor(address permit2) {
         _PERMIT2 = permit2;
+        _surplusOut = 0;
+    }
+
+    /// @notice Sets the surplus paid out on top of `amountOutMin` on subsequent swaps.
+    function setSurplusOut(uint256 surplusOut) external {
+        _surplusOut = surplusOut;
     }
 
     /// @notice Swaps pulling the input token via a classic ERC-20 allowance (`approve` + `transferFrom`).
@@ -30,7 +40,7 @@ contract DexRouterMock {
         address to
     ) external returns (uint256 amountOut) {
         IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountIn);
-        amountOut = amountOutMin;
+        amountOut = amountOutMin + _surplusOut;
         IERC20(tokenOut).safeTransfer(to, amountOut);
     }
 
@@ -43,7 +53,7 @@ contract DexRouterMock {
         address to
     ) external returns (uint256 amountOut) {
         IAllowanceTransfer(_PERMIT2).transferFrom(msg.sender, address(this), SafeCast.toUint160(amountIn), tokenIn);
-        amountOut = amountOutMin;
+        amountOut = amountOutMin + _surplusOut;
         IERC20(tokenOut).safeTransfer(to, amountOut);
     }
 
@@ -65,7 +75,7 @@ contract DexRouterMock {
             owner: msg.sender,
             signature: signature
         });
-        amountOut = amountOutMin;
+        amountOut = amountOutMin + _surplusOut;
         IERC20(tokenOut).safeTransfer(to, amountOut);
     }
 }

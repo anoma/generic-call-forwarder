@@ -5,7 +5,7 @@ import {IERC1271} from "@openzeppelin-contracts-5.6.1/interfaces/IERC1271.sol";
 import {Address} from "@openzeppelin-contracts-5.6.1/utils/Address.sol";
 import {ForwarderBase} from "anoma-forwarder-bases-1.0.0-rc.4/src/ForwarderBase.sol";
 import {IVersion} from "anoma-forwarder-bases-1.0.0-rc.4/src/interfaces/IVersion.sol";
-import {NativeTokenReceiver} from "anoma-forwarder-bases-1.0.0-rc.4/src/NativeTokenReceiver.sol";
+import {SweepableNativeTokenReceiver} from "anoma-forwarder-bases-1.0.0-rc.4/src/SweepableNativeTokenReceiver.sol";
 import {TransientFallbackHandler} from "anoma-forwarder-bases-1.0.0-rc.4/src/TransientFallbackHandler.sol";
 
 /// @title GenericCallForwarder
@@ -22,7 +22,13 @@ import {TransientFallbackHandler} from "anoma-forwarder-bases-1.0.0-rc.4/src/Tra
 ///! state held by it are only under a given user's control transiently, i.e., for the duration of that user's action.
 ///! Any funds or state remaining after the action may be modified by subsequent callers.
 /// @custom:security-contact security@anoma.foundation
-contract GenericCallForwarder is IERC1271, IVersion, ForwarderBase, NativeTokenReceiver, TransientFallbackHandler {
+contract GenericCallForwarder is
+    IERC1271,
+    IVersion,
+    ForwarderBase,
+    SweepableNativeTokenReceiver,
+    TransientFallbackHandler
+{
     using Address for address;
     using Address for address payable;
 
