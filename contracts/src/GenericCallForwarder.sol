@@ -56,7 +56,7 @@ contract GenericCallForwarder is
 
     /// @inheritdoc IVersion
     function getVersion() external pure override returns (bytes32 version) {
-        version = "1.0.0-rc.1";
+        version = "1.0.0-rc.2";
     }
 
     /// @inheritdoc IERC1271
