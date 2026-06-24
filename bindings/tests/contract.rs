@@ -6,7 +6,7 @@ use alloy::providers::{DynProvider, Provider, ProviderBuilder};
 use alloy_chains::NamedChain;
 use anoma_generic_call_forwarder_bindings::generated::generic_call_forwarder;
 use anoma_pa_evm_bindings::addresses::protocol_adapter_address;
-use anoma_pa_evm_bindings::helpers::alchemy_url;
+use anoma_pa_evm_bindings::helpers::rpc_url;
 use anoma_generic_call_forwarder_bindings::addresses::generic_call_forwarder_deployments_map;
 use anoma_generic_call_forwarder_bindings::contract::generic_call_forwarder;
 use anoma_generic_call_forwarder_bindings::generated::generic_call_forwarder::GenericCallForwarder::GenericCallForwarderInstance;
@@ -97,7 +97,7 @@ async fn versions_of_deployed_forwarders_match_the_expected_version() {
 }
 
 async fn fwd_instance(chain: &NamedChain) -> GenericCallForwarderInstance<DynProvider> {
-    let rpc_url = alchemy_url(chain).unwrap();
+    let rpc_url = rpc_url(chain).unwrap();
 
     let provider = ProviderBuilder::new()
         .connect_anvil_with_wallet_and_config(|a| a.fork(rpc_url))
