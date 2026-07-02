@@ -6,8 +6,9 @@ import {IERC1271} from "@openzeppelin-contracts-5.6.1/interfaces/IERC1271.sol";
 import {IERC20} from "@openzeppelin-contracts-5.6.1/token/ERC20/IERC20.sol";
 import {Errors} from "@openzeppelin-contracts-5.6.1/utils/Errors.sol";
 import {ReentrancyGuardTransient} from "@openzeppelin-contracts-5.6.1/utils/ReentrancyGuardTransient.sol";
-import {IVersion} from "anoma-forwarder-bases-1.0.0-rc.4/src/interfaces/IVersion.sol";
-import {ERC20Example} from "anomapay-erc20-forwarder-1.1.0-rc.3/test/examples/ERC20.e.sol";
+import {IVersion} from "anoma-forwarder-bases-1.0.0/src/interfaces/IVersion.sol";
+import {ERC20Example} from "anoma-forwarder-bases-1.0.0/test/examples/ERC20Example.sol";
+
 import {Test} from "forge-std-1.16.1/src/Test.sol";
 
 import {WETH} from "solady-0.1.26/src/tokens/WETH.sol";
@@ -188,13 +189,12 @@ contract GenericCallForwarderTest is Test {
         assertEq(_genericCallFwd.isValidSignature(hash, signature), IERC1271.isValidSignature.selector);
     }
 
-    function test_check_that_the_current_version_is_a_pre_release_of_v1_0_0() public view {
-        int256 lt = -1;
-        //int256 eq = 0;
-        int256 gt = 1;
+    function test_check_that_the_current_version_is_the_initial_release_v1_0_0() public view {
+        //int256 lt = -1;
+        int256 eq = 0;
+        //int256 gt = 1;
 
-        assertEq(SemVerLib.cmp(IVersion(address(_genericCallFwd)).getVersion(), "0.0.0"), gt);
-        assertEq(SemVerLib.cmp(IVersion(address(_genericCallFwd)).getVersion(), "1.0.0"), lt);
+        assertEq(SemVerLib.cmp(IVersion(address(_genericCallFwd)).getVersion(), "1.0.0"), eq);
     }
 }
 
