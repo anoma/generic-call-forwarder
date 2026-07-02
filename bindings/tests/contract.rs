@@ -4,16 +4,12 @@ extern crate dotenvy;
 use alloy::primitives::{Address, B256};
 use alloy::providers::{DynProvider, Provider, ProviderBuilder};
 use alloy_chains::NamedChain;
-use anoma_generic_call_forwarder_bindings::generated::generic_call_forwarder;
-use anoma_pa_evm_bindings::addresses::protocol_adapter_address;
-use anoma_pa_evm_bindings::helpers::rpc_url;
 use anoma_generic_call_forwarder_bindings::addresses::generic_call_forwarder_deployments_map;
 use anoma_generic_call_forwarder_bindings::contract::generic_call_forwarder;
+use anoma_generic_call_forwarder_bindings::generated::generic_call_forwarder;
 use anoma_generic_call_forwarder_bindings::generated::generic_call_forwarder::GenericCallForwarder::GenericCallForwarderInstance;
-
-fn generic_call_id() -> B256 {
-    B256::from_slice(anoma_generic_call_library::GENERIC_CALL_ID.as_bytes())
-}
+use anoma_pa_evm_bindings::addresses::protocol_adapter_address;
+use anoma_pa_evm_bindings::helpers::rpc_url;
 
 #[tokio::test]
 async fn deployed_forwarders_point_to_the_current_protocol_adapter_contract() {
@@ -59,33 +55,28 @@ async fn deployed_forwarders_reference_the_expected_logic_ref() {
 
 #[tokio::test]
 async fn versions_of_deployed_forwarders_match_the_expected_version() {
+    let current_fwd = generic_call_forwarder::GenericCallForwarder::deploy(
+        ProviderBuilder::new().connect_anvil_with_wallet().erased(),
+        Address::from([1u8; 20]),
+        generic_call_id(),
+    )
+    .await
+    .expect("Couldn't deploy generic call forwarder");
+
+    let expected_version = current_fwd
+        .getVersion()
+        .call()
+        .await
+        .expect("Couldn't get version");
+
     // Iterate over all supported chains
     for chain in generic_call_forwarder_deployments_map().keys() {
-        let existing_fwd = fwd_instance(chain).await;
-
-        let current_fwd = generic_call_forwarder::GenericCallForwarder::deploy(
-            existing_fwd.provider(),
-            existing_fwd
-                .getProtocolAdapter()
-                .call()
-                .await
-                .expect("Couldn't get protocol adapter"),
-            generic_call_id(),
-        )
-        .await
-        .expect("Couldn't deploy generic call forwarder");
-
-        let expected_version = current_fwd
+        let actual_version: alloy::primitives::FixedBytes<32> = fwd_instance(chain)
+            .await
             .getVersion()
             .call()
             .await
-            .expect("Couldn't get version");
-
-        let actual_version: alloy::primitives::FixedBytes<32> = existing_fwd
-            .getVersion()
-            .call()
-            .await
-            .expect("Couldn't get protocol adapter version");
+            .expect("Couldn't get deployed forwarder version");
 
         //  Check that the deployed generic call forwarder version matches the expected version.
         assert_eq!(
@@ -96,13 +87,14 @@ async fn versions_of_deployed_forwarders_match_the_expected_version() {
     }
 }
 
+fn generic_call_id() -> B256 {
+    B256::from_slice(anoma_generic_call_library::GENERIC_CALL_ID.as_bytes())
+}
+
 async fn fwd_instance(chain: &NamedChain) -> GenericCallForwarderInstance<DynProvider> {
     let rpc_url = rpc_url(chain).unwrap();
 
-    let provider = ProviderBuilder::new()
-        .connect_anvil_with_wallet_and_config(|a| a.fork(rpc_url))
-        .expect("Couldn't create anvil provider")
-        .erased();
+    let provider = ProviderBuilder::new().connect_http(rpc_url).erased();
     generic_call_forwarder(&provider).await.unwrap()
 }
 
