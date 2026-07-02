@@ -1,10 +1,46 @@
 [
   {
-    "chainId": 8453,
-    "contractAddress": "0x448A6026A836E74feF84Ad971e65ded2e0211b51"
+    "chainId": 11155111,
+    "contractAddress": "0x4464b1C0d441C99BdC37a30b1f0d7D4e06927139"
+  },
+  {
+    "chainId": 1,
+    "contractAddress": "0x4220bcB4A9c755aeE676c675cCc8a113e2A48274"
   },
   {
     "chainId": 84532,
-    "contractAddress": "0x448A6026A836E74feF84Ad971e65ded2e0211b51"
+    "contractAddress": "0x24843B8F3F5eC2D557217148d6d4E2108497C404"
+  },
+  {
+    "chainId": 8453,
+    "contractAddress": "0x24843B8F3F5eC2D557217148d6d4E2108497C404"
+  },
+  {
+    "chainId": 10,
+    "contractAddress": "0x24843B8F3F5eC2D557217148d6d4E2108497C404"
+  },
+  {
+    "chainId": 42161,
+    "contractAddress": "0x24843B8F3F5eC2D557217148d6d4E2108497C404"
+  },
+  {
+    "chainId": 56,
+    "contractAddress": "0xee4b283fA62AE445DcfDf9a34a7569a8Bc6Ba7D5"
+  },
+  {
+    "chainId": 143,
+    "contractAddress": "0x354Cd903169af664E03AFDD07df7E8913d48F064"
+  },
+  {
+    "chainId": 988,
+    "contractAddress": "0x354Cd903169af664E03AFDD07df7E8913d48F064"
+  },
+  {
+    "chainId": 4326,
+    "contractAddress": "0x354Cd903169af664E03AFDD07df7E8913d48F064"
+  },
+  {
+    "chainId": 1313161554,
+    "contractAddress": "0x354Cd903169af664E03AFDD07df7E8913d48F064"
   }
 ]

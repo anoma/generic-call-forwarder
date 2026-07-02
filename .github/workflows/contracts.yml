@@ -65,5 +65,3 @@ jobs:
 
       - name: Run Forge tests
         run: just contracts-test
-        env:
-          ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
