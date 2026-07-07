@@ -28,8 +28,17 @@ library.
 
 ## Audits
 
-> [!CAUTION]
-> This contract is a prototype and has not been audited.
+Our software undergoes regular [audits](./audits/):
+
+1. Informal Systems
+   - Company Website: https://informal.systems
+   - Commit
+     ID: [64c364974b51c31dabb5371e89762c037c9790bb](https://github.com/anoma/generic-call-forwarder/tree/64c364974b51c31dabb5371e89762c037c9790bb)
+   - Started: 2026-06-15
+   - Finished: 2026-06-19
+   - Last revised: 2026-07-03
+
+   [📄 Audit Report (pdf)](./audits/2026-07-03_Informal_Systems_Generic_Call_Resource_&_Forwarder.pdf)
 
 ## Security
 
