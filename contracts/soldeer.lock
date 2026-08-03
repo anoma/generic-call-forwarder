@@ -14,10 +14,10 @@ integrity = "cb7b2674e8cff9aee82276899bd168d9d36364002f08547ddd58f12d1021f0ab"
 
 [[dependencies]]
 name = "anomapay-erc20-forwarder"
-version = "1.1.0-rc.4"
-url = "https://soldeer-revisions.s3.amazonaws.com/anomapay-erc20-forwarder/1_1_0-rc_4_02-07-2026_15:06:50_contracts.zip"
-checksum = "a96f30e024e1e60daca9a1c0a22c67eb11fa828fec0e1327739040a3cc9f678c"
-integrity = "d4fcc45bb723b024b01f7c732dcc041f28ef9f8e5349db96b213bae02e968b6a"
+version = "1.1.0-rc.5"
+url = "https://soldeer-revisions.s3.amazonaws.com/anomapay-erc20-forwarder/1_1_0-rc_5_03-08-2026_10:44:00_contracts.zip"
+checksum = "c03bc4d251e00c2b8d25d498146d3294e8c398568c323291634241660a816008"
+integrity = "f0dcfda29d22d015966cd0db8073f3d43fc6c9c0c98f1a2def39ab0bd0726a8b"
 
 [[dependencies]]
 name = "forge-std"
@@ -38,4 +38,4 @@ name = "uniswap-permit2"
 version = "0x000000000022D473030F116dDEE9F6B43aC78BA3"
 url = "https://soldeer-revisions.s3.amazonaws.com/uniswap-permit2/0x000000000022D473030F116dDEE9F6B43aC78BA3_11-11-2024_08:00:23_permit2.zip"
 checksum = "d4fb59a5d0b9bb91c6800b55a0fa4037dcf4d2a17e55750ffb369572a4dd5906"
-integrity = "6a1b1a1a1807633a3d16882fc33da87d5f7fb2b1ff104675b3479c602b661ea7"
+integrity = "9079c9b814a4ce73dd1653a10cdabd148512d709797bf6a5e55854fa2a92ccb5"
