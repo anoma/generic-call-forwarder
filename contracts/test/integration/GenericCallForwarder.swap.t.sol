@@ -6,8 +6,8 @@ import {Time} from "@openzeppelin-contracts-5.6.1/utils/types/Time.sol";
 import {IForwarder} from "anoma-forwarder-bases-1.0.0/src/interfaces/IForwarder.sol";
 import {ISweepable} from "anoma-forwarder-bases-1.0.0/src/interfaces/ISweepable.sol";
 import {ERC20Example} from "anoma-forwarder-bases-1.0.0/test/examples/ERC20Example.sol";
-import {ERC20Forwarder} from "anomapay-erc20-forwarder-1.1.0-rc.4/src/ERC20Forwarder.sol";
-import {DeployPermit2} from "anomapay-erc20-forwarder-1.1.0-rc.4/test/script/DeployPermit2.s.sol";
+import {ERC20Forwarder} from "anomapay-erc20-forwarder-1.1.0-rc.5/src/ERC20Forwarder.sol";
+import {DeployPermit2} from "anomapay-erc20-forwarder-1.1.0-rc.5/test/script/DeployPermit2.s.sol";
 import {Test} from "forge-std-1.16.1/src/Test.sol";
 
 import {
