@@ -189,12 +189,13 @@ contract GenericCallForwarderTest is Test {
         assertEq(_genericCallFwd.isValidSignature(hash, signature), IERC1271.isValidSignature.selector);
     }
 
-    function test_check_that_the_current_version_is_the_initial_release_v1_0_0() public view {
-        //int256 lt = -1;
-        int256 eq = 0;
-        //int256 gt = 1;
+    function test_check_that_the_current_version_is_a_not_a_major_release() public view {
+        int256 lt = -1;
+        //int256 eq = 0;
+        int256 gt = 1;
 
-        assertEq(SemVerLib.cmp(IVersion(address(_genericCallFwd)).getVersion(), "1.0.0"), eq);
+        assertEq(SemVerLib.cmp(IVersion(address(_genericCallFwd)).getVersion(), "1.0.0"), gt);
+        assertEq(SemVerLib.cmp(IVersion(address(_genericCallFwd)).getVersion(), "2.0.0"), lt);
     }
 }
 
