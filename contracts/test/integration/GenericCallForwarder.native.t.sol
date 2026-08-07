@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
+import {Time} from "@openzeppelin-contracts-5.6.1/utils/types/Time.sol";
 import {IForwarder} from "anoma-forwarder-bases-1.0.0/src/interfaces/IForwarder.sol";
 import {INativeTokenReceiver} from "anoma-forwarder-bases-1.0.0/src/interfaces/INativeTokenReceiver.sol";
 import {ERC20Forwarder} from "anomapay-erc20-forwarder-1.1.0-rc.5/src/ERC20Forwarder.sol";
+import {DeployPermit2} from "anomapay-erc20-forwarder-1.1.0-rc.5/test/script/DeployPermit2.s.sol";
 import {Test} from "forge-std-1.16.1/src/Test.sol";
 
 import {WETH} from "solady-0.1.26/src/tokens/WETH.sol";
@@ -15,6 +17,7 @@ contract GenericCallForwarderNativeTest is Test {
     address internal constant _EMERGENCY_COMMITTEE = address(uint160(2));
     uint128 internal constant _TRANSFER_AMOUNT = 1000;
     bytes internal constant _EXPECTED_OUTPUT = "";
+    bytes32 internal constant _ACTION_TREE_ROOT = bytes32(uint256(0));
 
     bytes32 internal _erc20ResourceLogicRef;
     bytes32 internal _genericCallResourceLogicRef;
@@ -27,6 +30,7 @@ contract GenericCallForwarderNativeTest is Test {
     WETH internal _weth;
 
     bytes internal _defaultUnwrapInput;
+    bytes internal _defaultWrapInput;
 
     function setUp() public {
         _erc20ResourceLogicRef = bytes32(uint256(1));
@@ -35,6 +39,9 @@ contract GenericCallForwarderNativeTest is Test {
         _alice = makeAddr("alice");
 
         _weth = new WETH();
+
+        // Deploy the canonical Permit2 contract that the ERC20 forwarder pulls the funds to be wrapped with
+        new DeployPermit2().run();
 
         // Deploy the forwarders
         _erc20Fwd = new ERC20Forwarder({
@@ -53,6 +60,24 @@ contract GenericCallForwarderNativeTest is Test {
             _TRANSFER_AMOUNT,
             /* unwrap data */
             ERC20Forwarder.UnwrapData({receiver: address(_genericCallFwd)})
+        );
+
+        _defaultWrapInput = abi.encode( /* callType */
+            ERC20Forwarder.CallType.Wrap,
+            /*     token */
+            address(_weth),
+            /*    amount */
+            _TRANSFER_AMOUNT,
+            /* wrap data */
+            ERC20Forwarder.WrapData({
+                nonce: 123,
+                deadline: Time.timestamp() + 5 minutes,
+                owner: address(_genericCallFwd),
+                actionTreeRoot: _ACTION_TREE_ROOT,
+                r: bytes32(0),
+                s: bytes32(0),
+                v: 27
+            })
         );
     }
 
@@ -104,5 +129,61 @@ contract GenericCallForwarderNativeTest is Test {
         assertEq(_weth.balanceOf(address(_erc20Fwd)), 0);
         assertEq(_weth.balanceOf(address(_genericCallFwd)), 0);
         assertEq(_alice.balance, _TRANSFER_AMOUNT);
+    }
+
+    function test_calls_allow_to_wrap_native_tokens() public {
+        // Fund the Generic Call Forwarder with ETH (e.g., sent by Alice as part of the same transaction)
+        {
+            vm.deal(_alice, _TRANSFER_AMOUNT);
+            vm.prank(_alice);
+            vm.expectEmit(address(_genericCallFwd));
+            emit INativeTokenReceiver.NativeTokenReceived({sender: _alice, amount: _TRANSFER_AMOUNT});
+            payable(address(_genericCallFwd)).transfer(_TRANSFER_AMOUNT);
+        }
+
+        assertEq(_alice.balance, 0);
+        assertEq(address(_genericCallFwd).balance, _TRANSFER_AMOUNT);
+        assertEq(_weth.balanceOf(address(_genericCallFwd)), 0);
+        assertEq(_weth.balanceOf(address(_erc20Fwd)), 0);
+
+        // Mock GenericCallForwarder call (triggered by GenericCall resource)
+        {
+            GenericCallForwarder.Call[] memory genericCalls = new GenericCallForwarder.Call[](1);
+            // Call 1: Deposit ETH into the WETH contract
+            // NOTE: No `approve(permit2, amount)` call is required here because Solady's WETH fixes the Permit2
+            // allowance at infinity (and reverts on explicit approvals). A canonical WETH9-style deployment would
+            // need an additional approval call in this batch.
+            genericCalls[0] = GenericCallForwarder.Call({
+                to: address(_weth), value: _TRANSFER_AMOUNT, data: abi.encodeCall(WETH.deposit, ())
+            });
+            bytes memory depositEthInput = abi.encode(genericCalls);
+
+            vm.prank(_PROTOCOL_ADAPTER);
+            bytes memory output1 =
+                _genericCallFwd.forwardCall({logicRef: _genericCallResourceLogicRef, input: depositEthInput});
+            assertEq(keccak256(output1), keccak256(_EXPECTED_OUTPUT));
+        }
+
+        assertEq(address(_genericCallFwd).balance, 0);
+        assertEq(_weth.balanceOf(address(_genericCallFwd)), _TRANSFER_AMOUNT);
+        assertEq(_weth.balanceOf(address(_erc20Fwd)), 0);
+
+        // Mock ERC20Forwarder call (triggered by TokenTransfer resource)
+        // Wrap the WETH held by the generic call forwarder into a WETH-R resource. The generic call forwarder
+        // implements ERC-1271 and accepts every signature, so the Permit2 signature components are zero.
+        {
+            vm.prank(_PROTOCOL_ADAPTER);
+            vm.expectEmit(address(_erc20Fwd));
+            emit ERC20Forwarder.Wrapped({
+                token: address(_weth), from: address(_genericCallFwd), amount: _TRANSFER_AMOUNT
+            });
+
+            bytes memory output2 = _erc20Fwd.forwardCall({logicRef: _erc20ResourceLogicRef, input: _defaultWrapInput});
+            assertEq(keccak256(output2), keccak256(_EXPECTED_OUTPUT));
+        }
+
+        assertEq(address(_genericCallFwd).balance, 0);
+        assertEq(_weth.balanceOf(address(_genericCallFwd)), 0);
+        assertEq(_weth.balanceOf(address(_erc20Fwd)), _TRANSFER_AMOUNT);
     }
 }
