@@ -8,8 +8,8 @@ use anoma_generic_call_forwarder_bindings::addresses::generic_call_forwarder_dep
 use anoma_generic_call_forwarder_bindings::contract::generic_call_forwarder;
 use anoma_generic_call_forwarder_bindings::generated::generic_call_forwarder;
 use anoma_generic_call_forwarder_bindings::generated::generic_call_forwarder::GenericCallForwarder::GenericCallForwarderInstance;
-use anoma_pa_evm_bindings::addresses::protocol_adapter_address;
-use anoma_pa_evm_bindings::helpers::rpc_url;
+use anoma_pa_evm_bindings::addresses::{Environment, protocol_adapter_address};
+use anoma_pa_evm_bindings::helpers::alchemy_url;
 
 #[tokio::test]
 async fn deployed_forwarders_point_to_the_current_protocol_adapter_contract() {
@@ -22,7 +22,8 @@ async fn deployed_forwarders_point_to_the_current_protocol_adapter_contract() {
             .await
             .expect("Couldn't get protocol adapter address");
 
-        let deployed_protocol_adapter = protocol_adapter_address(chain).unwrap();
+        let deployed_protocol_adapter =
+            protocol_adapter_address(Environment::Staging, chain).unwrap();
 
         //  Check that the referenced and deployed protocol adapter addresses match.
         assert_eq!(
@@ -92,7 +93,7 @@ fn generic_call_id() -> B256 {
 }
 
 async fn fwd_instance(chain: &NamedChain) -> GenericCallForwarderInstance<DynProvider> {
-    let rpc_url = rpc_url(chain).unwrap();
+    let rpc_url = alchemy_url(chain).unwrap();
 
     let provider = ProviderBuilder::new().connect_http(rpc_url).erased();
     generic_call_forwarder(&provider).await.unwrap()
