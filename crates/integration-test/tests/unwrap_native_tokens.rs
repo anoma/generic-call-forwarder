@@ -11,11 +11,11 @@ use anoma_pa_testkit::environment::CommitmentTree;
 use anoma_pa_testkit::environment::Environment;
 use anoma_pa_testkit::environment::ProtocolAdapter;
 use anoma_pa_testkit::fixtures::identities;
-use anomapay_erc20_forwarder_integration_test::deploy::erc20::ierc20_bindings::ierc20;
-use anomapay_erc20_forwarder_integration_test::deploy::erc20::weth_bindings::WETH9;
+use anomapay_erc20_forwarder_integration_test::deploy::erc20_bindings::WETH9;
+use anomapay_erc20_forwarder_integration_test::deploy::erc20_bindings::ierc20;
 use anomapay_erc20_forwarder_integration_test::fixtures::{transfer, unwrap, wrap};
-use anomapay_erc20_forwarder_integration_test::state::erc20::addresses::erc20_address;
-use anomapay_erc20_forwarder_integration_test::state::forwarder::addresses::erc20_forwarder_v1_address;
+use anomapay_erc20_forwarder_integration_test::state::erc20::erc20_address;
+use anomapay_erc20_forwarder_integration_test::state::forwarder::erc20_forwarder_v1_address;
 use anyhow::Context;
 #[cfg(feature = "e2e")]
 use common::setup_transfer_generic_call_e2e_env;

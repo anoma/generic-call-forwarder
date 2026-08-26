@@ -1,9 +1,9 @@
 use anoma_generic_call_library::GenericCall;
 use anoma_generic_call_library::GenericCallLogic;
 use anoma_pa_testkit::witness::ActionWitnesses;
-use anoma_rm_risc0::action_tree::MerkleTree as ArmTree;
+use anoma_rm_risc0::action_tree::ActionTree as ArmTree;
 use anoma_rm_risc0::compliance::ComplianceWitness;
-use anoma_rm_risc0::resource::Resource;
+use anoma_rm_risc0::resource::{ConsumedResourceWitness, Resource};
 use anyhow::Context;
 
 use super::resource;
@@ -46,11 +46,12 @@ pub fn build(
         &overrides,
     )?;
 
+    let consumed_witness =
+        ConsumedResourceWitness::from_resource(consumed_ephemeral, nf_key.clone());
     let compliance_witness = ComplianceWitness::from_resources(
-        consumed_ephemeral,
-        *anoma_rm_risc0::compliance::INITIAL_ROOT,
-        nf_key.clone(),
-        created_ephemeral,
+        &[consumed_witness],
+        &[created_ephemeral],
+        resource::kind_table(),
     );
 
     let action_tree_root = ArmTree::new(vec![consumed_nullifier, created_ephemeral.commitment()])
@@ -75,7 +76,7 @@ pub fn build(
     .witness;
 
     let witnesses = ActionWitnesses {
-        compliance_witnesses: vec![Box::new(compliance_witness)],
+        compliance_witness: Box::new(compliance_witness),
         logic_witnesses: vec![
             Box::new(logic::Witness::new(consumed_logic_witness)),
             Box::new(logic::Witness::new(created_logic_witness)),
