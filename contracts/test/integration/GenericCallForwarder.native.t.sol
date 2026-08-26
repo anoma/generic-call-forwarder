@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
-import {IForwarder} from "anoma-forwarder-bases-1.0.0/src/interfaces/IForwarder.sol";
-import {INativeTokenReceiver} from "anoma-forwarder-bases-1.0.0/src/interfaces/INativeTokenReceiver.sol";
-import {ERC20Forwarder} from "anomapay-erc20-forwarder-1.1.0-rc.4/src/ERC20Forwarder.sol";
-import {Test} from "forge-std-1.16.1/src/Test.sol";
+import {ERC1967Proxy} from "@openzeppelin-contracts-5.7.0/proxy/ERC1967/ERC1967Proxy.sol";
+import {IForwarder} from "anoma-forwarder-bases-3.0.0/src/interfaces/IForwarder.sol";
+import {INativeTokenReceiver} from "anoma-forwarder-bases-3.0.0/src/interfaces/INativeTokenReceiver.sol";
+import {ERC20Forwarder} from "anomapay-erc20-forwarder-2.0.0-rc.0/src/ERC20Forwarder.sol";
+import {Test} from "forge-std-1.16.2/src/Test.sol";
 
 import {WETH} from "solady-0.1.26/src/tokens/WETH.sol";
 
@@ -12,7 +13,7 @@ import {GenericCallForwarder} from "../../src/GenericCallForwarder.sol";
 
 contract GenericCallForwarderNativeTest is Test {
     address internal constant _PROTOCOL_ADAPTER = address(uint160(1));
-    address internal constant _EMERGENCY_COMMITTEE = address(uint160(2));
+    address internal constant _FORWARDER_OWNER = address(uint160(2));
     uint128 internal constant _TRANSFER_AMOUNT = 1000;
     bytes internal constant _EXPECTED_OUTPUT = "";
 
@@ -37,11 +38,16 @@ contract GenericCallForwarderNativeTest is Test {
         _weth = new WETH();
 
         // Deploy the forwarders
-        _erc20Fwd = new ERC20Forwarder({
-            protocolAdapter: _PROTOCOL_ADAPTER,
-            emergencyCommittee: _EMERGENCY_COMMITTEE,
-            logicRef: _erc20ResourceLogicRef
-        });
+        _erc20Fwd = IForwarder(
+            address(
+                new ERC1967Proxy(
+                    address(new ERC20Forwarder()),
+                    abi.encodeCall(
+                        ERC20Forwarder.initialize, (_PROTOCOL_ADAPTER, _erc20ResourceLogicRef, _FORWARDER_OWNER)
+                    )
+                )
+            )
+        );
         _genericCallFwd =
             new GenericCallForwarder({protocolAdapter: _PROTOCOL_ADAPTER, logicRef: _genericCallResourceLogicRef});
 
