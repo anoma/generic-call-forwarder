@@ -17,7 +17,11 @@ src = "src"
 test = "test"
 out = "out"
 script = "script"
-fs_permissions = [{ access = "read", path = "./" }]
+# Let tests and the deploy script read the recorded deployments alongside the Foundry root.
+fs_permissions = [
+    { access = "read", path = "./" },
+    { access = "read", path = "../crates/bindings/deployments.json" },
+]
 libs = ["dependencies"]
 auto_detect_remappings = false
 remappings = [
