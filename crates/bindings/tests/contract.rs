@@ -1,111 +1,144 @@
+//! Deployment checks against the live environments. They run on the promotion gate: the
+//! `VERIFY_*` flags arm them per environment, because between a version bump on `next` and the
+//! environment's redeployment the source and the deployments legitimately disagree.
+
 #[cfg(test)]
 extern crate dotenvy;
 
 use alloy::primitives::{Address, B256};
 use alloy::providers::{DynProvider, Provider, ProviderBuilder};
 use alloy_chains::NamedChain;
-use anoma_generic_call_forwarder_bindings::addresses::generic_call_forwarder_deployments_map;
+use anoma_generic_call_forwarder_bindings::addresses::{
+    Environment, generic_call_forwarder_deployments_map,
+};
 use anoma_generic_call_forwarder_bindings::contract::generic_call_forwarder;
 use anoma_generic_call_forwarder_bindings::generated::generic_call_forwarder;
 use anoma_generic_call_forwarder_bindings::generated::generic_call_forwarder::GenericCallForwarder::GenericCallForwarderInstance;
-use anoma_pa_evm_bindings::addresses::protocol_adapter_address;
-use anoma_pa_evm_bindings::helpers::rpc_url;
+use anoma_pa_evm_bindings::addresses::{Environment as PaEnvironment, protocol_adapter_address};
+use anoma_pa_evm_bindings::helpers::alchemy_url;
 
-#[tokio::test]
-async fn deployed_forwarders_point_to_the_current_protocol_adapter_contract() {
-    // Iterate over all supported chains
-    for chain in generic_call_forwarder_deployments_map().keys() {
-        let fwd_referenced_protocol_adapter: Address = fwd_instance(chain)
-            .await
-            .getProtocolAdapter()
-            .call()
-            .await
-            .expect("Couldn't get protocol adapter address");
+const ENVIRONMENTS: [(Environment, &str); 2] = [
+    (Environment::Staging, "VERIFY_STAGING_DEPLOYMENTS"),
+    (Environment::Production, "VERIFY_PRODUCTION_DEPLOYMENTS"),
+];
 
-        let deployed_protocol_adapter = protocol_adapter_address(chain).unwrap();
-
-        //  Check that the referenced and deployed protocol adapter addresses match.
-        assert_eq!(
-            fwd_referenced_protocol_adapter, deployed_protocol_adapter,
-            "Protocol adapter address mismatch on network '{chain}'."
-        );
+/// Maps the forwarder's environment onto the protocol adapter bindings' equivalent.
+fn pa_environment(environment: Environment) -> PaEnvironment {
+    match environment {
+        Environment::Staging => PaEnvironment::Staging,
+        Environment::Production => PaEnvironment::Production,
     }
 }
 
-#[tokio::test]
-async fn deployed_forwarders_reference_the_expected_logic_ref() {
-    // Iterate over all supported chains
-    for chain in generic_call_forwarder_deployments_map().keys() {
-        let actual_logic_ref = fwd_instance(chain)
-            .await
-            .getLogicRef()
-            .call()
-            .await
-            .expect("Couldn't get logic ref");
-
-        // Check that the logic ref in the deployed forwarder matches the expected one from the transfer library.
-        assert_eq!(
-            actual_logic_ref,
-            generic_call_id(),
-            "Logic address mismatch on network '{chain}': expected {}, actual: {actual_logic_ref}.",
-            generic_call_id()
-        );
-    }
-}
-
-#[tokio::test]
-async fn versions_of_deployed_forwarders_match_the_expected_version() {
-    let current_fwd = generic_call_forwarder::GenericCallForwarder::deploy(
-        ProviderBuilder::new().connect_anvil_with_wallet().erased(),
-        Address::from([1u8; 20]),
-        generic_call_id(),
-    )
-    .await
-    .expect("Couldn't deploy generic call forwarder");
-
-    let expected_version = current_fwd
-        .getVersion()
-        .call()
-        .await
-        .expect("Couldn't get version");
-
-    // Iterate over all supported chains
-    for chain in generic_call_forwarder_deployments_map().keys() {
-        let actual_version: alloy::primitives::FixedBytes<32> = fwd_instance(chain)
-            .await
-            .getVersion()
-            .call()
-            .await
-            .expect("Couldn't get deployed forwarder version");
-
-        //  Check that the deployed generic call forwarder version matches the expected version.
-        assert_eq!(
-            decode_bytes32_to_utf8(actual_version),
-            decode_bytes32_to_utf8(expected_version),
-            "Generic call forwarder version mismatch on network '{chain}'."
-        );
-    }
+/// Returns the environments whose flag arms the gate, printing a skip note for the rest.
+fn armed_environments() -> Vec<Environment> {
+    ENVIRONMENTS
+        .into_iter()
+        .filter_map(|(environment, flag)| {
+            if std::env::var(flag).as_deref() == Ok("true") {
+                Some(environment)
+            } else {
+                eprintln!("skipped: {flag} is not set");
+                None
+            }
+        })
+        .collect()
 }
 
 fn generic_call_id() -> B256 {
     B256::from_slice(anoma_generic_call_library::GENERIC_CALL_ID.as_bytes())
 }
 
-async fn fwd_instance(chain: &NamedChain) -> GenericCallForwarderInstance<DynProvider> {
-    let rpc_url = rpc_url(chain).unwrap();
+#[tokio::test]
+async fn deployed_forwarders_point_to_the_current_protocol_adapter_contract() {
+    for environment in armed_environments() {
+        for chain in generic_call_forwarder_deployments_map(environment).keys() {
+            let referenced_protocol_adapter: Address = fwd_instance(chain, environment)
+                .await
+                .getProtocolAdapter()
+                .call()
+                .await
+                .expect("Couldn't get protocol adapter address");
 
-    let provider = ProviderBuilder::new().connect_http(rpc_url).erased();
-    generic_call_forwarder(&provider).await.unwrap()
+            // The forwarder settles through the protocol adapter proxy of the same environment.
+            let deployed_protocol_adapter =
+                protocol_adapter_address(pa_environment(environment), chain).unwrap_or_else(|| {
+                    panic!("no protocol adapter recorded for network '{chain}'")
+                });
+
+            assert_eq!(
+                referenced_protocol_adapter, deployed_protocol_adapter,
+                "Protocol adapter address mismatch on network '{chain}' of environment {environment:?}."
+            );
+        }
+    }
 }
 
-fn decode_bytes32_to_utf8(encoded_string: B256) -> String {
-    let bytes = alloy::hex::decode(encoded_string.to_string()).expect("Couldn't decode hex string");
+#[tokio::test]
+async fn deployed_forwarders_reference_the_expected_logic_ref() {
+    for environment in armed_environments() {
+        for chain in generic_call_forwarder_deployments_map(environment).keys() {
+            let actual_logic_ref = fwd_instance(chain, environment)
+                .await
+                .getLogicRef()
+                .call()
+                .await
+                .expect("Couldn't get logic ref");
 
-    let trimmed = bytes
-        .split(|b| *b == 0)
-        .next()
-        .expect("No null byte found in bytes");
-    str::from_utf8(trimmed)
-        .expect("Conversion to UTF-8 failed.")
-        .to_string()
+            assert_eq!(
+                actual_logic_ref,
+                generic_call_id(),
+                "Logic ref mismatch on network '{chain}' of environment {environment:?}: expected {}, actual: {actual_logic_ref}.",
+                generic_call_id()
+            );
+        }
+    }
+}
+
+#[tokio::test]
+async fn versions_of_deployed_forwarders_match_the_expected_version() {
+    for environment in armed_environments() {
+        for chain in generic_call_forwarder_deployments_map(environment).keys() {
+            let existing_fwd = fwd_instance(chain, environment).await;
+
+            // `VERSION` is a constant, so a freshly deployed forwarder answers it regardless of
+            // its constructor arguments.
+            let expected_version = generic_call_forwarder::GenericCallForwarder::deploy(
+                existing_fwd.provider(),
+                Address::ZERO,
+                B256::ZERO,
+            )
+            .await
+            .expect("Couldn't deploy the generic call forwarder")
+            .VERSION()
+            .call()
+            .await
+            .expect("Couldn't get version");
+
+            let actual_version = existing_fwd
+                .VERSION()
+                .call()
+                .await
+                .expect("Couldn't get the deployed generic call forwarder version");
+
+            assert_eq!(
+                actual_version, expected_version,
+                "Generic call forwarder version mismatch on network '{chain}' of environment {environment:?}."
+            );
+        }
+    }
+}
+
+async fn fwd_instance(
+    chain: &NamedChain,
+    environment: Environment,
+) -> GenericCallForwarderInstance<DynProvider> {
+    let rpc_url = alchemy_url(chain).expect("Couldn't get RPC URL for chain");
+
+    let provider = ProviderBuilder::new()
+        .connect_anvil_with_wallet_and_config(|a| a.fork(rpc_url))
+        .expect("Couldn't create anvil provider");
+    generic_call_forwarder(&provider.erased(), environment)
+        .await
+        .expect("Couldn't get generic call forwarder instance")
 }

@@ -1,14 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
-import {IERC20} from "@openzeppelin-contracts-5.6.1/token/ERC20/IERC20.sol";
-import {Time} from "@openzeppelin-contracts-5.6.1/utils/types/Time.sol";
-import {IForwarder} from "anoma-forwarder-bases-1.0.0/src/interfaces/IForwarder.sol";
-import {ISweepable} from "anoma-forwarder-bases-1.0.0/src/interfaces/ISweepable.sol";
-import {ERC20Example} from "anoma-forwarder-bases-1.0.0/test/examples/ERC20Example.sol";
-import {ERC20Forwarder} from "anomapay-erc20-forwarder-1.1.0-rc.4/src/ERC20Forwarder.sol";
-import {DeployPermit2} from "anomapay-erc20-forwarder-1.1.0-rc.4/test/script/DeployPermit2.s.sol";
-import {Test} from "forge-std-1.16.1/src/Test.sol";
+import {ERC1967Proxy} from "@openzeppelin-contracts-5.7.0/proxy/ERC1967/ERC1967Proxy.sol";
+import {IERC20} from "@openzeppelin-contracts-5.7.0/token/ERC20/IERC20.sol";
+import {Time} from "@openzeppelin-contracts-5.7.0/utils/types/Time.sol";
+import {IForwarder} from "anoma-forwarder-bases-3.0.0/src/interfaces/IForwarder.sol";
+import {ISweepable} from "anoma-forwarder-bases-3.0.0/src/interfaces/ISweepable.sol";
+import {ERC20Example} from "anoma-forwarder-bases-3.0.0/test/examples/ERC20Example.sol";
+import {ERC20Forwarder} from "anomapay-erc20-forwarder-2.0.0-rc.0/src/ERC20Forwarder.sol";
+import {DeployPermit2} from "anomapay-erc20-forwarder-2.0.0-rc.0/test/script/DeployPermit2.s.sol";
+import {Test} from "forge-std-1.16.2/src/Test.sol";
 
 import {
     IAllowanceTransfer
@@ -23,7 +24,7 @@ import {DexRouterMock} from "../mocks/DexRouter.m.sol";
 
 contract GenericCallForwarderSwapTest is Test {
     address internal constant _PROTOCOL_ADAPTER = address(uint160(1));
-    address internal constant _EMERGENCY_COMMITTEE = address(uint160(2));
+    address internal constant _FORWARDER_OWNER = address(uint160(2));
     uint128 internal constant _TRANSFER_AMOUNT = 1000;
     bytes internal constant _EXPECTED_OUTPUT = "";
     bytes32 internal constant _ACTION_TREE_ROOT = bytes32(uint256(0));
@@ -49,11 +50,16 @@ contract GenericCallForwarderSwapTest is Test {
         _permit2 = new DeployPermit2().run();
 
         // Deploy the forwarders
-        _erc20Fwd = new ERC20Forwarder({
-            protocolAdapter: _PROTOCOL_ADAPTER,
-            emergencyCommittee: _EMERGENCY_COMMITTEE,
-            logicRef: _erc20ResourceLogicRef
-        });
+        _erc20Fwd = IForwarder(
+            address(
+                new ERC1967Proxy(
+                    address(new ERC20Forwarder()),
+                    abi.encodeCall(
+                        ERC20Forwarder.initialize, (_PROTOCOL_ADAPTER, _erc20ResourceLogicRef, _FORWARDER_OWNER)
+                    )
+                )
+            )
+        );
         _genericCallFwd =
             new GenericCallForwarder({protocolAdapter: _PROTOCOL_ADAPTER, logicRef: _genericCallResourceLogicRef});
 

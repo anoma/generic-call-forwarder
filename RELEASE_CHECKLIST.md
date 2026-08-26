@@ -6,6 +6,9 @@ Releases of the packages contained in this monorepo follow the [SemVer conventio
 > The `contracts` and `bindings` are independently versioned with `X.Y.Z` and `A.B.C`, respectively.
 > Both versions can include release candidates (suffixed with `-rc.?`).
 
+> [!IMPORTANT]
+> The generic call forwarder is stateless and stays immutable by design — it does not become upgradeable. The protocol adapter and the ERC20 forwarder promote deployments from `next` through `staging` to `main` and keep a staging and a production environment, each with its own proxy owner. This repo keeps the single-environment release flow below: a new version is a new address, not an upgrade, so there is nothing for a Safe to execute and no proxy to promote. The bindings still record deployments per environment (staging and production), keyed by the protocol adapter they settle through.
+
 We distinguish between three release cases:
 
 - Deploying a **new** generic call forwarder version to multiple new chains resulting in a new

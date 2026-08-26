@@ -11,13 +11,17 @@ homepage = "https://anoma.net/"
 edition = "2024"
 
 [workspace.dependencies]
-alloy = { version = "2.0.5", features = ["full", "eip712", "node-bindings"] }
-alloy-chains = "0.2.33"
-anoma-generic-call-library = "1.0.0"
-anoma-generic-call-witness = "1.0.0"
-anoma-pa-evm-bindings = "2.3.0"
-anoma-rm-risc0 = { version = "1.1.1", default-features = false }
-anoma-rm-risc0-gadgets = "1.1.1"
+alloy = { version = "2.4.1", features = ["full", "eip712", "node-bindings"] }
+alloy-chains = "0.2.36"
+anoma-generic-call-library = { git = "https://github.com/anoma/generic-call-resource", tag = "v3.0.0-rc.1" }
+anoma-generic-call-witness = { git = "https://github.com/anoma/generic-call-resource", tag = "v3.0.0-rc.1" }
+anoma-pa-evm-bindings = { git = "https://github.com/anoma/pa-evm", tag = "bindings/v3.0.0-rc.6" }
+anoma-rm-risc0 = { git = "https://github.com/anoma/arm-risc0", tag = "v2.0.0-rc.4", features = [
+  "abi_encoding",
+  "bonsai",
+  "aggregation",
+] }
+anoma-rm-risc0-gadgets = { git = "https://github.com/anoma/arm-risc0", tag = "v2.0.0-rc.4" }
 anyhow = "1.0"
 bincode = "1.3.3"
 dotenvy = "0.15.7"
@@ -33,9 +37,8 @@ tokio = { version = "1.52", features = ["rt-multi-thread"] }
 # Forwarder bindings (this repo)
 anoma-generic-call-forwarder-bindings = { path = "crates/bindings" }
 
-# Upstream test crates. anoma-pa-testkit and pa-evm are pinned by git rev (see
-# ADR-0002); the erc20 integration-test crate stays a local path until erc20 is
-# pushed and pinned by git rev too. For cross-repo dev, override with `[patch]`.
-anoma-pa-testkit = { git = "https://github.com/anoma/pa-testkit", rev = "74cf6ad7cd488021128c34662e68171c7ae28e6d" }
-anoma-pa-evm-integration-test = { git = "https://github.com/anoma/pa-evm", rev = "95179723a8515337a90276d47374237c3e5a7784" }
-anomapay-erc20-forwarder-integration-test = { git = "https://github.com/anoma/anomapay-erc20-forwarder", rev = "ccdf93b869521261c8ebc2d05145abb782a8cc4d" }
+# Upstream test crates, pinned by git rev (see anoma-pa-testkit ADR-0002). For
+# cross-repo development, override locally with a `[patch]` to a path checkout.
+anoma-pa-testkit = { git = "https://github.com/anoma/pa-testkit", rev = "8f3850beb5a2df9c5b940912ee748b0f6b4e5242" }
+anoma-pa-evm-integration-test = { git = "https://github.com/anoma/pa-evm", tag = "bindings/v3.0.0-rc.6" }
+anomapay-erc20-forwarder-integration-test = { git = "https://github.com/anoma/anomapay-erc20-forwarder", tag = "bindings/v3.0.0-rc.8" }

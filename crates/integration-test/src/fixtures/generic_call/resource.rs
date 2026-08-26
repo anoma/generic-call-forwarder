@@ -3,6 +3,7 @@ use anoma_generic_call_witness::calculate_label_ref;
 use anoma_generic_call_witness::calculate_value_ref;
 use anoma_generic_call_witness::encode_generic_call_forwarder_input;
 use anoma_rm_risc0::Digest;
+use anoma_rm_risc0::compliance::KindTableEntry;
 use anoma_rm_risc0::nullifier_key::NullifierKey;
 use anoma_rm_risc0::nullifier_key::NullifierKeyCommitment;
 use anoma_rm_risc0::resource::Resource;
@@ -96,10 +97,8 @@ pub(super) fn created(
         .created_label_ref
         .unwrap_or(calculate_label_ref(forwarder_addr));
 
-    let default_nonce: [u8; 32] = consumed_nullifier
-        .as_bytes()
-        .try_into()
-        .context("nullifier must be 32 bytes")?;
+    let default_nonce = Resource::derive_nonce_from_nullifiers(0, &[consumed_nullifier])
+        .context("failed to derive the created resource nonce")?;
 
     Ok(Resource {
         logic_ref: logic::verifying_key(),
@@ -115,4 +114,13 @@ pub(super) fn created(
 
 pub(super) fn nullifier_key(seed: u8) -> NullifierKey {
     NullifierKey::from_bytes([seed; 32])
+}
+
+/// The kind table the fixtures prove against. Empty, so every kind falls back to
+/// hash-to-curve and the commitment matches the protocol adapter's initial
+/// `_EMPTY_KIND_TABLE_COMMITMENT`. Proving against a non-empty table additionally
+/// requires `init_kind_table_from_file` — `Transaction::verify` fails with
+/// `KindTableNotLoaded` without it — and the adapter's stored commitment to agree.
+pub(super) fn kind_table() -> Vec<KindTableEntry> {
+    Vec::new()
 }
