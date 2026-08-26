@@ -1,4 +1,4 @@
-[![Contracts Tests](https://github.com/anoma/generic-call-forwarder/actions/workflows/contracts.yml/badge.svg)](https://github.com/anoma/generic-call-forwarder/actions/workflows/contracts.yml) [![soldeer.xyz](https://img.shields.io/badge/soldeer.xyz-anoma--generic--call--forwarder-blue?logo=ethereum)](https://soldeer.xyz/project/anoma-generic-call-forwarder) [![License](https://img.shields.io/badge/license-MIT-blue)](https://raw.githubusercontent.com/anoma/generic-call-forwarder/refs/heads/main/bindings/LICENSE)
+[![Contracts Tests](https://github.com/anoma/generic-call-forwarder/actions/workflows/contracts.yml/badge.svg)](https://github.com/anoma/generic-call-forwarder/actions/workflows/contracts.yml) [![soldeer.xyz](https://img.shields.io/badge/soldeer.xyz-anoma--generic--call--forwarder-blue?logo=ethereum)](https://soldeer.xyz/project/anoma-generic-call-forwarder) [![License](https://img.shields.io/badge/license-MIT-blue)](https://raw.githubusercontent.com/anoma/generic-call-forwarder/refs/heads/main/contracts/LICENSE)
 
 # Generic Call Forwarder Contract
 

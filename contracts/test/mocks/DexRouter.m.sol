@@ -12,6 +12,9 @@ import {
     ISignatureTransfer
 } from "uniswap-permit2-0x000000000022D473030F116dDEE9F6B43aC78BA3/src/interfaces/ISignatureTransfer.sol";
 
+/// @notice A minimal DEX router mock swapping `amountIn` of `tokenIn` for a fixed `amountOutMin` of `tokenOut`.
+/// The variants differ only in how the input token is pulled from the caller: a classic ERC-20 allowance,
+/// a Permit2 allowance, or a Permit2 signature.
 contract DexRouterMock {
     using SafeERC20 for IERC20;
 
