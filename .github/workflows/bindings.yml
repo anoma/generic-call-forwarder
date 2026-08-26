@@ -11,7 +11,7 @@ jobs:
     name: Bindings Tests
     runs-on: macos-latest
     env:
-      ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
+      RISC0_SKIP_BUILD_KERNELS: true
 
     steps:
       - name: Checkout repository
@@ -48,3 +48,5 @@ jobs:
 
       - name: Run Tests
         run: just bindings-test
+        env:
+          ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
