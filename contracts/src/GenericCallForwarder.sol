@@ -42,6 +42,9 @@ contract GenericCallForwarder is
         bytes data;
     }
 
+    /// @inheritdoc IVersion
+    string public constant override VERSION = "2.0.0-rc.0";
+
     /// @notice Emits the executed calls and their resulting outputs.
     /// @param calls The array of calls executed.
     /// @param execResults The array with the results of the executed calls.
@@ -53,9 +56,6 @@ contract GenericCallForwarder is
     /// @param protocolAdapter The protocol adapter contract that can forward calls.
     /// @param logicRef The reference to the logic function of the resource kind triggering the forward call.
     constructor(address protocolAdapter, bytes32 logicRef) ForwarderBase(protocolAdapter, logicRef) {}
-
-    /// @inheritdoc IVersion
-    string public constant override VERSION = "2.0.0-rc.0";
 
     /// @inheritdoc IERC1271
     /// @dev This method accepts every signature unconditionally by returning the ERC-1271 magic value, without

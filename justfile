@@ -57,22 +57,22 @@ contracts-gen-bindings:
         --module \
         --overwrite
 
-# Simulate deployment (dry-run)
-contracts-simulate generic-call-circuit-id chain protocol-adapter *args:
-    @echo "IS_TEST_DEPLOYMENT: $IS_TEST_DEPLOYMENT"
+# Simulate the deterministic forwarder deployment (dry-run)
+contracts-simulate chain protocol-adapter logic-ref *args:
+    @echo "IS_PRODUCTION: $IS_PRODUCTION"
     @echo "Cleaning contracts to ensure reproducible build..."
     @just contracts-clean
     cd contracts && forge script script/DeployGenericCallForwarder.s.sol:DeployGenericCallForwarder \
-        --sig "run(bool,address,bytes32)" $IS_TEST_DEPLOYMENT {{protocol-adapter}} {{generic-call-circuit-id}} \
+        --sig "run(bool,address,bytes32)" $IS_PRODUCTION {{protocol-adapter}} {{logic-ref}} \
         --rpc-url {{chain}} {{ args }}
 
-# Deploy Generic Call Forwarder
-contracts-deploy deployer generic-call-circuit-id chain protocol-adapter *args:
+# Deploy the forwarder deterministically to the environment selected by IS_PRODUCTION
+contracts-deploy deployer chain protocol-adapter logic-ref *args:
     @echo "Cleaning contracts to ensure reproducible build..."
     @just contracts-clean
     cd contracts && forge script script/DeployGenericCallForwarder.s.sol:DeployGenericCallForwarder \
-        --sig "run(bool,address,bytes32)" $IS_TEST_DEPLOYMENT {{protocol-adapter}} {{generic-call-circuit-id}} \
-         --broadcast --rpc-url {{chain}} --account {{deployer}} {{ args }}
+        --sig "run(bool,address,bytes32)" $IS_PRODUCTION {{protocol-adapter}} {{logic-ref}} \
+        --broadcast --rpc-url {{chain}} --account {{deployer}} {{ args }}
 
 # Verify on sourcify
 contracts-verify-sourcify address chain *args:
