@@ -11,8 +11,7 @@ jobs:
     name: Bindings Tests
     runs-on: macos-latest
     env:
-      ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
-      NOWNODES_API_KEY: ${{ secrets.NOWNODES_API_KEY }}
+      RISC0_SKIP_BUILD_KERNELS: true
 
     steps:
       - name: Checkout repository
@@ -31,8 +30,6 @@ jobs:
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
-        with:
-          version: v1.7.1
 
       - name: Show Foundry version
         run: forge --version
@@ -51,3 +48,5 @@ jobs:
 
       - name: Run Tests
         run: just bindings-test
+        env:
+          ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
