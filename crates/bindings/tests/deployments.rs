@@ -1,7 +1,7 @@
 use alloy::primitives::Address;
 use alloy_chains::NamedChain;
 use anoma_generic_call_forwarder_bindings::addresses::{
-    generic_call_forwarder_address, generic_call_forwarder_deployments_map,
+    Environment, generic_call_forwarder_address, generic_call_forwarder_deployments_map,
 };
 use std::collections::HashSet;
 
@@ -12,72 +12,89 @@ struct RawEntry {
     contract_address: String,
 }
 
-fn raw_entries() -> Vec<RawEntry> {
-    serde_json::from_str(include_str!("../deployments.json"))
-        .expect("deployments.json: invalid JSON")
+#[derive(serde::Deserialize)]
+struct RawDeployments {
+    staging: Vec<RawEntry>,
+    production: Vec<RawEntry>,
+}
+
+fn raw_environments() -> [(Environment, Vec<RawEntry>); 2] {
+    let raw: RawDeployments = serde_json::from_str(include_str!("../deployments.json"))
+        .expect("deployments.json: invalid JSON");
+    [
+        (Environment::Staging, raw.staging),
+        (Environment::Production, raw.production),
+    ]
 }
 
 #[test]
 fn all_entries_have_valid_chain_ids() {
-    for entry in raw_entries() {
-        NamedChain::try_from(entry.chain_id).unwrap_or_else(|_| {
-            panic!(
-                "chain ID {} does not map to a known NamedChain variant",
-                entry.chain_id
-            )
-        });
+    for (environment, entries) in raw_environments() {
+        for entry in entries {
+            NamedChain::try_from(entry.chain_id).unwrap_or_else(|_| {
+                panic!(
+                    "chain ID {} of environment {environment:?} does not map to a known NamedChain variant",
+                    entry.chain_id
+                )
+            });
+        }
     }
 }
 
 #[test]
 fn all_entries_have_valid_addresses() {
-    for entry in raw_entries() {
-        entry
-            .contract_address
-            .parse::<Address>()
-            .unwrap_or_else(|_| {
-                panic!(
-                    "invalid contract address '{}' for chain ID '{}'",
-                    entry.contract_address, entry.chain_id
-                )
-            });
+    for (environment, entries) in raw_environments() {
+        for entry in entries {
+            entry
+                .contract_address
+                .parse::<Address>()
+                .unwrap_or_else(|_| {
+                    panic!(
+                        "invalid contract address '{}' for chain ID '{}' of environment {environment:?}",
+                        entry.contract_address, entry.chain_id
+                    )
+                });
+        }
     }
 }
 
 #[test]
 fn no_duplicate_chain_ids() {
-    let entries = raw_entries();
-    let mut seen = HashSet::new();
-    for entry in &entries {
-        assert!(
-            seen.insert(entry.chain_id),
-            "duplicate chain ID {}",
-            entry.chain_id
-        );
+    for (environment, entries) in raw_environments() {
+        let mut seen = HashSet::new();
+        for entry in &entries {
+            assert!(
+                seen.insert(entry.chain_id),
+                "duplicate chain ID {} in environment {environment:?}",
+                entry.chain_id
+            );
+        }
     }
 }
 
 #[test]
 fn deployments_map_has_expected_count() {
-    let map: std::collections::HashMap<NamedChain, Address> =
-        generic_call_forwarder_deployments_map();
-    let entries = raw_entries();
-    assert_eq!(
-        map.len(),
-        entries.len(),
-        "deployments map size ({}) does not match JSON entries ({})",
-        map.len(),
-        entries.len()
-    );
+    for (environment, entries) in raw_environments() {
+        let map = generic_call_forwarder_deployments_map(environment);
+        assert_eq!(
+            map.len(),
+            entries.len(),
+            "deployments map size ({}) does not match JSON entries ({}) in environment {environment:?}",
+            map.len(),
+            entries.len()
+        );
+    }
 }
 
 #[test]
 fn each_chain_is_individually_addressable() {
-    let map = generic_call_forwarder_deployments_map();
-    for chain in map.keys() {
-        assert!(
-            generic_call_forwarder_address(chain).is_some(),
-            "erc20_forwarder_address returned None for chain '{chain}'"
-        );
+    for (environment, _) in raw_environments() {
+        let map = generic_call_forwarder_deployments_map(environment);
+        for chain in map.keys() {
+            assert!(
+                generic_call_forwarder_address(environment, chain).is_some(),
+                "generic_call_forwarder_address returned None for chain '{chain}' of environment {environment:?}"
+            );
+        }
     }
 }
