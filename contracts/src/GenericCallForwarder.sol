@@ -32,6 +32,9 @@ contract GenericCallForwarder is
     using Address for address;
     using Address for address payable;
 
+    /// @inheritdoc IVersion
+    string public constant override VERSION = "2.0.0-rc.0";
+
     /// @notice A struct containing data for a generic call to be executed as part of a forwarded call.
     /// @param to The address to call.
     /// @param value The native token value to be sent with the call.
@@ -53,9 +56,6 @@ contract GenericCallForwarder is
     /// @param protocolAdapter The protocol adapter contract that can forward calls.
     /// @param logicRef The reference to the logic function of the resource kind triggering the forward call.
     constructor(address protocolAdapter, bytes32 logicRef) ForwarderBase(protocolAdapter, logicRef) {}
-
-    /// @inheritdoc IVersion
-    string public constant override VERSION = "2.0.0-rc.0";
 
     /// @inheritdoc IERC1271
     /// @dev This method accepts every signature unconditionally by returning the ERC-1271 magic value, without
