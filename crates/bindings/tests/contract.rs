@@ -101,12 +101,12 @@ async fn versions_of_deployed_forwarders_match_the_expected_version() {
         for chain in generic_call_forwarder_deployments_map(environment).keys() {
             let existing_fwd = fwd_instance(chain, environment).await;
 
-            // `VERSION` is a constant, so a freshly deployed forwarder answers it regardless of
-            // its constructor arguments.
+            // `VERSION` is a constant and the constructor rejects zero values, so a throwaway
+            // deployment with dummy non-zero arguments serves the version read.
             let expected_version = generic_call_forwarder::GenericCallForwarder::deploy(
                 existing_fwd.provider(),
-                Address::ZERO,
-                B256::ZERO,
+                Address::with_last_byte(1),
+                B256::with_last_byte(1),
             )
             .await
             .expect("Couldn't deploy the generic call forwarder")
