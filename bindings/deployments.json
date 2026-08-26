@@ -38,9 +38,5 @@
   {
     "chainId": 4326,
     "contractAddress": "0x354Cd903169af664E03AFDD07df7E8913d48F064"
-  },
-  {
-    "chainId": 1313161554,
-    "contractAddress": "0x354Cd903169af664E03AFDD07df7E8913d48F064"
   }
 ]
