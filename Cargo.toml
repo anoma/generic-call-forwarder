@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["bindings"]
+members = ["crates/bindings", "crates/integration-test"]
 
 [workspace.package]
 keywords = ["anoma", "evm", "protocol-adapter", "forwarder"]
@@ -11,14 +11,34 @@ homepage = "https://anoma.net/"
 edition = "2024"
 
 [workspace.dependencies]
-alloy = { version = "2.0.5", features = ["full", "eip712", "node-bindings"] }
-alloy-chains = "0.2.33"
-anoma-generic-call-library = "1.0.0"
-anoma-pa-evm-bindings = "3.0.0-rc.2"
+alloy = { version = "2.4.1", features = ["full", "eip712", "node-bindings"] }
+alloy-chains = "0.2.36"
+anoma-generic-call-library = { git = "https://github.com/anoma/generic-call-resource", tag = "v3.0.0-rc.1" }
+anoma-generic-call-witness = { git = "https://github.com/anoma/generic-call-resource", tag = "v3.0.0-rc.1" }
+anoma-pa-evm-bindings = { git = "https://github.com/anoma/pa-evm", tag = "bindings/v3.0.0-rc.6" }
+anoma-rm-risc0 = { git = "https://github.com/anoma/arm-risc0", tag = "v2.0.0-rc.4", features = [
+  "abi_encoding",
+  "bonsai",
+  "aggregation",
+] }
+anoma-rm-risc0-gadgets = { git = "https://github.com/anoma/arm-risc0", tag = "v2.0.0-rc.4" }
+anyhow = "1.0"
+bincode = "1.3.3"
 dotenvy = "0.15.7"
+regex = "1.12.3"
+risc0-zkvm = "3.0.3"
+rstest = "0.26.1"
 serde = { version = "1.0.228", default-features = false }
 serde_json = "1.0"
 thiserror = "2.0.18"
 tokio = { version = "1.52", features = ["rt-multi-thread"] }
 
-anoma-generic-call-forwarder-bindings = { path = "bindings" }
+
+# Forwarder bindings (this repo)
+anoma-generic-call-forwarder-bindings = { path = "crates/bindings" }
+
+# Upstream test crates, pinned by git rev (see anoma-pa-testkit ADR-0002). For
+# cross-repo development, override locally with a `[patch]` to a path checkout.
+anoma-pa-testkit = { git = "https://github.com/anoma/pa-testkit", rev = "8f3850beb5a2df9c5b940912ee748b0f6b4e5242" }
+anoma-pa-evm-integration-test = { git = "https://github.com/anoma/pa-evm", tag = "bindings/v3.0.0-rc.6" }
+anomapay-erc20-forwarder-integration-test = { git = "https://github.com/anoma/anomapay-erc20-forwarder", tag = "bindings/v3.0.0-rc.8" }

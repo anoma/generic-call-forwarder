@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
-import {IERC1271} from "@openzeppelin-contracts-5.6.1/interfaces/IERC1271.sol";
-import {Address} from "@openzeppelin-contracts-5.6.1/utils/Address.sol";
-import {ForwarderBase} from "anoma-forwarder-bases-1.0.0/src/ForwarderBase.sol";
-import {IVersion} from "anoma-forwarder-bases-1.0.0/src/interfaces/IVersion.sol";
-import {SweepableNativeTokenReceiver} from "anoma-forwarder-bases-1.0.0/src/SweepableNativeTokenReceiver.sol";
-import {TransientFallbackHandler} from "anoma-forwarder-bases-1.0.0/src/TransientFallbackHandler.sol";
+import {IERC1271} from "@openzeppelin-contracts-5.7.0/interfaces/IERC1271.sol";
+import {Address} from "@openzeppelin-contracts-5.7.0/utils/Address.sol";
+import {ForwarderBase} from "anoma-forwarder-bases-3.0.0/src/ForwarderBase.sol";
+import {IVersion} from "anoma-forwarder-bases-3.0.0/src/interfaces/IVersion.sol";
+import {SweepableNativeTokenReceiver} from "anoma-forwarder-bases-3.0.0/src/SweepableNativeTokenReceiver.sol";
+import {TransientFallbackHandler} from "anoma-forwarder-bases-3.0.0/src/TransientFallbackHandler.sol";
 
 /// @title GenericCallForwarder
 /// @author Anoma Foundation, 2026
@@ -42,6 +42,9 @@ contract GenericCallForwarder is
         bytes data;
     }
 
+    /// @inheritdoc IVersion
+    string public constant override VERSION = "2.0.0-rc.0";
+
     /// @notice Emits the executed calls and their resulting outputs.
     /// @param calls The array of calls executed.
     /// @param execResults The array with the results of the executed calls.
@@ -53,11 +56,6 @@ contract GenericCallForwarder is
     /// @param protocolAdapter The protocol adapter contract that can forward calls.
     /// @param logicRef The reference to the logic function of the resource kind triggering the forward call.
     constructor(address protocolAdapter, bytes32 logicRef) ForwarderBase(protocolAdapter, logicRef) {}
-
-    /// @inheritdoc IVersion
-    function getVersion() external pure override returns (bytes32 version) {
-        version = "1.0.1-rc.0";
-    }
 
     /// @inheritdoc IERC1271
     /// @dev This method accepts every signature unconditionally by returning the ERC-1271 magic value, without
