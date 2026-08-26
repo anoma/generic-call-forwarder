@@ -32,9 +32,6 @@ contract GenericCallForwarder is
     using Address for address;
     using Address for address payable;
 
-    /// @inheritdoc IVersion
-    string public constant override VERSION = "2.0.0-rc.0";
-
     /// @notice A struct containing data for a generic call to be executed as part of a forwarded call.
     /// @param to The address to call.
     /// @param value The native token value to be sent with the call.
@@ -44,6 +41,9 @@ contract GenericCallForwarder is
         uint256 value;
         bytes data;
     }
+
+    /// @inheritdoc IVersion
+    string public constant override VERSION = "2.0.0-rc.0";
 
     /// @notice Emits the executed calls and their resulting outputs.
     /// @param calls The array of calls executed.

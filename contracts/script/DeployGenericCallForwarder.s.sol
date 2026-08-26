@@ -72,13 +72,6 @@ contract DeployGenericCallForwarder is Script {
         name = isProduction ? "production" : "staging";
     }
 
-    /// @notice Returns the CREATE2 salt of an environment.
-    /// @param isProduction Whether to return the production or the staging environment salt.
-    /// @return salt The environment salt.
-    function _salt(bool isProduction) internal pure returns (bytes32 salt) {
-        salt = isProduction ? FORWARDER_SALT_PRODUCTION : FORWARDER_SALT_STAGING;
-    }
-
     /// @notice Checks that the environment has no deployment recorded for this chain yet.
     /// @param isProduction Whether to check the production or the staging environment.
     function _requireUnrecorded(bool isProduction) internal view {
@@ -97,5 +90,12 @@ contract DeployGenericCallForwarder is Script {
                 DeploymentAlreadyRecorded(environment, block.chainid)
             );
         }
+    }
+
+    /// @notice Returns the CREATE2 salt of an environment.
+    /// @param isProduction Whether to return the production or the staging environment salt.
+    /// @return salt The environment salt.
+    function _salt(bool isProduction) internal pure returns (bytes32 salt) {
+        salt = isProduction ? FORWARDER_SALT_PRODUCTION : FORWARDER_SALT_STAGING;
     }
 }
