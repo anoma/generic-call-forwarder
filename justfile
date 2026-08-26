@@ -95,11 +95,22 @@ contracts-verify-custom address chain verifier-url *args:
 # Verify on both sourcify and etherscan
 contracts-verify address chain: (contracts-verify-sourcify address chain) (contracts-verify-etherscan address chain)
 
-# Publish contracts to soldeer. VERSION must be semver (e.g. 1.2.0).
-# Flags such as --dry-run go AFTER the version: `just contracts-publish 1.2.0 --dry-run`.
-contracts-publish version *args:
-    @[[ "{{version}}" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+ ]] || { echo "error: invalid version '{{version}}'. Expected semver like 1.2.0. Usage: just contracts-publish <version> [flags] (put --dry-run AFTER the version)." >&2; exit 1; }
-    cd contracts && forge soldeer push anoma-generic-call-forwarder~{{version}} {{ args }}
+# Publish contracts at the version `GenericCallForwarder` compiles to
+contracts-publish *args:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "Cleaning contracts to ensure reproducible build..."
+    just contracts-clean
+    just contracts-build
+    cd contracts
+    version="$(forge script script/PrintGenericCallForwarderVersion.s.sol:PrintGenericCallForwarderVersion --sig 'run()(string)' --json \
+        | jq -ser '[.[] | select(has("returns")) | .returns.version.value] | if length == 1 then .[0] else error("expected one version, found \(length)") end')"
+    if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+        printf '{{RED}}The generic call forwarder reports "%s", which is not a version.{{NORMAL}}\n' "$version"
+        exit 1
+    fi
+    printf '{{GREEN}}Publishing anoma-generic-call-forwarder~%s{{NORMAL}}\n' "$version"
+    forge soldeer push "anoma-generic-call-forwarder~$version" {{ args }}
 
 # --- Bindings ---
 

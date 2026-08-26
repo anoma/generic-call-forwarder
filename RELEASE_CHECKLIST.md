@@ -2,30 +2,51 @@
 
 Releases of the packages contained in this monorepo follow the [SemVer convention](https://semver.org/spec/v2.0.0.html).
 
-> ![NOTE]
-> The `contracts` and `bindings` are independently versioned with `X.Y.Z` and `A.B.C`, respectively.
-> Both versions can include release candidates (suffixed with `-rc.?`).
-
-> [!IMPORTANT]
-> The generic call forwarder is stateless and stays immutable by design — it does not become upgradeable. The protocol adapter and the ERC20 forwarder promote deployments from `next` through `staging` to `main` and keep a staging and a production environment, each with its own proxy owner. This repo keeps the single-environment release flow below: a new version is a new address, not an upgrade, so there is nothing for a Safe to execute and no proxy to promote. The bindings still record deployments per environment (staging and production), keyed by the protocol adapter they settle through.
+> [!NOTE]
+> The `contracts` and `bindings` are independently versioned with `X.Y.Z` and `A.B.C`, respectively. Both versions can include release candidates (suffixed with `-rc.N`).
 
 We distinguish between three release cases:
 
-- Deploying a **new** generic call forwarder version to multiple new chains resulting in a new
-  - `contracts/X.Y.Z` version
-  - `bindings/A.0.0` version
+- Releasing a **new** generic call forwarder version resulting in a new
+  - `contracts/vX.Y.Z` version
+  - `bindings/vA.0.0` version
 
-- Deploying an **existing** generic call forwarder version to multiple new chains resulting in a new
-  - `bindings/A.B.0` version
+- Deploying an **existing** generic call forwarder version to a chain new to an environment resulting in a new
+  - `bindings/vA.B.0` version
 
 - Maintaining the bindings resulting in a new
-  - `bindings/A.B.C` version
+  - `bindings/vA.B.C` version
 
-## Deploying a new Generic Call Forwarder Version
+## Branches and Environments
 
-### 1. Prerequisites
+The generic call forwarder runs in two environments, recorded per chain in [`./crates/bindings/deployments.json`](./crates/bindings/deployments.json):
 
-- [ ] Visit https://www.soliditylang.org/ and check that Solidity compiler version used in `contracts/foundry.toml` has no [known vulnerabilities](https://docs.soliditylang.org/en/latest/bugs.html).
+| Environment  | CREATE2 salt                     | Branch    |
+| ------------ | -------------------------------- | --------- |
+| `staging`    | `GenericCallForwarderStaging`    | `staging` |
+| `production` | `GenericCallForwarderProduction` | `main`    |
+
+The forwarder is immutable and unowned, so the environments differ only in the CREATE2 salt and the protocol adapter they settle through: each environment's forwarder is constructed with the protocol adapter proxy of the **same** environment.
+
+Changes flow one way, `next` → `staging` → `main`, and the promotion pull request is the gate:
+
+- **`next`** integrates feature branches. Nothing is asserted about deployments, so a version bump is green before anything is deployed.
+- **`staging`** receives `next`. A pull request into it requires every entry in the staging section to run the source version, checked with `VERIFY_STAGING_DEPLOYMENTS`.
+- **`main`** receives `staging`. A pull request into it requires every entry in the production section to run the source version and carry no prerelease suffix, checked with `VERIFY_PRODUCTION_DEPLOYMENTS`.
+
+The flags gate the deployment tests in the contracts and the crates suites alike; unset, the gated tests skip and no chain is forked.
+
+Deploy **every** chain of an environment before opening its promotion pull request — one chain left behind blocks the promotion for all of them.
+
+`VERSION` is a `string public constant`, so it is part of the creation code and every version is a different contract at a different address. Bumping it is a redeploy, and stripping an `-rc.N` suffix is a redeploy too, which is why a release costs one extra staging deploy round.
+
+An entry pins the address an environment currently runs and nothing else — the deployment tests recompute the CREATE2 prediction from the salt and the constructor arguments the chain answers, so nothing needs genesis pinning. Every deploy therefore **replaces** the chain's entry, and superseded versions simply remain on-chain unrecorded.
+
+## Prerequisites
+
+These apply to all three cases and are done once per session.
+
+- [ ] Visit https://www.soliditylang.org/ and check that the Solidity compiler version used in [`./contracts/foundry.toml`](./contracts/foundry.toml) has no [known vulnerabilities](https://docs.soliditylang.org/en/latest/bugs.html).
 
 - [ ] Install the dependencies with
 
@@ -33,7 +54,15 @@ We distinguish between three release cases:
   just contracts-deps
   ```
 
-- [ ] Check that the dependencies are up-to-date and have no known vulnerabilities in the dependencies
+- [ ] Check that the dependencies are up-to-date and have no known vulnerabilities.
+
+- [ ] Check that the bindings are up-to-date with
+
+  ```sh
+  just bindings-check
+  ```
+
+- [ ] Check out a new git branch branching off from `next`, and check that there are no staged or unstaged changes by running `git status`.
 
 - [ ] Check that the deployer wallet is funded and add it to `cast` with
 
@@ -44,13 +73,7 @@ We distinguish between three release cases:
   or
 
   ```sh
-  cast wallet import deployer --mnemonic <MNEMONICC>
-  ```
-
-- [ ] Set `IS_TEST_DEPLOYMENT` to `false` to deterministically deploy the generic call forwarder.
-
-  ```sh
-  export IS_TEST_DEPLOYMENT=false
+  cast wallet import deployer --mnemonic <MNEMONIC>
   ```
 
 - [ ] Set the Alchemy RPC provider by exporting
@@ -65,89 +88,108 @@ We distinguish between three release cases:
   export ETHERSCAN_API_KEY=<KEY>
   ```
 
-### 2. Bump the Version
+- [ ] Select the environment. It picks the CREATE2 salt in [`DeployGenericCallForwarder.s.sol`](./contracts/script/DeployGenericCallForwarder.s.sol), and is deliberately not persisted anywhere so that it is a conscious choice per session.
 
-- [ ] Bump the version number in the `getVersion()` function in [`./contracts/src/GenericCallForwarder.sol`](./contracts/src/GenericCallForwarder.sol) to the new version number following [SemVer](https://semver.org/spec/v2.0.0.html).
+  ```sh
+  export IS_PRODUCTION=false
+  ```
 
-- [ ] Remove all entries from [`./bindings/deployments.json`](./bindings/deployments.json) (replace the array contents with `[]`).
+  Only `just contracts-simulate` and `just contracts-deploy` read it.
 
-### 3. Test the Contracts
+## Releasing a new Generic Call Forwarder Version
 
-- [ ] Run the test suite with `just contracts-test`
+A release candidate and a release go through the same cycle. Steps 1 to 5 are repeated for each release candidate; steps 6 to 9 lift the last candidate to a release and carry it to production.
 
-### 4. Deploy and Verify the Generic Call Forwarder
+### 1. Bump the Version
 
-For each chain, you want to deploy to, do the following:
+- [ ] Bump `VERSION` in [`./contracts/src/GenericCallForwarder.sol`](./contracts/src/GenericCallForwarder.sol) following [SemVer](https://semver.org/spec/v2.0.0.html).
+
+- [ ] Bump the `bindings` package version in [`./crates/bindings/Cargo.toml`](./crates/bindings/Cargo.toml) to `A.0.0-rc.N`, where `A` is the last `MAJOR` version number incremented by 1.
+
+- [ ] Regenerate the bindings with `just contracts-gen-bindings`, then run `just bindings-build` and check that the `Cargo.lock` file reflects the version number change.
+
+- [ ] Open a pull request into `next` and merge it once green. The deploy is a separate mechanical step afterwards.
+
+### 2. Test the Contracts
+
+- [ ] Run the checks and test suites CI runs with
+
+  ```sh
+  just all-lint all-test
+  ```
+
+### 3. Deploy Staging
+
+For each chain in the `staging` section of the record:
+
+- [ ] Look up the two values the forwarder commits to:
+  - `<PROTOCOL_ADAPTER>` — the **staging** protocol adapter proxy on this chain, recorded in [`anoma/pa-evm` `crates/bindings/deployments.json`](https://github.com/anoma/pa-evm/blob/main/crates/bindings/deployments.json) on the branch tracking the environment.
+  - `<GENERIC_CALL_CIRCUIT_ID>` — the verifying key of the [`generic_call_library`](https://github.com/anoma/generic-call-resource) version pinned in [`./Cargo.toml`](./Cargo.toml).
 
 - [ ] **Simulate** the deployment by running
 
   ```sh
-  just contracts-simulate <GENERIC_CALL_CIRCUIT_ID> <CHAIN_NAME> <PROTOCOL_ADAPTER_ADDRESS>
+  just contracts-simulate <CHAIN> <PROTOCOL_ADAPTER> <GENERIC_CALL_CIRCUIT_ID>
   ```
-
-  where `<GENERIC_CALL_CIRCUIT_ID>` can be found in the [`anoma/generic-call-resource` `generic_call_library`](https://github.com/anoma/generic-call-resource/blob/main/generic_call_library/src/lib.rs)
-  and `<PROTOCOL_ADAPTER_ADDRESS>` can be found in [`anoma/pa-evm` `deployments.json`](https://github.com/anoma/pa-evm/blob/main/deployments.json). **Make sure that you are using the right versions, respectively!**
 
 - [ ] After successful simulation, **deploy** the contract by running
 
   ```sh
-  just contracts-deploy deployer <GENERIC_CALL_CIRCUIT_ID> <CHAIN_NAME> <PROTOCOL_ADAPTER_ADDRESS>
+  just contracts-deploy deployer <CHAIN> <PROTOCOL_ADAPTER> <GENERIC_CALL_CIRCUIT_ID>
   ```
 
-- [ ] Export the address of the newly deployed generic call forwarder contract with
+- [ ] Export the address of the newly deployed forwarder with
 
   ```sh
   export FWD_ADDRESS=<ADDRESS>
   ```
 
-- [ ] Verify the contract on
-  - [ ] sourcify
+- [ ] Verify the contract on sourcify and Etherscan by running
 
-    ```sh
-    just contracts-verify-sourcify <FWD_ADDRESS> <CHAIN>
-    ```
+  ```sh
+  just contracts-verify $FWD_ADDRESS <CHAIN>
+  ```
 
-  - [ ] Etherscan
+  and check that the verification worked (e.g. on https://sourcify.dev/#/lookup).
 
-    ```sh
-    just contracts-verify-etherscan <FWD_ADDRESS> <CHAIN>
-    ```
+- [ ] Replace the chain's entry in the `staging` section of [`./crates/bindings/deployments.json`](./crates/bindings/deployments.json) with the new address.
 
-  and check that the verification worked (e.g., on https://sourcify.dev/#/lookup).
+After the last chain:
 
-### 5. Update the Deployments Map and Create a new `contracts` and `bindings` GitHub Release
+- [ ] Confirm the promotion gate locally by running
 
-- [ ] Add a deployment entry to [`./bindings/deployments.json`](./bindings/deployments.json) for each chain deployed.
+  ```sh
+  VERIFY_STAGING_DEPLOYMENTS=true just contracts-test bindings-test
+  ```
 
-  The `protocolAdapterAddress` records which protocol adapter this forwarder is linked to. No extra tools or scripts are needed — the JSON is embedded at compile time by `addresses.rs`.
+  the same checks the promotion pull request runs.
 
-- [ ] Change the `bindings` package version number in the [`./bindings/Cargo.toml`](./bindings/Cargo.toml) file to `A.0.0`, where `A` is the last `MAJOR` version number incremented by 1.
+- [ ] Open a pull request with the record update into `next` and merge it once green.
 
-- [ ] Clean the bindings build with `just bindings-clean`.
+> [!NOTE]
+> Deploying to a chain that has no entry yet is not part of this cycle — see [Deploying a Version to a Chain new to an Environment](#deploying-a-version-to-a-chain-new-to-an-environment).
 
-- [ ] Regenerate the bindings with `just contracts-gen-bindings`.
+### 4. Promote `next` into `staging`
 
-- [ ] Run `just bindings-build` and check that the `Cargo.lock` file reflects the version number change.
+- [ ] Open a pull request from `next` into `staging`. CI sets `VERIFY_STAGING_DEPLOYMENTS`, so the deployment tests fork every chain in the staging section and check that it runs the address this source predicts under the environment salt.
 
-- [ ] Run the tests with `just bindings-test`.
+- [ ] Merge it once green.
 
-- [ ] After merging, create new tags for:
-  - [ ] `contracts/X.Y.Z` where `X.Y.Z` must match the generic call forwarder version number and
-  - [ ] `bindings/A.0.0` tag, where `A` is the last `MAJOR` version incremented by 1.
+### 5. Tag and Publish the Release Candidate
+
+- [ ] Create the tags on the promoted commit:
+  - [ ] `contracts/vX.Y.Z-rc.N`, where `X.Y.Z-rc.N` must match the generic call forwarder `VERSION`, and
+  - [ ] `bindings/vA.0.0-rc.N`.
 
 - [ ] Create new [GH releases](https://github.com/anoma/generic-call-forwarder/releases) for both packages.
-
-### 6. Publish a new `contracts` package
 
 - [ ] Publish the `contracts` package on https://soldeer.xyz/ with
 
   ```sh
-  just contracts-publish <X.Y.Z> --dry-run
+  just contracts-publish --dry-run
   ```
 
-  where `<X.Y.Z>` is the Version number in the constructor and check the resulting `contracts.zip` file. If everything is correct, remove the `--dry-run` flag and publish the package.
-
-### 7. Publish a new `bindings` package
+  and check the resulting `contracts.zip` file. If everything is correct, remove the `--dry-run` flag and publish the package.
 
 - [ ] Publish the `anoma-generic-call-forwarder-bindings` package on https://crates.io/ with
 
@@ -157,156 +199,123 @@ For each chain, you want to deploy to, do the following:
 
   and check the result. If everything is correct, remove the `--dry-run` flag and publish the package.
 
-## Deploying an existing Generic Call Forwarder Version to new Chains
+> [!IMPORTANT]
+> A prerelease of the bindings describes **staging only**. Production trails on the previous release until the candidate cycle ends, so the generated ABI need not match what production runs.
 
-### 1. Prerequisites
+### 6. Lift the Release Candidate to a Release
 
-- [ ] Visit https://www.soliditylang.org/ and check that Solidity compiler version used in `contracts/foundry.toml` has no known vulnerabilities.
+- [ ] On a branch off `next`, strip the `-rc.N` suffix from `VERSION` and from the `bindings` package version, and merge it into `next`.
 
-- [ ] Install the dependencies with
+- [ ] Repeat steps 2 to 4. The release version is a different contract at a different address, so it has to be deployed to staging and promoted like any other candidate. This is the extra staging deploy round a release costs, and it is what lets production run the exact source staging validated.
 
-  ```sh
-  just contracts-deps
-  ```
+### 7. Deploy Production
 
-- [ ] Check that the dependencies are up-to-date and have no known vulnerabilities in the dependencies
-
-- [ ] Check that the bindings are up-to-date with
+- [ ] Select the production environment with
 
   ```sh
-  just bindings-check
+  export IS_PRODUCTION=true
   ```
 
-- [ ] Checkout a new git branch branching off from `main`.
+- [ ] For each chain in the `production` section of the record, simulate, deploy, verify, and replace the chain's entry as in step 3 — with the **production** protocol adapter proxy as `<PROTOCOL_ADAPTER>`.
 
-- [ ] Check that there are no staged or unstaged changes by running `git status`.
-
-- [ ] Check that the deployer wallet is funded and add it to `cast` with
+- [ ] After the last chain, confirm the promotion gate locally by running
 
   ```sh
-  cast wallet import deployer --private-key <PRIVATE_KEY>
+  VERIFY_PRODUCTION_DEPLOYMENTS=true just contracts-test bindings-test
   ```
 
-  or
+- [ ] Open a pull request with the record update into `next` and merge it once green.
+
+### 8. Promote `staging` into `main`
+
+- [ ] Promote `next` into `staging` so the production record update rides along — the staging gate is indifferent to production entries and staging still runs this source.
+
+- [ ] Open a pull request from `staging` into `main`. CI sets `VERIFY_PRODUCTION_DEPLOYMENTS`, so the deployment tests check that every chain in the production section runs this source and carries no prerelease suffix.
+
+- [ ] Merge it once green.
+
+### 9. Tag and Publish the Release
+
+- [ ] Create the tags on the promoted commit:
+  - [ ] `contracts/vX.Y.Z`, where `X.Y.Z` must match the generic call forwarder `VERSION`, and
+  - [ ] `bindings/vA.0.0`, where `A` is the last `MAJOR` version number incremented by 1.
+
+- [ ] Create new [GH releases](https://github.com/anoma/generic-call-forwarder/releases) for both packages, and publish both as in step 5.
+
+## Deploying a Version to a Chain new to an Environment
+
+A chain can be new to one environment and not to the other. The deploy is the same either way — the environment picks the CREATE2 salt and the protocol adapter the forwarder settles through.
+
+### 1. Deploy and Verify the Generic Call Forwarder
+
+For **staging**:
+
+- [ ] Select the environment with
 
   ```sh
-  cast wallet import deployer --mnemonic <MNEMONICC>
+  export IS_PRODUCTION=false
   ```
 
-- [ ] Set `IS_TEST_DEPLOYMENT` to `false` to deterministically deploy the generic call forwarder.
+For **production**:
+
+- [ ] Check that `VERSION` carries no `-rc.N` suffix. Recording a production entry arms the release check on the next promotion into `main`.
+
+- [ ] Select the environment with
 
   ```sh
-  export IS_TEST_DEPLOYMENT=false
+  export IS_PRODUCTION=true
   ```
 
-- [ ] Set the Alchemy RPC provider by exporting
+For **both**:
 
-  ```sh
-  export ALCHEMY_API_KEY=<KEY>
+- [ ] Run the checks and test suites as in step 2 of the release cycle.
+
+- [ ] Look up `<PROTOCOL_ADAPTER>` and `<GENERIC_CALL_CIRCUIT_ID>`, then simulate, deploy, and verify as in step 3 of the release cycle.
+
+### 2. Record the Entry
+
+- [ ] Add an entry to the environment's section of [`./crates/bindings/deployments.json`](./crates/bindings/deployments.json):
+
+  ```json
+  {
+    "chainId": <CHAIN_ID>,
+    "contractAddress": "<FWD_ADDRESS>"
+  }
   ```
 
-- [ ] Set the Etherscan key
-  ```sh
-  export ETHERSCAN_API_KEY=<KEY>
-  ```
+- [ ] Bump the `bindings` package version in [`./crates/bindings/Cargo.toml`](./crates/bindings/Cargo.toml) to `A.B.0`, where `A` is the last `MAJOR` version and `B` is the last `MINOR` version number incremented by 1.
 
-### 2. Build the contracts
+- [ ] Run `just bindings-build` and check that the `Cargo.lock` file reflects the version number change, then run the tests with `just bindings-test`.
 
-- [ ] Run `just contracts-build`
+- [ ] Open a pull request into `next` and merge it once green. The CREATE2 derivation of the new entry is checked at the promotions, so deploy before promoting.
 
-- [ ] Run the test suite with `just contracts-test`
+### 3. Promote and Publish
 
-### 3. Deploy and Verify the Generic Call Forwarder
+- [ ] Promote `next` into `staging`, then `staging` into `main`, as in the release cycle. Each gate now includes the new chain, so the section it was added to has become a rollout commitment.
 
-For each **new** chain, you want to deploy to, do the following:
-
-- [ ] **Simulate** the deployment by running
-
-  ```sh
-  just contracts-simulate <GENERIC_CALL_CIRCUIT_ID> <CHAIN_NAME> <PROTOCOL_ADAPTER_ADDRESS>
-  ```
-
-  where `<GENERIC_CALL_CIRCUIT_ID>` can be found in the [`anoma/generic-call-resource` `generic_call_library`](https://github.com/anoma/generic-call-resource/blob/main/generic_call_library/src/lib.rs)
-  and `<PROTOCOL_ADAPTER_ADDRESS>` can be found in [`anoma/pa-evm` `./bindings/deployments.json`](https://github.com/anoma/pa-evm/blob/main/bindings/deployments.json). **Make sure that you are using the right versions, respectively!**
-
-- [ ] After successful simulation, **deploy** the contract by running
-
-  ```sh
-  just contracts-deploy deployer <GENERIC_CALL_CIRCUIT_ID> <CHAIN_NAME> <PROTOCOL_ADAPTER_ADDRESS>
-  ```
-
-- [ ] Export the address of the newly deployed generic call forwarder contract with
-
-  ```sh
-  export FWD_ADDRESS=<ADDRESS>
-  ```
-
-- [ ] Verify the contract on
-  - [ ] sourcify
-
-    ```sh
-    just contracts-verify-sourcify <FWD_ADDRESS> <CHAIN>
-    ```
-
-  - [ ] Etherscan
-
-    ```sh
-    just contracts-verify-etherscan <FWD_ADDRESS> <CHAIN>
-    ```
-
-  and check that the verification worked (e.g., on https://sourcify.dev/#/lookup).
-
-### 4. Update the Deployments Map and Create a new `bindings` GitHub Release
-
-- [ ] Add a deployment entry to [`./bindings/deployments.json`](./bindings/deployments.json) for each **new** chain deployed.
-
-- [ ] Change the `bindings` package version number in the `./bindings/Cargo.toml` file to `A.B.0`, where `A` is the last `MAJOR` version and `B` is the last `MINOR` version number incremented by 1.
-
-- [ ] Run `just bindings-build` and check that the `Cargo.lock` file reflects the version number change.
-
-- [ ] Run the tests with `just bindings-test`.
-
-- [ ] After merging, create a new `bindings/A.B.0` tag, where `A` is the last `MAJOR` version and `B` is the last `MINOR` version number incremented by 1.
-
-- [ ] Create a new [GH release](https://github.com/anoma/generic-call-forwarder/releases).
-
-### 5. Publish a new `bindings` package
-
-- [ ] Publish the `anoma-generic-call-forwarder-bindings` package on https://crates.io/ with
-
-  ```sh
-  just bindings-publish --dry-run
-  ```
-
-  and check the result. If everything is correct, remove the `--dry-run` flag and publish the package.
+- [ ] Create a `bindings/vA.B.0` tag on the commit promoted to `main`, create a new [GH release](https://github.com/anoma/generic-call-forwarder/releases), and publish the package as in step 5 of the release cycle.
 
 ## Maintaining the Bindings
 
-### 1. Prerequisites
+For changes that touch only the bindings crate and leave `VERSION` alone.
 
-- [ ] Check that the bindings are up-to-date with
+### 1. Bump the Version
 
-  ```sh
-  just bindings-check
-  ```
-
-- [ ] Checkout a new git branch branching off from `main`.
-
-- [ ] Check that there are no staged or unstaged changes by running `git status`.
-
-### 2. Create a new `bindings` GitHub Release
-
-- [ ] Change the `bindings` package version number in the `./bindings/Cargo.toml` file to `A.B.C`, where `A` and `B` are the last `MAJOR` and `MINOR` version numbers and `C` is the last `PATCH` version number incremented by 1.
+- [ ] Change the `bindings` package version number in [`./crates/bindings/Cargo.toml`](./crates/bindings/Cargo.toml) to `A.B.C`, where `A` and `B` are the last `MAJOR` and `MINOR` version numbers and `C` is the last `PATCH` version number incremented by 1.
 
 - [ ] Run `just bindings-build` and check that the `Cargo.lock` file reflects the version number change.
 
 - [ ] Run the tests with `just bindings-test`.
 
-- [ ] After merging, create a new `bindings/A.B.C` tag, where `A` and `B` are the last `MAJOR` and `MINOR` version numbers, respectively, and `C` is the last `PATCH` version number incremented by 1.
+- [ ] Open a pull request into `next` and merge it once green.
 
-- [ ] Create a new [GH release](https://github.com/anoma/generic-call-forwarder/releases).
+### 2. Promote
 
-### 3. Publish a new `bindings` package
+- [ ] Promote `next` into `staging`, then `staging` into `main`. Neither promotion needs a deploy round: `VERSION` did not change, so both environments already run the source version and both gates are satisfied as they stand.
+
+### 3. Tag and Publish a new `bindings` Package
+
+- [ ] Create a new `bindings/vA.B.C` tag on the commit promoted to `main` and a new [GH release](https://github.com/anoma/generic-call-forwarder/releases).
 
 - [ ] Publish the `anoma-generic-call-forwarder-bindings` package on https://crates.io/ with
 
