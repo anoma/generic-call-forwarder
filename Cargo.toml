@@ -13,15 +13,15 @@ edition = "2024"
 [workspace.dependencies]
 alloy = { version = "2.4.1", features = ["full", "eip712", "node-bindings"] }
 alloy-chains = "0.2.36"
-anoma-generic-call-library = { git = "https://github.com/anoma/generic-call-resource", tag = "v3.0.0-rc.1" }
-anoma-generic-call-witness = { git = "https://github.com/anoma/generic-call-resource", tag = "v3.0.0-rc.1" }
-anoma-pa-evm-bindings = { git = "https://github.com/anoma/pa-evm", tag = "bindings/v3.0.0-rc.6" }
-anoma-rm-risc0 = { git = "https://github.com/anoma/arm-risc0", tag = "v2.0.0-rc.4", features = [
+anoma-generic-call-library = "3.0.0-rc.2"
+anoma-generic-call-witness = "3.0.0-rc.2"
+anoma-pa-evm-bindings = { git = "https://github.com/anoma/pa-evm", rev = "0efdb7f2c6a0b962c7f492a997d7d4b5bf5cdbe5" }
+anoma-rm-risc0 = { version = "2.0.0-rc.5", features = [
   "abi_encoding",
   "bonsai",
   "aggregation",
 ] }
-anoma-rm-risc0-gadgets = { git = "https://github.com/anoma/arm-risc0", tag = "v2.0.0-rc.4" }
+anoma-rm-risc0-gadgets = { version = "2.0.0-rc.5" }
 anyhow = "1.0"
 bincode = "1.3.3"
 dotenvy = "0.15.7"
@@ -39,6 +39,6 @@ anoma-generic-call-forwarder-bindings = { path = "crates/bindings" }
 
 # Upstream test crates, pinned by git rev (see anoma-pa-testkit ADR-0002). For
 # cross-repo development, override locally with a `[patch]` to a path checkout.
-anoma-pa-testkit = { git = "https://github.com/anoma/pa-testkit", rev = "8f3850beb5a2df9c5b940912ee748b0f6b4e5242" }
-anoma-pa-evm-integration-test = { git = "https://github.com/anoma/pa-evm", tag = "bindings/v3.0.0-rc.6" }
-anomapay-erc20-forwarder-integration-test = { git = "https://github.com/anoma/anomapay-erc20-forwarder", tag = "bindings/v3.0.0-rc.8" }
+anoma-pa-testkit = { git = "https://github.com/anoma/pa-testkit", rev = "d61575df22ddc81e427948605a4e5da8ebf5da9c" }
+anoma-pa-evm-integration-test = { git = "https://github.com/anoma/pa-evm", rev = "0efdb7f2c6a0b962c7f492a997d7d4b5bf5cdbe5" }
+anomapay-erc20-forwarder-integration-test = { git = "https://github.com/anoma/anomapay-erc20-forwarder", rev = "724250f3a94eeb355ed8a591f28316778d94599c" }
