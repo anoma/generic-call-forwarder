@@ -49,8 +49,8 @@ pub fn build(
     let consumed_witness =
         ConsumedResourceWitness::from_resource(consumed_ephemeral, nf_key.clone());
     let compliance_witness = ComplianceWitness::from_resources(
-        &[consumed_witness],
-        &[created_ephemeral],
+        vec![consumed_witness],
+        vec![created_ephemeral],
         resource::kind_table(),
     );
 
