@@ -1,4 +1,9 @@
 {
   "production": [],
-  "staging": []
+  "staging": [
+    {
+      "chainId": 11155111,
+      "contractAddress": "0x9dC25FF414a86AC51348d1c626f73BDf7749ebCa"
+    }
+  ]
 }
