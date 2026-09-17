@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
+import {RecordedDeployments} from "../../../generated/RecordedDeployments.sol";
 import {GenericCallForwarder} from "../../../src/GenericCallForwarder.sol";
 import {DeploymentsFixture} from "../../fixtures/DeploymentsFixture.sol";
 
@@ -19,7 +20,7 @@ contract DeploymentsProductionTest is DeploymentsFixture {
     }
 
     function test_recorded_deployments_run_a_release_version() public onlyProduction {
-        Deployment[] memory deployments = _recordedDeployments({isProduction: true});
+        RecordedDeployments.Deployment[] memory deployments = _recordedDeployments({isProduction: true});
 
         for (uint256 i = 0; i < deployments.length; ++i) {
             _selectForkAt(deployments[i].chainId);

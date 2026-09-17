@@ -110,7 +110,7 @@ To simulate deployment on sepolia, run
 
 ```sh
 forge script script/DeployGenericCallForwarder.s.sol:DeployGenericCallForwarder \
-  --sig "run(bool,address,bytes32,address)" <IS_TEST_DEPLOYMENT> <PROTOCOL_ADAPTER> <CARRIER_LOGIC_REF> <EMERGENCY_COMMITTEE> \
+  --sig "run(bool)" <IS_PRODUCTION> \
   --rpc-url sepolia
 ```
 

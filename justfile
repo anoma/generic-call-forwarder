@@ -68,20 +68,20 @@ contracts-gen-bindings:
 contracts-gen: contracts-gen-deployments contracts-gen-bindings
 
 # Simulate the deterministic forwarder deployment (dry-run)
-contracts-simulate chain protocol-adapter logic-ref *args:
+contracts-simulate chain *args:
     @echo "IS_PRODUCTION: $IS_PRODUCTION"
     @echo "Cleaning contracts to ensure reproducible build..."
     @just contracts-clean
     cd contracts && forge script script/DeployGenericCallForwarder.s.sol:DeployGenericCallForwarder \
-        --sig "run(bool,address,bytes32)" $IS_PRODUCTION {{protocol-adapter}} {{logic-ref}} \
+        --sig "run(bool)" $IS_PRODUCTION \
         --rpc-url {{chain}} {{ args }}
 
 # Deploy the forwarder deterministically to the environment selected by IS_PRODUCTION
-contracts-deploy deployer chain protocol-adapter logic-ref *args:
+contracts-deploy deployer chain *args:
     @echo "Cleaning contracts to ensure reproducible build..."
     @just contracts-clean
     cd contracts && forge script script/DeployGenericCallForwarder.s.sol:DeployGenericCallForwarder \
-        --sig "run(bool,address,bytes32)" $IS_PRODUCTION {{protocol-adapter}} {{logic-ref}} \
+        --sig "run(bool)" $IS_PRODUCTION \
         --broadcast --rpc-url {{chain}} --account {{deployer}} {{ args }}
 
 # Verify on sourcify
