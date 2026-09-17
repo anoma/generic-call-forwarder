@@ -85,6 +85,8 @@ contract GenericCallForwarder is
         uint256 nCalls = calls.length;
         bytes[] memory execResults = new bytes[](nCalls);
 
+        // NOTE: The `onlyProtocolAdapter` modifier in `ForwarderBase.forwardCall` restricts the caller.
+        // forge-lint: disable-next-item(arbitrary-send-eth)
         for (uint256 i = 0; i < nCalls;) {
             if (calls[i].data.length != 0) {
                 if (calls[i].value == 0) {
