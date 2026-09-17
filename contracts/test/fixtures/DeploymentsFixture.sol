@@ -63,10 +63,10 @@ abstract contract DeploymentsFixture is Test {
             GenericCallForwarder forwarder = GenericCallForwarder(payable(recorded));
             address predicted = new DeployGenericCallForwarder()
                 .predict({
-                isProduction: isProduction,
-                protocolAdapter: forwarder.getProtocolAdapter(),
-                logicRef: forwarder.getLogicRef()
-            });
+                    isProduction: isProduction,
+                    protocolAdapter: forwarder.getProtocolAdapter(),
+                    logicRef: forwarder.getLogicRef()
+                });
 
             assertEq(predicted, recorded, string.concat(context, ": recorded address differs from the prediction"));
         }
