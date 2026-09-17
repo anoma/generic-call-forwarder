@@ -25,7 +25,7 @@ contracts-build *args:
 
 # Lint contracts (forge lint + solhint)
 contracts-lint:
-    cd contracts && forge lint --deny warnings
+    cd contracts && forge lint --deny notes
     cd contracts && bunx --bun solhint --config .solhint.json 'src/**/*.sol'
     cd contracts && bunx --bun solhint --config .solhint.other.json 'test/**/*.sol'
     cd contracts && bunx --bun solhint --config .solhint.other.json 'script/**/*.sol'
@@ -50,8 +50,10 @@ contracts-test *args:
 
 # Regenerate Rust bindings from contracts
 contracts-gen-bindings:
-    cd contracts && forge clean && forge bind \
-        --skip test --skip script \
+    # `forge bind` builds without bytecode, which drops the `deploy` helpers, so
+    # build first and let it read those artifacts.
+    cd contracts && forge clean && forge build --skip test --skip script && forge bind \
+        --skip-build \
         --select '^(GenericCallForwarder)$' \
         --bindings-path ../crates/bindings/src/generated/ \
         --module \

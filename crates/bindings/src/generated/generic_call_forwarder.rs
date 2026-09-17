@@ -795,10 +795,10 @@ error AddressEmptyCode(address target);
             }
             #[inline]
             fn abi_decode_raw_validate(data: &[u8]) -> alloy_sol_types::Result<Self> {
-                <Self::Parameters<
-                    '_,
-                > as alloy_sol_types::SolType>::abi_decode_sequence_validate(data)
-                    .map(Self::new)
+                Self::abi_decode_raw_with_config(
+                    data,
+                    alloy_sol_types::abi::AbiDecoderConfig::new().validate(true),
+                )
             }
         }
     };
@@ -869,10 +869,10 @@ error FailedCall();
             }
             #[inline]
             fn abi_decode_raw_validate(data: &[u8]) -> alloy_sol_types::Result<Self> {
-                <Self::Parameters<
-                    '_,
-                > as alloy_sol_types::SolType>::abi_decode_sequence_validate(data)
-                    .map(Self::new)
+                Self::abi_decode_raw_with_config(
+                    data,
+                    alloy_sol_types::abi::AbiDecoderConfig::new().validate(true),
+                )
             }
         }
     };
@@ -964,10 +964,10 @@ error InsufficientBalance(uint256 balance, uint256 needed);
             }
             #[inline]
             fn abi_decode_raw_validate(data: &[u8]) -> alloy_sol_types::Result<Self> {
-                <Self::Parameters<
-                    '_,
-                > as alloy_sol_types::SolType>::abi_decode_sequence_validate(data)
-                    .map(Self::new)
+                Self::abi_decode_raw_with_config(
+                    data,
+                    alloy_sol_types::abi::AbiDecoderConfig::new().validate(true),
+                )
             }
         }
     };
@@ -1059,10 +1059,10 @@ error LogicRefMismatch(bytes32 expected, bytes32 actual);
             }
             #[inline]
             fn abi_decode_raw_validate(data: &[u8]) -> alloy_sol_types::Result<Self> {
-                <Self::Parameters<
-                    '_,
-                > as alloy_sol_types::SolType>::abi_decode_sequence_validate(data)
-                    .map(Self::new)
+                Self::abi_decode_raw_with_config(
+                    data,
+                    alloy_sol_types::abi::AbiDecoderConfig::new().validate(true),
+                )
             }
         }
     };
@@ -1133,10 +1133,10 @@ error NoOpNotAllowed();
             }
             #[inline]
             fn abi_decode_raw_validate(data: &[u8]) -> alloy_sol_types::Result<Self> {
-                <Self::Parameters<
-                    '_,
-                > as alloy_sol_types::SolType>::abi_decode_sequence_validate(data)
-                    .map(Self::new)
+                Self::abi_decode_raw_with_config(
+                    data,
+                    alloy_sol_types::abi::AbiDecoderConfig::new().validate(true),
+                )
             }
         }
     };
@@ -1214,10 +1214,10 @@ error NonSelfCallNotAllowed(address nonSelfCaller);
             }
             #[inline]
             fn abi_decode_raw_validate(data: &[u8]) -> alloy_sol_types::Result<Self> {
-                <Self::Parameters<
-                    '_,
-                > as alloy_sol_types::SolType>::abi_decode_sequence_validate(data)
-                    .map(Self::new)
+                Self::abi_decode_raw_with_config(
+                    data,
+                    alloy_sol_types::abi::AbiDecoderConfig::new().validate(true),
+                )
             }
         }
     };
@@ -1309,10 +1309,10 @@ error ProtocolAdapterMismatch(address expected, address actual);
             }
             #[inline]
             fn abi_decode_raw_validate(data: &[u8]) -> alloy_sol_types::Result<Self> {
-                <Self::Parameters<
-                    '_,
-                > as alloy_sol_types::SolType>::abi_decode_sequence_validate(data)
-                    .map(Self::new)
+                Self::abi_decode_raw_with_config(
+                    data,
+                    alloy_sol_types::abi::AbiDecoderConfig::new().validate(true),
+                )
             }
         }
     };
@@ -1385,10 +1385,10 @@ error ReentrancyGuardReentrantCall();
             }
             #[inline]
             fn abi_decode_raw_validate(data: &[u8]) -> alloy_sol_types::Result<Self> {
-                <Self::Parameters<
-                    '_,
-                > as alloy_sol_types::SolType>::abi_decode_sequence_validate(data)
-                    .map(Self::new)
+                Self::abi_decode_raw_with_config(
+                    data,
+                    alloy_sol_types::abi::AbiDecoderConfig::new().validate(true),
+                )
             }
         }
     };
@@ -1468,10 +1468,10 @@ error SafeERC20FailedOperation(address token);
             }
             #[inline]
             fn abi_decode_raw_validate(data: &[u8]) -> alloy_sol_types::Result<Self> {
-                <Self::Parameters<
-                    '_,
-                > as alloy_sol_types::SolType>::abi_decode_sequence_validate(data)
-                    .map(Self::new)
+                Self::abi_decode_raw_with_config(
+                    data,
+                    alloy_sol_types::abi::AbiDecoderConfig::new().validate(true),
+                )
             }
         }
     };
@@ -1549,10 +1549,10 @@ error UnregisteredSelector(bytes4 selector);
             }
             #[inline]
             fn abi_decode_raw_validate(data: &[u8]) -> alloy_sol_types::Result<Self> {
-                <Self::Parameters<
-                    '_,
-                > as alloy_sol_types::SolType>::abi_decode_sequence_validate(data)
-                    .map(Self::new)
+                Self::abi_decode_raw_with_config(
+                    data,
+                    alloy_sol_types::abi::AbiDecoderConfig::new().validate(true),
+                )
             }
         }
     };
@@ -1623,10 +1623,10 @@ error ZeroLogicRefNotAllowed();
             }
             #[inline]
             fn abi_decode_raw_validate(data: &[u8]) -> alloy_sol_types::Result<Self> {
-                <Self::Parameters<
-                    '_,
-                > as alloy_sol_types::SolType>::abi_decode_sequence_validate(data)
-                    .map(Self::new)
+                Self::abi_decode_raw_with_config(
+                    data,
+                    alloy_sol_types::abi::AbiDecoderConfig::new().validate(true),
+                )
             }
         }
     };
@@ -1699,10 +1699,10 @@ error ZeroProtocolAdapterNotAllowed();
             }
             #[inline]
             fn abi_decode_raw_validate(data: &[u8]) -> alloy_sol_types::Result<Self> {
-                <Self::Parameters<
-                    '_,
-                > as alloy_sol_types::SolType>::abi_decode_sequence_validate(data)
-                    .map(Self::new)
+                Self::abi_decode_raw_with_config(
+                    data,
+                    alloy_sol_types::abi::AbiDecoderConfig::new().validate(true),
+                )
             }
         }
     };
@@ -1773,10 +1773,10 @@ error ZeroRecipientNotAllowed();
             }
             #[inline]
             fn abi_decode_raw_validate(data: &[u8]) -> alloy_sol_types::Result<Self> {
-                <Self::Parameters<
-                    '_,
-                > as alloy_sol_types::SolType>::abi_decode_sequence_validate(data)
-                    .map(Self::new)
+                Self::abi_decode_raw_with_config(
+                    data,
+                    alloy_sol_types::abi::AbiDecoderConfig::new().validate(true),
+                )
             }
         }
     };
@@ -2477,16 +2477,29 @@ function VERSION() external view returns (string memory);
                     })
             }
             #[inline]
-            fn abi_decode_returns_validate(
+            fn abi_decode_returns_with_config(
                 data: &[u8],
+                config: alloy_sol_types::abi::AbiDecoderConfig,
             ) -> alloy_sol_types::Result<Self::Return> {
                 <Self::ReturnTuple<
                     '_,
-                > as alloy_sol_types::SolType>::abi_decode_sequence_validate(data)
+                > as alloy_sol_types::SolType>::abi_decode_sequence_with_config(
+                        data,
+                        config,
+                    )
                     .map(|r| {
                         let r: VERSIONReturn = r.into();
                         r._0
                     })
+            }
+            #[inline]
+            fn abi_decode_returns_validate(
+                data: &[u8],
+            ) -> alloy_sol_types::Result<Self::Return> {
+                Self::abi_decode_returns_with_config(
+                    data,
+                    alloy_sol_types::abi::AbiDecoderConfig::new().validate(true),
+                )
             }
         }
     };
@@ -2646,16 +2659,29 @@ function forwardCall(bytes32 logicRef, bytes memory input) external returns (byt
                     })
             }
             #[inline]
-            fn abi_decode_returns_validate(
+            fn abi_decode_returns_with_config(
                 data: &[u8],
+                config: alloy_sol_types::abi::AbiDecoderConfig,
             ) -> alloy_sol_types::Result<Self::Return> {
                 <Self::ReturnTuple<
                     '_,
-                > as alloy_sol_types::SolType>::abi_decode_sequence_validate(data)
+                > as alloy_sol_types::SolType>::abi_decode_sequence_with_config(
+                        data,
+                        config,
+                    )
                     .map(|r| {
                         let r: forwardCallReturn = r.into();
                         r.output
                     })
+            }
+            #[inline]
+            fn abi_decode_returns_validate(
+                data: &[u8],
+            ) -> alloy_sol_types::Result<Self::Return> {
+                Self::abi_decode_returns_with_config(
+                    data,
+                    alloy_sol_types::abi::AbiDecoderConfig::new().validate(true),
+                )
             }
         }
     };
@@ -2791,16 +2817,29 @@ function getLogicRef() external view returns (bytes32 logicRef);
                     })
             }
             #[inline]
-            fn abi_decode_returns_validate(
+            fn abi_decode_returns_with_config(
                 data: &[u8],
+                config: alloy_sol_types::abi::AbiDecoderConfig,
             ) -> alloy_sol_types::Result<Self::Return> {
                 <Self::ReturnTuple<
                     '_,
-                > as alloy_sol_types::SolType>::abi_decode_sequence_validate(data)
+                > as alloy_sol_types::SolType>::abi_decode_sequence_with_config(
+                        data,
+                        config,
+                    )
                     .map(|r| {
                         let r: getLogicRefReturn = r.into();
                         r.logicRef
                     })
+            }
+            #[inline]
+            fn abi_decode_returns_validate(
+                data: &[u8],
+            ) -> alloy_sol_types::Result<Self::Return> {
+                Self::abi_decode_returns_with_config(
+                    data,
+                    alloy_sol_types::abi::AbiDecoderConfig::new().validate(true),
+                )
             }
         }
     };
@@ -2940,16 +2979,29 @@ function getProtocolAdapter() external view returns (address protocolAdapter);
                     })
             }
             #[inline]
-            fn abi_decode_returns_validate(
+            fn abi_decode_returns_with_config(
                 data: &[u8],
+                config: alloy_sol_types::abi::AbiDecoderConfig,
             ) -> alloy_sol_types::Result<Self::Return> {
                 <Self::ReturnTuple<
                     '_,
-                > as alloy_sol_types::SolType>::abi_decode_sequence_validate(data)
+                > as alloy_sol_types::SolType>::abi_decode_sequence_with_config(
+                        data,
+                        config,
+                    )
                     .map(|r| {
                         let r: getProtocolAdapterReturn = r.into();
                         r.protocolAdapter
                     })
+            }
+            #[inline]
+            fn abi_decode_returns_validate(
+                data: &[u8],
+            ) -> alloy_sol_types::Result<Self::Return> {
+                Self::abi_decode_returns_with_config(
+                    data,
+                    alloy_sol_types::abi::AbiDecoderConfig::new().validate(true),
+                )
             }
         }
     };
@@ -3113,16 +3165,29 @@ function isValidSignature(bytes32 hash, bytes memory signature) external pure re
                     })
             }
             #[inline]
-            fn abi_decode_returns_validate(
+            fn abi_decode_returns_with_config(
                 data: &[u8],
+                config: alloy_sol_types::abi::AbiDecoderConfig,
             ) -> alloy_sol_types::Result<Self::Return> {
                 <Self::ReturnTuple<
                     '_,
-                > as alloy_sol_types::SolType>::abi_decode_sequence_validate(data)
+                > as alloy_sol_types::SolType>::abi_decode_sequence_with_config(
+                        data,
+                        config,
+                    )
                     .map(|r| {
                         let r: isValidSignatureReturn = r.into();
                         r.magicValue
                     })
+            }
+            #[inline]
+            fn abi_decode_returns_validate(
+                data: &[u8],
+            ) -> alloy_sol_types::Result<Self::Return> {
+                Self::abi_decode_returns_with_config(
+                    data,
+                    alloy_sol_types::abi::AbiDecoderConfig::new().validate(true),
+                )
             }
         }
     };
@@ -3269,16 +3334,29 @@ function lookupMagicNumber(bytes4 selector) external view returns (bytes4 magicN
                     })
             }
             #[inline]
-            fn abi_decode_returns_validate(
+            fn abi_decode_returns_with_config(
                 data: &[u8],
+                config: alloy_sol_types::abi::AbiDecoderConfig,
             ) -> alloy_sol_types::Result<Self::Return> {
                 <Self::ReturnTuple<
                     '_,
-                > as alloy_sol_types::SolType>::abi_decode_sequence_validate(data)
+                > as alloy_sol_types::SolType>::abi_decode_sequence_with_config(
+                        data,
+                        config,
+                    )
                     .map(|r| {
                         let r: lookupMagicNumberReturn = r.into();
                         r.magicNumber
                     })
+            }
+            #[inline]
+            fn abi_decode_returns_validate(
+                data: &[u8],
+            ) -> alloy_sol_types::Result<Self::Return> {
+                Self::abi_decode_returns_with_config(
+                    data,
+                    alloy_sol_types::abi::AbiDecoderConfig::new().validate(true),
+                )
             }
         }
     };
@@ -3437,13 +3515,26 @@ function registerSelector(bytes4 selector, bytes4 magicNumber) external;
                     .map(Into::into)
             }
             #[inline]
-            fn abi_decode_returns_validate(
+            fn abi_decode_returns_with_config(
                 data: &[u8],
+                config: alloy_sol_types::abi::AbiDecoderConfig,
             ) -> alloy_sol_types::Result<Self::Return> {
                 <Self::ReturnTuple<
                     '_,
-                > as alloy_sol_types::SolType>::abi_decode_sequence_validate(data)
+                > as alloy_sol_types::SolType>::abi_decode_sequence_with_config(
+                        data,
+                        config,
+                    )
                     .map(Into::into)
+            }
+            #[inline]
+            fn abi_decode_returns_validate(
+                data: &[u8],
+            ) -> alloy_sol_types::Result<Self::Return> {
+                Self::abi_decode_returns_with_config(
+                    data,
+                    alloy_sol_types::abi::AbiDecoderConfig::new().validate(true),
+                )
             }
         }
     };
@@ -3605,23 +3696,36 @@ function sweep(address token, address to) external returns (uint256 amount);
                     })
             }
             #[inline]
-            fn abi_decode_returns_validate(
+            fn abi_decode_returns_with_config(
                 data: &[u8],
+                config: alloy_sol_types::abi::AbiDecoderConfig,
             ) -> alloy_sol_types::Result<Self::Return> {
                 <Self::ReturnTuple<
                     '_,
-                > as alloy_sol_types::SolType>::abi_decode_sequence_validate(data)
+                > as alloy_sol_types::SolType>::abi_decode_sequence_with_config(
+                        data,
+                        config,
+                    )
                     .map(|r| {
                         let r: sweepReturn = r.into();
                         r.amount
                     })
+            }
+            #[inline]
+            fn abi_decode_returns_validate(
+                data: &[u8],
+            ) -> alloy_sol_types::Result<Self::Return> {
+                Self::abi_decode_returns_with_config(
+                    data,
+                    alloy_sol_types::abi::AbiDecoderConfig::new().validate(true),
+                )
             }
         }
     };
     ///Container for all the [`GenericCallForwarder`](self) function calls.
     #[derive(Clone)]
     #[derive(serde::Serialize, serde::Deserialize)]
-    #[derive()]
+    #[derive(Debug, PartialEq, Eq, Hash)]
     pub enum GenericCallForwarderCalls {
         #[allow(missing_docs)]
         VERSION(VERSIONCall),
@@ -3744,15 +3848,31 @@ function sweep(address token, address to) external returns (uint256 amount);
             selector: [u8; 4],
             data: &[u8],
         ) -> alloy_sol_types::Result<Self> {
+            Self::abi_decode_raw_with_config(
+                selector,
+                data,
+                alloy_sol_types::abi::AbiDecoderConfig::default(),
+            )
+        }
+        #[inline]
+        #[allow(non_snake_case)]
+        fn abi_decode_raw_with_config(
+            selector: [u8; 4],
+            data: &[u8],
+            config: alloy_sol_types::abi::AbiDecoderConfig,
+        ) -> alloy_sol_types::Result<Self> {
             static DECODE_SHIMS: &[fn(
                 &[u8],
+                alloy_sol_types::abi::AbiDecoderConfig,
             ) -> alloy_sol_types::Result<GenericCallForwarderCalls>] = &[
                 {
                     fn isValidSignature(
                         data: &[u8],
+                        config: alloy_sol_types::abi::AbiDecoderConfig,
                     ) -> alloy_sol_types::Result<GenericCallForwarderCalls> {
-                        <isValidSignatureCall as alloy_sol_types::SolCall>::abi_decode_raw(
+                        <isValidSignatureCall as alloy_sol_types::SolCall>::abi_decode_raw_with_config(
                                 data,
+                                config,
                             )
                             .map(GenericCallForwarderCalls::isValidSignature)
                     }
@@ -3761,9 +3881,11 @@ function sweep(address token, address to) external returns (uint256 amount);
                 {
                     fn registerSelector(
                         data: &[u8],
+                        config: alloy_sol_types::abi::AbiDecoderConfig,
                     ) -> alloy_sol_types::Result<GenericCallForwarderCalls> {
-                        <registerSelectorCall as alloy_sol_types::SolCall>::abi_decode_raw(
+                        <registerSelectorCall as alloy_sol_types::SolCall>::abi_decode_raw_with_config(
                                 data,
+                                config,
                             )
                             .map(GenericCallForwarderCalls::registerSelector)
                     }
@@ -3772,9 +3894,11 @@ function sweep(address token, address to) external returns (uint256 amount);
                 {
                     fn forwardCall(
                         data: &[u8],
+                        config: alloy_sol_types::abi::AbiDecoderConfig,
                     ) -> alloy_sol_types::Result<GenericCallForwarderCalls> {
-                        <forwardCallCall as alloy_sol_types::SolCall>::abi_decode_raw(
+                        <forwardCallCall as alloy_sol_types::SolCall>::abi_decode_raw_with_config(
                                 data,
+                                config,
                             )
                             .map(GenericCallForwarderCalls::forwardCall)
                     }
@@ -3783,9 +3907,11 @@ function sweep(address token, address to) external returns (uint256 amount);
                 {
                     fn getProtocolAdapter(
                         data: &[u8],
+                        config: alloy_sol_types::abi::AbiDecoderConfig,
                     ) -> alloy_sol_types::Result<GenericCallForwarderCalls> {
-                        <getProtocolAdapterCall as alloy_sol_types::SolCall>::abi_decode_raw(
+                        <getProtocolAdapterCall as alloy_sol_types::SolCall>::abi_decode_raw_with_config(
                                 data,
+                                config,
                             )
                             .map(GenericCallForwarderCalls::getProtocolAdapter)
                     }
@@ -3794,9 +3920,11 @@ function sweep(address token, address to) external returns (uint256 amount);
                 {
                     fn lookupMagicNumber(
                         data: &[u8],
+                        config: alloy_sol_types::abi::AbiDecoderConfig,
                     ) -> alloy_sol_types::Result<GenericCallForwarderCalls> {
-                        <lookupMagicNumberCall as alloy_sol_types::SolCall>::abi_decode_raw(
+                        <lookupMagicNumberCall as alloy_sol_types::SolCall>::abi_decode_raw_with_config(
                                 data,
+                                config,
                             )
                             .map(GenericCallForwarderCalls::lookupMagicNumber)
                     }
@@ -3805,8 +3933,12 @@ function sweep(address token, address to) external returns (uint256 amount);
                 {
                     fn sweep(
                         data: &[u8],
+                        config: alloy_sol_types::abi::AbiDecoderConfig,
                     ) -> alloy_sol_types::Result<GenericCallForwarderCalls> {
-                        <sweepCall as alloy_sol_types::SolCall>::abi_decode_raw(data)
+                        <sweepCall as alloy_sol_types::SolCall>::abi_decode_raw_with_config(
+                                data,
+                                config,
+                            )
                             .map(GenericCallForwarderCalls::sweep)
                     }
                     sweep
@@ -3814,9 +3946,11 @@ function sweep(address token, address to) external returns (uint256 amount);
                 {
                     fn getLogicRef(
                         data: &[u8],
+                        config: alloy_sol_types::abi::AbiDecoderConfig,
                     ) -> alloy_sol_types::Result<GenericCallForwarderCalls> {
-                        <getLogicRefCall as alloy_sol_types::SolCall>::abi_decode_raw(
+                        <getLogicRefCall as alloy_sol_types::SolCall>::abi_decode_raw_with_config(
                                 data,
+                                config,
                             )
                             .map(GenericCallForwarderCalls::getLogicRef)
                     }
@@ -3825,8 +3959,12 @@ function sweep(address token, address to) external returns (uint256 amount);
                 {
                     fn VERSION(
                         data: &[u8],
+                        config: alloy_sol_types::abi::AbiDecoderConfig,
                     ) -> alloy_sol_types::Result<GenericCallForwarderCalls> {
-                        <VERSIONCall as alloy_sol_types::SolCall>::abi_decode_raw(data)
+                        <VERSIONCall as alloy_sol_types::SolCall>::abi_decode_raw_with_config(
+                                data,
+                                config,
+                            )
                             .map(GenericCallForwarderCalls::VERSION)
                     }
                     VERSION
@@ -3840,7 +3978,7 @@ function sweep(address token, address to) external returns (uint256 amount);
                     ),
                 );
             };
-            DECODE_SHIMS[idx](data)
+            DECODE_SHIMS[idx](data, config)
         }
         #[inline]
         #[allow(non_snake_case)]
@@ -3848,107 +3986,11 @@ function sweep(address token, address to) external returns (uint256 amount);
             selector: [u8; 4],
             data: &[u8],
         ) -> alloy_sol_types::Result<Self> {
-            static DECODE_VALIDATE_SHIMS: &[fn(
-                &[u8],
-            ) -> alloy_sol_types::Result<GenericCallForwarderCalls>] = &[
-                {
-                    fn isValidSignature(
-                        data: &[u8],
-                    ) -> alloy_sol_types::Result<GenericCallForwarderCalls> {
-                        <isValidSignatureCall as alloy_sol_types::SolCall>::abi_decode_raw_validate(
-                                data,
-                            )
-                            .map(GenericCallForwarderCalls::isValidSignature)
-                    }
-                    isValidSignature
-                },
-                {
-                    fn registerSelector(
-                        data: &[u8],
-                    ) -> alloy_sol_types::Result<GenericCallForwarderCalls> {
-                        <registerSelectorCall as alloy_sol_types::SolCall>::abi_decode_raw_validate(
-                                data,
-                            )
-                            .map(GenericCallForwarderCalls::registerSelector)
-                    }
-                    registerSelector
-                },
-                {
-                    fn forwardCall(
-                        data: &[u8],
-                    ) -> alloy_sol_types::Result<GenericCallForwarderCalls> {
-                        <forwardCallCall as alloy_sol_types::SolCall>::abi_decode_raw_validate(
-                                data,
-                            )
-                            .map(GenericCallForwarderCalls::forwardCall)
-                    }
-                    forwardCall
-                },
-                {
-                    fn getProtocolAdapter(
-                        data: &[u8],
-                    ) -> alloy_sol_types::Result<GenericCallForwarderCalls> {
-                        <getProtocolAdapterCall as alloy_sol_types::SolCall>::abi_decode_raw_validate(
-                                data,
-                            )
-                            .map(GenericCallForwarderCalls::getProtocolAdapter)
-                    }
-                    getProtocolAdapter
-                },
-                {
-                    fn lookupMagicNumber(
-                        data: &[u8],
-                    ) -> alloy_sol_types::Result<GenericCallForwarderCalls> {
-                        <lookupMagicNumberCall as alloy_sol_types::SolCall>::abi_decode_raw_validate(
-                                data,
-                            )
-                            .map(GenericCallForwarderCalls::lookupMagicNumber)
-                    }
-                    lookupMagicNumber
-                },
-                {
-                    fn sweep(
-                        data: &[u8],
-                    ) -> alloy_sol_types::Result<GenericCallForwarderCalls> {
-                        <sweepCall as alloy_sol_types::SolCall>::abi_decode_raw_validate(
-                                data,
-                            )
-                            .map(GenericCallForwarderCalls::sweep)
-                    }
-                    sweep
-                },
-                {
-                    fn getLogicRef(
-                        data: &[u8],
-                    ) -> alloy_sol_types::Result<GenericCallForwarderCalls> {
-                        <getLogicRefCall as alloy_sol_types::SolCall>::abi_decode_raw_validate(
-                                data,
-                            )
-                            .map(GenericCallForwarderCalls::getLogicRef)
-                    }
-                    getLogicRef
-                },
-                {
-                    fn VERSION(
-                        data: &[u8],
-                    ) -> alloy_sol_types::Result<GenericCallForwarderCalls> {
-                        <VERSIONCall as alloy_sol_types::SolCall>::abi_decode_raw_validate(
-                                data,
-                            )
-                            .map(GenericCallForwarderCalls::VERSION)
-                    }
-                    VERSION
-                },
-            ];
-            let Ok(idx) = Self::SELECTORS.binary_search(&selector) else {
-                return Err(
-                    alloy_sol_types::Error::unknown_selector(
-                        <Self as alloy_sol_types::SolInterface>::NAME,
-                        selector,
-                    ),
-                );
-            };
-            DECODE_VALIDATE_SHIMS[idx](data)
+            Self::abi_decode_raw_with_config(
+                selector,
+                data,
+                alloy_sol_types::abi::AbiDecoderConfig::new().validate(true),
+            )
         }
         #[inline]
         fn abi_encoded_size(&self) -> usize {
@@ -4209,15 +4251,31 @@ function sweep(address token, address to) external returns (uint256 amount);
             selector: [u8; 4],
             data: &[u8],
         ) -> alloy_sol_types::Result<Self> {
+            Self::abi_decode_raw_with_config(
+                selector,
+                data,
+                alloy_sol_types::abi::AbiDecoderConfig::default(),
+            )
+        }
+        #[inline]
+        #[allow(non_snake_case)]
+        fn abi_decode_raw_with_config(
+            selector: [u8; 4],
+            data: &[u8],
+            config: alloy_sol_types::abi::AbiDecoderConfig,
+        ) -> alloy_sol_types::Result<Self> {
             static DECODE_SHIMS: &[fn(
                 &[u8],
+                alloy_sol_types::abi::AbiDecoderConfig,
             ) -> alloy_sol_types::Result<GenericCallForwarderErrors>] = &[
                 {
                     fn NoOpNotAllowed(
                         data: &[u8],
+                        config: alloy_sol_types::abi::AbiDecoderConfig,
                     ) -> alloy_sol_types::Result<GenericCallForwarderErrors> {
-                        <NoOpNotAllowed as alloy_sol_types::SolError>::abi_decode_raw(
+                        <NoOpNotAllowed as alloy_sol_types::SolError>::abi_decode_raw_with_config(
                                 data,
+                                config,
                             )
                             .map(GenericCallForwarderErrors::NoOpNotAllowed)
                     }
@@ -4226,9 +4284,11 @@ function sweep(address token, address to) external returns (uint256 amount);
                 {
                     fn ProtocolAdapterMismatch(
                         data: &[u8],
+                        config: alloy_sol_types::abi::AbiDecoderConfig,
                     ) -> alloy_sol_types::Result<GenericCallForwarderErrors> {
-                        <ProtocolAdapterMismatch as alloy_sol_types::SolError>::abi_decode_raw(
+                        <ProtocolAdapterMismatch as alloy_sol_types::SolError>::abi_decode_raw_with_config(
                                 data,
+                                config,
                             )
                             .map(GenericCallForwarderErrors::ProtocolAdapterMismatch)
                     }
@@ -4237,9 +4297,11 @@ function sweep(address token, address to) external returns (uint256 amount);
                 {
                     fn LogicRefMismatch(
                         data: &[u8],
+                        config: alloy_sol_types::abi::AbiDecoderConfig,
                     ) -> alloy_sol_types::Result<GenericCallForwarderErrors> {
-                        <LogicRefMismatch as alloy_sol_types::SolError>::abi_decode_raw(
+                        <LogicRefMismatch as alloy_sol_types::SolError>::abi_decode_raw_with_config(
                                 data,
+                                config,
                             )
                             .map(GenericCallForwarderErrors::LogicRefMismatch)
                     }
@@ -4248,9 +4310,11 @@ function sweep(address token, address to) external returns (uint256 amount);
                 {
                     fn ReentrancyGuardReentrantCall(
                         data: &[u8],
+                        config: alloy_sol_types::abi::AbiDecoderConfig,
                     ) -> alloy_sol_types::Result<GenericCallForwarderErrors> {
-                        <ReentrancyGuardReentrantCall as alloy_sol_types::SolError>::abi_decode_raw(
+                        <ReentrancyGuardReentrantCall as alloy_sol_types::SolError>::abi_decode_raw_with_config(
                                 data,
+                                config,
                             )
                             .map(
                                 GenericCallForwarderErrors::ReentrancyGuardReentrantCall,
@@ -4261,9 +4325,11 @@ function sweep(address token, address to) external returns (uint256 amount);
                 {
                     fn SafeERC20FailedOperation(
                         data: &[u8],
+                        config: alloy_sol_types::abi::AbiDecoderConfig,
                     ) -> alloy_sol_types::Result<GenericCallForwarderErrors> {
-                        <SafeERC20FailedOperation as alloy_sol_types::SolError>::abi_decode_raw(
+                        <SafeERC20FailedOperation as alloy_sol_types::SolError>::abi_decode_raw_with_config(
                                 data,
+                                config,
                             )
                             .map(GenericCallForwarderErrors::SafeERC20FailedOperation)
                     }
@@ -4272,9 +4338,11 @@ function sweep(address token, address to) external returns (uint256 amount);
                 {
                     fn ZeroLogicRefNotAllowed(
                         data: &[u8],
+                        config: alloy_sol_types::abi::AbiDecoderConfig,
                     ) -> alloy_sol_types::Result<GenericCallForwarderErrors> {
-                        <ZeroLogicRefNotAllowed as alloy_sol_types::SolError>::abi_decode_raw(
+                        <ZeroLogicRefNotAllowed as alloy_sol_types::SolError>::abi_decode_raw_with_config(
                                 data,
+                                config,
                             )
                             .map(GenericCallForwarderErrors::ZeroLogicRefNotAllowed)
                     }
@@ -4283,9 +4351,11 @@ function sweep(address token, address to) external returns (uint256 amount);
                 {
                     fn AddressEmptyCode(
                         data: &[u8],
+                        config: alloy_sol_types::abi::AbiDecoderConfig,
                     ) -> alloy_sol_types::Result<GenericCallForwarderErrors> {
-                        <AddressEmptyCode as alloy_sol_types::SolError>::abi_decode_raw(
+                        <AddressEmptyCode as alloy_sol_types::SolError>::abi_decode_raw_with_config(
                                 data,
+                                config,
                             )
                             .map(GenericCallForwarderErrors::AddressEmptyCode)
                     }
@@ -4294,9 +4364,11 @@ function sweep(address token, address to) external returns (uint256 amount);
                 {
                     fn NonSelfCallNotAllowed(
                         data: &[u8],
+                        config: alloy_sol_types::abi::AbiDecoderConfig,
                     ) -> alloy_sol_types::Result<GenericCallForwarderErrors> {
-                        <NonSelfCallNotAllowed as alloy_sol_types::SolError>::abi_decode_raw(
+                        <NonSelfCallNotAllowed as alloy_sol_types::SolError>::abi_decode_raw_with_config(
                                 data,
+                                config,
                             )
                             .map(GenericCallForwarderErrors::NonSelfCallNotAllowed)
                     }
@@ -4305,9 +4377,11 @@ function sweep(address token, address to) external returns (uint256 amount);
                 {
                     fn ZeroProtocolAdapterNotAllowed(
                         data: &[u8],
+                        config: alloy_sol_types::abi::AbiDecoderConfig,
                     ) -> alloy_sol_types::Result<GenericCallForwarderErrors> {
-                        <ZeroProtocolAdapterNotAllowed as alloy_sol_types::SolError>::abi_decode_raw(
+                        <ZeroProtocolAdapterNotAllowed as alloy_sol_types::SolError>::abi_decode_raw_with_config(
                                 data,
+                                config,
                             )
                             .map(
                                 GenericCallForwarderErrors::ZeroProtocolAdapterNotAllowed,
@@ -4318,9 +4392,11 @@ function sweep(address token, address to) external returns (uint256 amount);
                 {
                     fn InsufficientBalance(
                         data: &[u8],
+                        config: alloy_sol_types::abi::AbiDecoderConfig,
                     ) -> alloy_sol_types::Result<GenericCallForwarderErrors> {
-                        <InsufficientBalance as alloy_sol_types::SolError>::abi_decode_raw(
+                        <InsufficientBalance as alloy_sol_types::SolError>::abi_decode_raw_with_config(
                                 data,
+                                config,
                             )
                             .map(GenericCallForwarderErrors::InsufficientBalance)
                     }
@@ -4329,8 +4405,12 @@ function sweep(address token, address to) external returns (uint256 amount);
                 {
                     fn FailedCall(
                         data: &[u8],
+                        config: alloy_sol_types::abi::AbiDecoderConfig,
                     ) -> alloy_sol_types::Result<GenericCallForwarderErrors> {
-                        <FailedCall as alloy_sol_types::SolError>::abi_decode_raw(data)
+                        <FailedCall as alloy_sol_types::SolError>::abi_decode_raw_with_config(
+                                data,
+                                config,
+                            )
                             .map(GenericCallForwarderErrors::FailedCall)
                     }
                     FailedCall
@@ -4338,9 +4418,11 @@ function sweep(address token, address to) external returns (uint256 amount);
                 {
                     fn ZeroRecipientNotAllowed(
                         data: &[u8],
+                        config: alloy_sol_types::abi::AbiDecoderConfig,
                     ) -> alloy_sol_types::Result<GenericCallForwarderErrors> {
-                        <ZeroRecipientNotAllowed as alloy_sol_types::SolError>::abi_decode_raw(
+                        <ZeroRecipientNotAllowed as alloy_sol_types::SolError>::abi_decode_raw_with_config(
                                 data,
+                                config,
                             )
                             .map(GenericCallForwarderErrors::ZeroRecipientNotAllowed)
                     }
@@ -4349,9 +4431,11 @@ function sweep(address token, address to) external returns (uint256 amount);
                 {
                     fn UnregisteredSelector(
                         data: &[u8],
+                        config: alloy_sol_types::abi::AbiDecoderConfig,
                     ) -> alloy_sol_types::Result<GenericCallForwarderErrors> {
-                        <UnregisteredSelector as alloy_sol_types::SolError>::abi_decode_raw(
+                        <UnregisteredSelector as alloy_sol_types::SolError>::abi_decode_raw_with_config(
                                 data,
+                                config,
                             )
                             .map(GenericCallForwarderErrors::UnregisteredSelector)
                     }
@@ -4366,7 +4450,7 @@ function sweep(address token, address to) external returns (uint256 amount);
                     ),
                 );
             };
-            DECODE_SHIMS[idx](data)
+            DECODE_SHIMS[idx](data, config)
         }
         #[inline]
         #[allow(non_snake_case)]
@@ -4374,166 +4458,11 @@ function sweep(address token, address to) external returns (uint256 amount);
             selector: [u8; 4],
             data: &[u8],
         ) -> alloy_sol_types::Result<Self> {
-            static DECODE_VALIDATE_SHIMS: &[fn(
-                &[u8],
-            ) -> alloy_sol_types::Result<GenericCallForwarderErrors>] = &[
-                {
-                    fn NoOpNotAllowed(
-                        data: &[u8],
-                    ) -> alloy_sol_types::Result<GenericCallForwarderErrors> {
-                        <NoOpNotAllowed as alloy_sol_types::SolError>::abi_decode_raw_validate(
-                                data,
-                            )
-                            .map(GenericCallForwarderErrors::NoOpNotAllowed)
-                    }
-                    NoOpNotAllowed
-                },
-                {
-                    fn ProtocolAdapterMismatch(
-                        data: &[u8],
-                    ) -> alloy_sol_types::Result<GenericCallForwarderErrors> {
-                        <ProtocolAdapterMismatch as alloy_sol_types::SolError>::abi_decode_raw_validate(
-                                data,
-                            )
-                            .map(GenericCallForwarderErrors::ProtocolAdapterMismatch)
-                    }
-                    ProtocolAdapterMismatch
-                },
-                {
-                    fn LogicRefMismatch(
-                        data: &[u8],
-                    ) -> alloy_sol_types::Result<GenericCallForwarderErrors> {
-                        <LogicRefMismatch as alloy_sol_types::SolError>::abi_decode_raw_validate(
-                                data,
-                            )
-                            .map(GenericCallForwarderErrors::LogicRefMismatch)
-                    }
-                    LogicRefMismatch
-                },
-                {
-                    fn ReentrancyGuardReentrantCall(
-                        data: &[u8],
-                    ) -> alloy_sol_types::Result<GenericCallForwarderErrors> {
-                        <ReentrancyGuardReentrantCall as alloy_sol_types::SolError>::abi_decode_raw_validate(
-                                data,
-                            )
-                            .map(
-                                GenericCallForwarderErrors::ReentrancyGuardReentrantCall,
-                            )
-                    }
-                    ReentrancyGuardReentrantCall
-                },
-                {
-                    fn SafeERC20FailedOperation(
-                        data: &[u8],
-                    ) -> alloy_sol_types::Result<GenericCallForwarderErrors> {
-                        <SafeERC20FailedOperation as alloy_sol_types::SolError>::abi_decode_raw_validate(
-                                data,
-                            )
-                            .map(GenericCallForwarderErrors::SafeERC20FailedOperation)
-                    }
-                    SafeERC20FailedOperation
-                },
-                {
-                    fn ZeroLogicRefNotAllowed(
-                        data: &[u8],
-                    ) -> alloy_sol_types::Result<GenericCallForwarderErrors> {
-                        <ZeroLogicRefNotAllowed as alloy_sol_types::SolError>::abi_decode_raw_validate(
-                                data,
-                            )
-                            .map(GenericCallForwarderErrors::ZeroLogicRefNotAllowed)
-                    }
-                    ZeroLogicRefNotAllowed
-                },
-                {
-                    fn AddressEmptyCode(
-                        data: &[u8],
-                    ) -> alloy_sol_types::Result<GenericCallForwarderErrors> {
-                        <AddressEmptyCode as alloy_sol_types::SolError>::abi_decode_raw_validate(
-                                data,
-                            )
-                            .map(GenericCallForwarderErrors::AddressEmptyCode)
-                    }
-                    AddressEmptyCode
-                },
-                {
-                    fn NonSelfCallNotAllowed(
-                        data: &[u8],
-                    ) -> alloy_sol_types::Result<GenericCallForwarderErrors> {
-                        <NonSelfCallNotAllowed as alloy_sol_types::SolError>::abi_decode_raw_validate(
-                                data,
-                            )
-                            .map(GenericCallForwarderErrors::NonSelfCallNotAllowed)
-                    }
-                    NonSelfCallNotAllowed
-                },
-                {
-                    fn ZeroProtocolAdapterNotAllowed(
-                        data: &[u8],
-                    ) -> alloy_sol_types::Result<GenericCallForwarderErrors> {
-                        <ZeroProtocolAdapterNotAllowed as alloy_sol_types::SolError>::abi_decode_raw_validate(
-                                data,
-                            )
-                            .map(
-                                GenericCallForwarderErrors::ZeroProtocolAdapterNotAllowed,
-                            )
-                    }
-                    ZeroProtocolAdapterNotAllowed
-                },
-                {
-                    fn InsufficientBalance(
-                        data: &[u8],
-                    ) -> alloy_sol_types::Result<GenericCallForwarderErrors> {
-                        <InsufficientBalance as alloy_sol_types::SolError>::abi_decode_raw_validate(
-                                data,
-                            )
-                            .map(GenericCallForwarderErrors::InsufficientBalance)
-                    }
-                    InsufficientBalance
-                },
-                {
-                    fn FailedCall(
-                        data: &[u8],
-                    ) -> alloy_sol_types::Result<GenericCallForwarderErrors> {
-                        <FailedCall as alloy_sol_types::SolError>::abi_decode_raw_validate(
-                                data,
-                            )
-                            .map(GenericCallForwarderErrors::FailedCall)
-                    }
-                    FailedCall
-                },
-                {
-                    fn ZeroRecipientNotAllowed(
-                        data: &[u8],
-                    ) -> alloy_sol_types::Result<GenericCallForwarderErrors> {
-                        <ZeroRecipientNotAllowed as alloy_sol_types::SolError>::abi_decode_raw_validate(
-                                data,
-                            )
-                            .map(GenericCallForwarderErrors::ZeroRecipientNotAllowed)
-                    }
-                    ZeroRecipientNotAllowed
-                },
-                {
-                    fn UnregisteredSelector(
-                        data: &[u8],
-                    ) -> alloy_sol_types::Result<GenericCallForwarderErrors> {
-                        <UnregisteredSelector as alloy_sol_types::SolError>::abi_decode_raw_validate(
-                                data,
-                            )
-                            .map(GenericCallForwarderErrors::UnregisteredSelector)
-                    }
-                    UnregisteredSelector
-                },
-            ];
-            let Ok(idx) = Self::SELECTORS.binary_search(&selector) else {
-                return Err(
-                    alloy_sol_types::Error::unknown_selector(
-                        <Self as alloy_sol_types::SolInterface>::NAME,
-                        selector,
-                    ),
-                );
-            };
-            DECODE_VALIDATE_SHIMS[idx](data)
+            Self::abi_decode_raw_with_config(
+                selector,
+                data,
+                alloy_sol_types::abi::AbiDecoderConfig::new().validate(true),
+            )
         }
         #[inline]
         fn abi_encoded_size(&self) -> usize {
@@ -4684,6 +4613,156 @@ function sweep(address token, address to) external returns (uint256 amount);
             }
         }
     }
+    #[automatically_derived]
+    impl GenericCallForwarderErrors {
+        /**Creates a [`AddressEmptyCode`] error.
+
+```solidity
+error AddressEmptyCode(address)
+```*/
+        #[inline]
+        pub fn address_empty_code(target: alloy::sol_types::private::Address) -> Self {
+            Self::AddressEmptyCode(AddressEmptyCode { target: target })
+        }
+        /**Creates a [`FailedCall`] error.
+
+```solidity
+error FailedCall()
+```*/
+        #[inline]
+        pub fn failed_call() -> Self {
+            Self::FailedCall(FailedCall)
+        }
+        /**Creates a [`InsufficientBalance`] error.
+
+```solidity
+error InsufficientBalance(uint256,uint256)
+```*/
+        #[inline]
+        pub fn insufficient_balance(
+            balance: alloy::sol_types::private::primitives::aliases::U256,
+            needed: alloy::sol_types::private::primitives::aliases::U256,
+        ) -> Self {
+            Self::InsufficientBalance(InsufficientBalance {
+                balance: balance,
+                needed: needed,
+            })
+        }
+        /**Creates a [`LogicRefMismatch`] error.
+
+```solidity
+error LogicRefMismatch(bytes32,bytes32)
+```*/
+        #[inline]
+        pub fn logic_ref_mismatch(
+            expected: alloy::sol_types::private::FixedBytes<32>,
+            actual: alloy::sol_types::private::FixedBytes<32>,
+        ) -> Self {
+            Self::LogicRefMismatch(LogicRefMismatch {
+                expected: expected,
+                actual: actual,
+            })
+        }
+        /**Creates a [`NoOpNotAllowed`] error.
+
+```solidity
+error NoOpNotAllowed()
+```*/
+        #[inline]
+        pub fn no_op_not_allowed() -> Self {
+            Self::NoOpNotAllowed(NoOpNotAllowed)
+        }
+        /**Creates a [`NonSelfCallNotAllowed`] error.
+
+```solidity
+error NonSelfCallNotAllowed(address)
+```*/
+        #[inline]
+        pub fn non_self_call_not_allowed(
+            non_self_caller: alloy::sol_types::private::Address,
+        ) -> Self {
+            Self::NonSelfCallNotAllowed(NonSelfCallNotAllowed {
+                nonSelfCaller: non_self_caller,
+            })
+        }
+        /**Creates a [`ProtocolAdapterMismatch`] error.
+
+```solidity
+error ProtocolAdapterMismatch(address,address)
+```*/
+        #[inline]
+        pub fn protocol_adapter_mismatch(
+            expected: alloy::sol_types::private::Address,
+            actual: alloy::sol_types::private::Address,
+        ) -> Self {
+            Self::ProtocolAdapterMismatch(ProtocolAdapterMismatch {
+                expected: expected,
+                actual: actual,
+            })
+        }
+        /**Creates a [`ReentrancyGuardReentrantCall`] error.
+
+```solidity
+error ReentrancyGuardReentrantCall()
+```*/
+        #[inline]
+        pub fn reentrancy_guard_reentrant_call() -> Self {
+            Self::ReentrancyGuardReentrantCall(ReentrancyGuardReentrantCall)
+        }
+        /**Creates a [`SafeERC20FailedOperation`] error.
+
+```solidity
+error SafeERC20FailedOperation(address)
+```*/
+        #[inline]
+        pub fn safe_erc_20_failed_operation(
+            token: alloy::sol_types::private::Address,
+        ) -> Self {
+            Self::SafeERC20FailedOperation(SafeERC20FailedOperation {
+                token: token,
+            })
+        }
+        /**Creates a [`UnregisteredSelector`] error.
+
+```solidity
+error UnregisteredSelector(bytes4)
+```*/
+        #[inline]
+        pub fn unregistered_selector(
+            selector: alloy::sol_types::private::FixedBytes<4>,
+        ) -> Self {
+            Self::UnregisteredSelector(UnregisteredSelector {
+                selector: selector,
+            })
+        }
+        /**Creates a [`ZeroLogicRefNotAllowed`] error.
+
+```solidity
+error ZeroLogicRefNotAllowed()
+```*/
+        #[inline]
+        pub fn zero_logic_ref_not_allowed() -> Self {
+            Self::ZeroLogicRefNotAllowed(ZeroLogicRefNotAllowed)
+        }
+        /**Creates a [`ZeroProtocolAdapterNotAllowed`] error.
+
+```solidity
+error ZeroProtocolAdapterNotAllowed()
+```*/
+        #[inline]
+        pub fn zero_protocol_adapter_not_allowed() -> Self {
+            Self::ZeroProtocolAdapterNotAllowed(ZeroProtocolAdapterNotAllowed)
+        }
+        /**Creates a [`ZeroRecipientNotAllowed`] error.
+
+```solidity
+error ZeroRecipientNotAllowed()
+```*/
+        #[inline]
+        pub fn zero_recipient_not_allowed() -> Self {
+            Self::ZeroRecipientNotAllowed(ZeroRecipientNotAllowed)
+        }
+    }
     ///Container for all the [`GenericCallForwarder`](self) events.
     #[derive(Clone)]
     #[derive(serde::Serialize, serde::Deserialize)]
@@ -4770,32 +4849,65 @@ function sweep(address token, address to) external returns (uint256 amount);
             topics: &[alloy_sol_types::Word],
             data: &[u8],
         ) -> alloy_sol_types::Result<Self> {
+            <Self as alloy_sol_types::SolEventInterface>::decode_raw_log_with_config(
+                topics,
+                data,
+                alloy_sol_types::abi::AbiDecoderConfig::default(),
+            )
+        }
+        fn decode_raw_log_with_config(
+            topics: &[alloy_sol_types::Word],
+            data: &[u8],
+            config: alloy_sol_types::abi::AbiDecoderConfig,
+        ) -> alloy_sol_types::Result<Self> {
             match topics.first().copied() {
                 Some(<Executed as alloy_sol_types::SolEvent>::SIGNATURE_HASH) => {
-                    <Executed as alloy_sol_types::SolEvent>::decode_raw_log(topics, data)
+                    <Executed as alloy_sol_types::SolEvent>::decode_raw_log_with_config(
+                            topics,
+                            data,
+                            config,
+                        )
                         .map(Self::Executed)
                 }
                 Some(<FallbackHandled as alloy_sol_types::SolEvent>::SIGNATURE_HASH) => {
-                    <FallbackHandled as alloy_sol_types::SolEvent>::decode_raw_log(
+                    <FallbackHandled as alloy_sol_types::SolEvent>::decode_raw_log_with_config(
                             topics,
                             data,
+                            config,
                         )
                         .map(Self::FallbackHandled)
                 }
                 Some(
                     <NativeTokenReceived as alloy_sol_types::SolEvent>::SIGNATURE_HASH,
                 ) => {
-                    <NativeTokenReceived as alloy_sol_types::SolEvent>::decode_raw_log(
+                    <NativeTokenReceived as alloy_sol_types::SolEvent>::decode_raw_log_with_config(
                             topics,
                             data,
+                            config,
                         )
                         .map(Self::NativeTokenReceived)
                 }
                 Some(<Swept as alloy_sol_types::SolEvent>::SIGNATURE_HASH) => {
-                    <Swept as alloy_sol_types::SolEvent>::decode_raw_log(topics, data)
+                    <Swept as alloy_sol_types::SolEvent>::decode_raw_log_with_config(
+                            topics,
+                            data,
+                            config,
+                        )
                         .map(Self::Swept)
                 }
                 _ => {
+                    if topics
+                        .len()
+                        .checked_mul(alloy_sol_types::Word::len_bytes())
+                        .and_then(|len| len.checked_add(data.len()))
+                        .is_none_or(|len| len > config.get_memory_limit())
+                    {
+                        return alloy_sol_types::private::Err(
+                            alloy_sol_types::Error::MemoryLimitExceeded(
+                                config.get_memory_limit(),
+                            ),
+                        );
+                    }
                     alloy_sol_types::private::Err(alloy_sol_types::Error::InvalidLog {
                         name: <Self as alloy_sol_types::SolEventInterface>::NAME,
                         log: alloy_sol_types::private::Box::new(
@@ -4842,6 +4954,77 @@ function sweep(address token, address to) external returns (uint256 amount);
                     alloy_sol_types::private::IntoLogData::into_log_data(inner)
                 }
             }
+        }
+    }
+    #[automatically_derived]
+    impl GenericCallForwarderEvents {
+        /**Creates a [`Executed`] event.
+
+```solidity
+event Executed((address,uint256,bytes)[],bytes[])
+```*/
+        #[inline]
+        pub fn executed(
+            calls: alloy::sol_types::private::Vec<
+                <Call as alloy::sol_types::SolType>::RustType,
+            >,
+            exec_results: alloy::sol_types::private::Vec<
+                alloy::sol_types::private::Bytes,
+            >,
+        ) -> Self {
+            Self::Executed(Executed {
+                calls: calls,
+                execResults: exec_results,
+            })
+        }
+        /**Creates a [`FallbackHandled`] event.
+
+```solidity
+event FallbackHandled(address,bytes4,bytes)
+```*/
+        #[inline]
+        pub fn fallback_handled(
+            sender: alloy::sol_types::private::Address,
+            selector: alloy::sol_types::private::FixedBytes<4>,
+            data: alloy::sol_types::private::Bytes,
+        ) -> Self {
+            Self::FallbackHandled(FallbackHandled {
+                sender: sender,
+                selector: selector,
+                data: data,
+            })
+        }
+        /**Creates a [`NativeTokenReceived`] event.
+
+```solidity
+event NativeTokenReceived(address,uint256)
+```*/
+        #[inline]
+        pub fn native_token_received(
+            sender: alloy::sol_types::private::Address,
+            amount: alloy::sol_types::private::primitives::aliases::U256,
+        ) -> Self {
+            Self::NativeTokenReceived(NativeTokenReceived {
+                sender: sender,
+                amount: amount,
+            })
+        }
+        /**Creates a [`Swept`] event.
+
+```solidity
+event Swept(address,address,uint256)
+```*/
+        #[inline]
+        pub fn swept(
+            token: alloy::sol_types::private::Address,
+            to: alloy::sol_types::private::Address,
+            amount: alloy::sol_types::private::primitives::aliases::U256,
+        ) -> Self {
+            Self::Swept(Swept {
+                token: token,
+                to: to,
+                amount: amount,
+            })
         }
     }
     use alloy::contract as alloy_contract;

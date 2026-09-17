@@ -69,12 +69,11 @@ contract DexRouterMock {
         ISignatureTransfer.PermitTransferFrom calldata permit,
         bytes calldata signature
     ) external returns (uint256 amountOut) {
-        ISignatureTransfer(_PERMIT2)
-            .permitTransferFrom({
+        ISignatureTransfer(_PERMIT2).permitTransferFrom({
             permit: permit,
             transferDetails: ISignatureTransfer.SignatureTransferDetails({
-            to: address(this), requestedAmount: permit.permitted.amount
-        }),
+                to: address(this), requestedAmount: permit.permitted.amount
+            }),
             owner: msg.sender,
             signature: signature
         });
