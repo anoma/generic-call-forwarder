@@ -15,7 +15,7 @@ alloy = { version = "2.4.1", features = ["full", "eip712", "node-bindings"] }
 alloy-chains = "0.2.36"
 anoma-generic-call-library = "3.0.0-rc.2"
 anoma-generic-call-witness = "3.0.0-rc.2"
-anoma-pa-evm-bindings = "3.0.0-rc.7"
+anoma-pa-evm-bindings = "3.0.0-rc.8"
 anoma-rm-risc0 = { version = "2.0.0-rc.5", features = [
   "abi_encoding",
   "bonsai",
@@ -40,5 +40,5 @@ anoma-generic-call-forwarder-bindings = { path = "crates/bindings" }
 # Upstream test crates, pinned by git rev (see anoma-pa-testkit ADR-0002). For
 # cross-repo development, override locally with a `[patch]` to a path checkout.
 anoma-pa-testkit = { git = "https://github.com/anoma/pa-testkit", rev = "d61575df22ddc81e427948605a4e5da8ebf5da9c" }
-anoma-pa-evm-integration-test = { git = "https://github.com/anoma/pa-evm", tag = "bindings/v3.0.0-rc.7" }
+anoma-pa-evm-integration-test = { git = "https://github.com/anoma/pa-evm", tag = "bindings/v3.0.0-rc.8" }
 anomapay-erc20-forwarder-integration-test = { git = "https://github.com/anoma/anomapay-erc20-forwarder", rev = "2e366ed7d9664b782f955daa76fc9fda24fe3831" }
