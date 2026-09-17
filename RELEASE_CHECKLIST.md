@@ -175,7 +175,8 @@ After the last chain:
 - [ ] Confirm the promotion gate locally by running
 
   ```sh
-  VERIFY_STAGING_DEPLOYMENTS=true just contracts-test bindings-test
+  VERIFY_STAGING_DEPLOYMENTS=true just contracts-test
+  VERIFY_STAGING_DEPLOYMENTS=true just bindings-test
   ```
 
   the same checks the promotion pull request runs.
