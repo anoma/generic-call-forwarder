@@ -106,7 +106,7 @@ A release candidate and a release go through the same cycle. Steps 1 to 5 are re
 
 - [ ] Bump the `bindings` package version in [`./crates/bindings/Cargo.toml`](./crates/bindings/Cargo.toml) to `A.0.0-rc.N`, where `A` is the last `MAJOR` version number incremented by 1.
 
-- [ ] Regenerate the bindings with `just contracts-gen`, then run `just bindings-build` and check that the `Cargo.lock` file reflects the version number change.
+- [ ] Regenerate the recorded deployments library and the bindings with `just contracts-gen`, then run `just bindings-build` and check that the `Cargo.lock` file reflects the version number change.
 
 - [ ] Open a pull request into `next` and merge it once green. The deploy is a separate mechanical step afterwards.
 
