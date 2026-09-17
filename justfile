@@ -59,6 +59,9 @@ contracts-gen-bindings:
         --module \
         --overwrite
 
+# Regenerate the Rust bindings, the only generated files in this repo
+contracts-gen: contracts-gen-bindings
+
 # Simulate the deterministic forwarder deployment (dry-run)
 contracts-simulate chain protocol-adapter logic-ref *args:
     @echo "IS_PRODUCTION: $IS_PRODUCTION"
