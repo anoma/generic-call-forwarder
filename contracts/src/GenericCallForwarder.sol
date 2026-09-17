@@ -43,7 +43,7 @@ contract GenericCallForwarder is
     }
 
     /// @inheritdoc IVersion
-    string public constant override VERSION = "2.0.0-rc.0";
+    string public constant override VERSION = "2.0.0-rc.1";
 
     /// @notice Emits the executed calls and their resulting outputs.
     /// @param calls The array of calls executed.
@@ -85,6 +85,8 @@ contract GenericCallForwarder is
         uint256 nCalls = calls.length;
         bytes[] memory execResults = new bytes[](nCalls);
 
+        // NOTE: The `onlyProtocolAdapter` modifier in `ForwarderBase.forwardCall` restricts the caller.
+        // forge-lint: disable-next-item(arbitrary-send-eth)
         for (uint256 i = 0; i < nCalls;) {
             if (calls[i].data.length != 0) {
                 if (calls[i].value == 0) {

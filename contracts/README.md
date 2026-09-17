@@ -66,8 +66,8 @@ forge coverage
 
 Append the
 
-- `--no-match-coverage "(script|test)"` to exclude scripts, tests, and drafts,
-- `--report lcov` to generate the `lcov.info` file that can be used by code review tooling.
+- `--no-match-coverage "(script|test|draft)"` flag to exclude scripts, tests, and drafts
+- `--report lcov` flag to generate the `lcov.info` file that can be used by code review tooling.
 
 #### Linting & Static Analysis
 
@@ -89,9 +89,10 @@ slither .
 To regenerate the Rust bindings (see the [forge bind](https://getfoundry.sh/forge/reference/bind/) documentation), run
 
 ```sh
-forge bind \
-  --select '^(GenericCallForwarder|GenericCallForwarderV2|GenericCallForwarderV3|IProtocolAdapterSpecific|ILogicRefSpecific|IEmergencyMigratable)$' \
-  --bindings-path ../bindings/src/generated/ \
+forge clean && forge build --skip test --skip script && forge bind \
+  --skip-build \
+  --select '^(GenericCallForwarder|DeploymentParameters)$' \
+  --bindings-path ../crates/bindings/src/generated/ \
   --module \
   --overwrite
 ```
@@ -110,7 +111,7 @@ To simulate deployment on sepolia, run
 
 ```sh
 forge script script/DeployGenericCallForwarder.s.sol:DeployGenericCallForwarder \
-  --sig "run(bool,address,bytes32,address)" <IS_TEST_DEPLOYMENT> <PROTOCOL_ADAPTER> <CARRIER_LOGIC_REF> <EMERGENCY_COMMITTEE> \
+  --sig "run(bool)" <IS_PRODUCTION> \
   --rpc-url sepolia
 ```
 

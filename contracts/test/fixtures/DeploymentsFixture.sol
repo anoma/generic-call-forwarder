@@ -1,26 +1,22 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
+import {
+    RecordedDeployments as ProtocolAdapterDeployments
+} from "anoma-pa-evm-2.0.0-rc.3/generated/RecordedDeployments.sol";
 import {Test} from "forge-std-1.16.2/src/Test.sol";
 import {LibString} from "solady-0.1.26/src/utils/LibString.sol";
 
+import {RecordedDeployments} from "../../generated/RecordedDeployments.sol";
 import {DeployGenericCallForwarder} from "../../script/DeployGenericCallForwarder.s.sol";
+import {Parameters} from "../../script/Parameters.sol";
 import {GenericCallForwarder} from "../../src/GenericCallForwarder.sol";
 
 /// @notice A test fixture providing the generic call forwarder deployments recorded per environment in
-/// `deployments.json` — the single source of truth for the deterministic deployments.
+/// `deployments.json` — the single source of truth for the deterministic deployments — through the generated
+/// `RecordedDeployments` library.
 abstract contract DeploymentsFixture is Test {
     using LibString for *;
-
-    /// @notice A generic call forwarder deployment recorded in `deployments.json`.
-    /// @dev Fields are ordered alphabetically by their JSON key so the struct decodes from `vm.parseJson`, which
-    /// encodes object values in that order — the Solidity names themselves are irrelevant.
-    struct Deployment {
-        uint256 chainId;
-        address contractAddress;
-    }
-
-    string internal constant _DEPLOYMENTS_PATH = "../crates/bindings/deployments.json";
 
     /// @notice The supported chain IDs mapped to the network names aliasing their RPC endpoints in `foundry.toml`.
     mapping(uint256 chainId => string networkName) internal _supportedNetworks;
@@ -45,12 +41,13 @@ abstract contract DeploymentsFixture is Test {
         _supportedNetworks[11155420] = "optimism-sepolia";
     }
 
-    /// @notice Checks that every recorded forwarder sits at the address this source predicts under the environment
-    /// salt from the constructor arguments the chain answers. The forwarder is immutable, so nothing needs genesis
-    /// pinning and a match proves both the salt and that the deployment runs this source.
+    /// @notice Checks that every recorded forwarder is the one this source deploys for the environment on its chain: it
+    /// settles through the recorded protocol adapter proxy, accepts the logic ref of the parameters, and sits at the
+    /// address they determine under the environment salt. The forwarder is immutable, so a match proves that the
+    /// deployment runs this source.
     /// @param isProduction Whether to check the production or the staging environment.
     function _expectSourceDeployments(bool isProduction) internal {
-        Deployment[] memory deployments = _recordedDeployments(isProduction);
+        RecordedDeployments.Deployment[] memory deployments = _recordedDeployments(isProduction);
 
         for (uint256 i = 0; i < deployments.length; ++i) {
             uint256 chainId = deployments[i].chainId;
@@ -61,13 +58,15 @@ abstract contract DeploymentsFixture is Test {
             assertGt(recorded.code.length, 0, string.concat(context, ": deployment missing on-chain"));
 
             GenericCallForwarder forwarder = GenericCallForwarder(payable(recorded));
-            address predicted = new DeployGenericCallForwarder()
-                .predict({
-                isProduction: isProduction,
-                protocolAdapter: forwarder.getProtocolAdapter(),
-                logicRef: forwarder.getLogicRef()
-            });
+            assertEq(
+                forwarder.getProtocolAdapter(),
+                ProtocolAdapterDeployments.protocolAdapterProxy({isProduction: isProduction, chainId: chainId}),
+                string.concat(context, ": does not settle through the recorded protocol adapter")
+            );
+            assertEq(forwarder.getLogicRef(), Parameters.LOGIC_REF, string.concat(context, ": logic ref differs"));
 
+            // Deployed after the fork is selected, because selecting one discards the contracts deployed before.
+            address predicted = new DeployGenericCallForwarder().predict({isProduction: isProduction});
             assertEq(predicted, recorded, string.concat(context, ": recorded address differs from the prediction"));
         }
     }
@@ -81,13 +80,15 @@ abstract contract DeploymentsFixture is Test {
         vm.selectFork(vm.createFork(networkName));
     }
 
-    /// @notice Reads the deployments of an environment recorded in `deployments.json`.
-    /// @param isProduction Whether to read the production or the staging environment.
+    /// @notice Returns the deployments of an environment, as `RecordedDeployments` records them.
+    /// @param isProduction Whether to return the production or the staging environment.
     /// @return deployments The recorded deployments.
-    function _recordedDeployments(bool isProduction) internal view returns (Deployment[] memory deployments) {
-        string memory environment = string.concat(".", _environmentName(isProduction));
-
-        deployments = abi.decode(vm.parseJson(vm.readFile(_DEPLOYMENTS_PATH), environment), (Deployment[]));
+    function _recordedDeployments(bool isProduction)
+        internal
+        pure
+        returns (RecordedDeployments.Deployment[] memory deployments)
+    {
+        deployments = isProduction ? RecordedDeployments.production() : RecordedDeployments.staging();
     }
 
     /// @notice Returns the name of an environment, which keys its deployments in `deployments.json`.

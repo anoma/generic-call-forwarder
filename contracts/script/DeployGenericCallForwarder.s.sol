@@ -1,68 +1,60 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
+import {
+    RecordedDeployments as ProtocolAdapterDeployments
+} from "anoma-pa-evm-2.0.0-rc.3/generated/RecordedDeployments.sol";
 import {Script} from "forge-std-1.16.2/src/Script.sol";
 
 import {GenericCallForwarder} from "../src/GenericCallForwarder.sol";
+import {Parameters} from "./Parameters.sol";
 
 /// @title DeployGenericCallForwarder
 /// @author Anoma Foundation, 2026
 /// @notice A script to deploy the generic call forwarder deterministically on supported networks. The forwarder is
-/// immutable and unowned, so the environments differ only in the CREATE2 salt and the protocol adapter they settle
-/// through — there is no owner to configure and no proxy to promote.
+/// immutable and unowned, so the environments differ only in the CREATE2 salt and the protocol adapter proxy they
+/// settle through, which the protocol adapter package records for the same environment on the chain.
 /// @custom:security-contact security@anoma.foundation
 contract DeployGenericCallForwarder is Script {
     /// @notice The CREATE2 salt for the staging environment deployment.
-    bytes32 public constant FORWARDER_SALT_STAGING = "GenericCallForwarderStaging";
+    bytes32 public constant FORWARDER_SALT_STAGING = Parameters.FORWARDER_SALT_STAGING;
 
     /// @notice The CREATE2 salt for the production environment deployment.
-    bytes32 public constant FORWARDER_SALT_PRODUCTION = "GenericCallForwarderProduction";
+    bytes32 public constant FORWARDER_SALT_PRODUCTION = Parameters.FORWARDER_SALT_PRODUCTION;
 
-    /// @notice The deployments recorded per environment, relative to the Foundry root.
-    string internal constant _DEPLOYMENTS_PATH = "../crates/bindings/deployments.json";
-
-    /// @notice Thrown if the environment already has a deployment recorded for this chain.
-    error DeploymentAlreadyRecorded(string environment, uint256 chainId);
+    /// @notice Thrown if the protocol adapter package records no protocol adapter proxy of the environment for this
+    /// chain, i.e. the forwarder has no protocol adapter to settle through.
+    error ProtocolAdapterNotRecorded(string environment, uint256 chainId);
 
     /// @notice Thrown if the forwarder of this source version is already deployed.
     error ForwarderAlreadyDeployed(address forwarder);
 
     /// @notice Deploys the generic call forwarder deterministically.
     /// @param isProduction Whether to deploy the production or the staging environment forwarder, selecting the
-    /// CREATE2 salt.
-    /// @param protocolAdapter The protocol adapter proxy of the same environment, the only caller allowed to forward
-    /// calls.
-    /// @param logicRef The reference to the generic-call resource logic function triggering the forward calls.
+    /// CREATE2 salt and the protocol adapter proxy to settle through.
     /// @return forwarder The generic call forwarder contract to interact with.
-    function run(bool isProduction, address protocolAdapter, bytes32 logicRef) public returns (address forwarder) {
+    function run(bool isProduction) public returns (address forwarder) {
         // Checks
-        _requireUnrecorded(isProduction);
+        address protocolAdapter = _protocolAdapter(isProduction);
 
-        forwarder = predict({isProduction: isProduction, protocolAdapter: protocolAdapter, logicRef: logicRef});
+        forwarder = _predict({isProduction: isProduction, protocolAdapter: protocolAdapter});
         require(forwarder.code.length == 0, ForwarderAlreadyDeployed({forwarder: forwarder}));
 
         // Deployment
         vm.startBroadcast();
         forwarder = address(
-            new GenericCallForwarder{salt: _salt(isProduction)}({protocolAdapter: protocolAdapter, logicRef: logicRef})
+            new GenericCallForwarder{salt: _salt(isProduction)}({
+                protocolAdapter: protocolAdapter, logicRef: Parameters.LOGIC_REF
+            })
         );
         vm.stopBroadcast();
     }
 
-    /// @notice Predicts the deterministic address the forwarder of this source version deploys to.
+    /// @notice Predicts the deterministic address the forwarder of this source version deploys to on this chain.
     /// @param isProduction Whether to predict the production or the staging environment forwarder.
-    /// @param protocolAdapter The protocol adapter proxy of the same environment.
-    /// @param logicRef The reference to the generic-call resource logic function triggering the forward calls.
     /// @return forwarder The predicted generic call forwarder contract address.
-    function predict(bool isProduction, address protocolAdapter, bytes32 logicRef)
-        public
-        pure
-        returns (address forwarder)
-    {
-        bytes memory initCode =
-            abi.encodePacked(type(GenericCallForwarder).creationCode, abi.encode(protocolAdapter, logicRef));
-
-        forwarder = vm.computeCreate2Address({salt: _salt(isProduction), initCodeHash: keccak256(initCode)});
+    function predict(bool isProduction) public view returns (address forwarder) {
+        forwarder = _predict({isProduction: isProduction, protocolAdapter: _protocolAdapter(isProduction)});
     }
 
     /// @notice Returns the name of an environment, which keys its deployments in `deployments.json`.
@@ -72,24 +64,26 @@ contract DeployGenericCallForwarder is Script {
         name = isProduction ? "production" : "staging";
     }
 
-    /// @notice Checks that the environment has no deployment recorded for this chain yet.
-    /// @param isProduction Whether to check the production or the staging environment.
-    function _requireUnrecorded(bool isProduction) internal view {
-        string memory json = vm.readFile(_DEPLOYMENTS_PATH);
-        string memory environment = environmentName(isProduction);
+    /// @notice Returns the protocol adapter proxy that the protocol adapter package records for the environment on this
+    /// chain, which the forwarder settles through, and reverts unless the package records one.
+    /// @param isProduction Whether to return the production or the staging environment protocol adapter proxy.
+    /// @return protocolAdapter The recorded protocol adapter proxy.
+    function _protocolAdapter(bool isProduction) internal view virtual returns (address protocolAdapter) {
+        protocolAdapter =
+            ProtocolAdapterDeployments.protocolAdapterProxy({isProduction: isProduction, chainId: block.chainid});
+        require(protocolAdapter != address(0), ProtocolAdapterNotRecorded(environmentName(isProduction), block.chainid));
+    }
 
-        for (uint256 i = 0;; ++i) {
-            // solhint-disable-next-line func-named-parameters
-            string memory entry = string.concat(".", environment, "[", vm.toString(i), "]");
-            if (!vm.keyExistsJson(json, entry)) {
-                return;
-            }
+    /// @notice Derives the deterministic forwarder address from the environment salt and the constructor arguments.
+    /// @param isProduction Whether to derive the production or the staging environment forwarder, selecting the salt.
+    /// @param protocolAdapter The protocol adapter proxy of the same environment.
+    /// @return forwarder The deterministic generic call forwarder contract address.
+    function _predict(bool isProduction, address protocolAdapter) internal pure returns (address forwarder) {
+        bytes memory initCode = abi.encodePacked(
+            type(GenericCallForwarder).creationCode, abi.encode(protocolAdapter, Parameters.LOGIC_REF)
+        );
 
-            require(
-                vm.parseJsonUint(json, string.concat(entry, ".chainId")) != block.chainid,
-                DeploymentAlreadyRecorded(environment, block.chainid)
-            );
-        }
+        forwarder = vm.computeCreate2Address({salt: _salt(isProduction), initCodeHash: keccak256(initCode)});
     }
 
     /// @notice Returns the CREATE2 salt of an environment.

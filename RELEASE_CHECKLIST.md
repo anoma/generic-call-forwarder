@@ -26,7 +26,7 @@ The generic call forwarder runs in two environments, recorded per chain in [`./c
 | `staging`    | `GenericCallForwarderStaging`    | `staging` |
 | `production` | `GenericCallForwarderProduction` | `main`    |
 
-The forwarder is immutable and unowned, so the environments differ only in the CREATE2 salt and the protocol adapter they settle through: each environment's forwarder is constructed with the protocol adapter proxy of the **same** environment.
+The forwarder is immutable and unowned, so the environments differ only in the CREATE2 salt and the protocol adapter they settle through: each environment's forwarder is constructed with the protocol adapter proxy of the **same** environment, which the deploy script reads from the records of the `anoma-pa-evm` package in [`./contracts/foundry.toml`](./contracts/foundry.toml).
 
 Changes flow one way, `next` → `staging` → `main`, and the promotion pull request is the gate:
 
@@ -40,7 +40,7 @@ Deploy **every** chain of an environment before opening its promotion pull reque
 
 `VERSION` is a `string public constant`, so it is part of the creation code and every version is a different contract at a different address. Bumping it is a redeploy, and stripping an `-rc.N` suffix is a redeploy too, which is why a release costs one extra staging deploy round.
 
-An entry pins the address an environment currently runs and nothing else — the deployment tests recompute the CREATE2 prediction from the salt and the constructor arguments the chain answers, so nothing needs genesis pinning. Every deploy therefore **replaces** the chain's entry, and superseded versions simply remain on-chain unrecorded.
+An entry pins the address an environment currently runs and nothing else — the deployment tests recompute the CREATE2 prediction from the salt, the recorded protocol adapter proxy, and the logic ref, so nothing needs genesis pinning. Every deploy therefore **replaces** the chain's entry, and superseded versions simply remain on-chain unrecorded.
 
 ## Prerequisites
 
@@ -82,13 +82,15 @@ These apply to all three cases and are done once per session.
   export ALCHEMY_API_KEY=<KEY>
   ```
 
+  It can live in `contracts/.env`, which `just` loads.
+
 - [ ] Set the Etherscan key
 
   ```sh
   export ETHERSCAN_API_KEY=<KEY>
   ```
 
-- [ ] Select the environment. It picks the CREATE2 salt in [`DeployGenericCallForwarder.s.sol`](./contracts/script/DeployGenericCallForwarder.s.sol), and is deliberately not persisted anywhere so that it is a conscious choice per session.
+- [ ] Select the environment. It picks the CREATE2 salt from [`Parameters.sol`](./contracts/script/Parameters.sol) and the recorded protocol adapter proxy of the same environment, and is deliberately kept out of `contracts/.env` so that it is a conscious choice per session.
 
   ```sh
   export IS_PRODUCTION=false
@@ -106,36 +108,42 @@ A release candidate and a release go through the same cycle. Steps 1 to 5 are re
 
 - [ ] Bump the `bindings` package version in [`./crates/bindings/Cargo.toml`](./crates/bindings/Cargo.toml) to `A.0.0-rc.N`, where `A` is the last `MAJOR` version number incremented by 1.
 
-- [ ] Regenerate the bindings with `just contracts-gen-bindings`, then run `just bindings-build` and check that the `Cargo.lock` file reflects the version number change.
+- [ ] Regenerate the recorded deployments library and the bindings with `just contracts-gen`, then run `just bindings-build` and check that the `Cargo.lock` file reflects the version number change.
 
 - [ ] Open a pull request into `next` and merge it once green. The deploy is a separate mechanical step afterwards.
 
 ### 2. Test the Contracts
 
-- [ ] Run the checks and test suites CI runs with
+- [ ] Run the checks CI runs with
 
   ```sh
-  just all-lint all-test
+  just all-check
+  ```
+
+- [ ] Run the test suites with
+
+  ```sh
+  just all-test
   ```
 
 ### 3. Deploy Staging
 
 For each chain in the `staging` section of the record:
 
-- [ ] Look up the two values the forwarder commits to:
-  - `<PROTOCOL_ADAPTER>` — the **staging** protocol adapter proxy on this chain, recorded in [`anoma/pa-evm` `crates/bindings/deployments.json`](https://github.com/anoma/pa-evm/blob/main/crates/bindings/deployments.json) on the branch tracking the environment.
-  - `<GENERIC_CALL_CIRCUIT_ID>` — the verifying key of the [`generic_call_library`](https://github.com/anoma/generic-call-resource) version pinned in [`./Cargo.toml`](./Cargo.toml).
+- [ ] Check the two values the forwarder commits to. The deploy script reads both itself:
+  - the protocol adapter proxy of the **same** environment on this chain, from the records of the `anoma-pa-evm` package in [`./contracts/foundry.toml`](./contracts/foundry.toml). The script reverts with `ProtocolAdapterNotRecorded` if the package records none, so bump the package first.
+  - `LOGIC_REF` in [`Parameters.sol`](./contracts/script/Parameters.sol), which `just bindings-test` checks against the `GENERIC_CALL_ID` of the [`generic_call_library`](https://github.com/anoma/generic-call-resource) version pinned in [`./Cargo.toml`](./Cargo.toml).
 
 - [ ] **Simulate** the deployment by running
 
   ```sh
-  just contracts-simulate <CHAIN> <PROTOCOL_ADAPTER> <GENERIC_CALL_CIRCUIT_ID>
+  just contracts-simulate <CHAIN>
   ```
 
 - [ ] After successful simulation, **deploy** the contract by running
 
   ```sh
-  just contracts-deploy deployer <CHAIN> <PROTOCOL_ADAPTER> <GENERIC_CALL_CIRCUIT_ID>
+  just contracts-deploy deployer <CHAIN>
   ```
 
 - [ ] Export the address of the newly deployed forwarder with
@@ -156,10 +164,19 @@ For each chain in the `staging` section of the record:
 
 After the last chain:
 
+- [ ] Regenerate the library the deployment tests read the record through, and the bindings, with
+
+  ```sh
+  just contracts-gen
+  ```
+
+  The contracts package ships without `deployments.json`, so the contracts read the records from the generated [`./contracts/generated/RecordedDeployments.sol`](./contracts/generated/RecordedDeployments.sol). CI reruns the generator and fails on any diff.
+
 - [ ] Confirm the promotion gate locally by running
 
   ```sh
-  VERIFY_STAGING_DEPLOYMENTS=true just contracts-test bindings-test
+  VERIFY_STAGING_DEPLOYMENTS=true just contracts-test
+  VERIFY_STAGING_DEPLOYMENTS=true just bindings-test
   ```
 
   the same checks the promotion pull request runs.
@@ -216,9 +233,11 @@ After the last chain:
   export IS_PRODUCTION=true
   ```
 
-- [ ] For each chain in the `production` section of the record, simulate, deploy, verify, and replace the chain's entry as in step 3 — with the **production** protocol adapter proxy as `<PROTOCOL_ADAPTER>`.
+- [ ] For each chain in the `production` section of the record, simulate, deploy, verify, and replace the chain's entry as in step 3. The deploy script reads the **production** protocol adapter proxy from the records.
 
-- [ ] After the last chain, confirm the promotion gate locally by running
+- [ ] After the last chain, regenerate the recorded deployments library and the bindings with `just contracts-gen`.
+
+- [ ] Confirm the promotion gate locally by running
 
   ```sh
   VERIFY_PRODUCTION_DEPLOYMENTS=true just contracts-test bindings-test
@@ -270,7 +289,7 @@ For **both**:
 
 - [ ] Run the checks and test suites as in step 2 of the release cycle.
 
-- [ ] Look up `<PROTOCOL_ADAPTER>` and `<GENERIC_CALL_CIRCUIT_ID>`, then simulate, deploy, and verify as in step 3 of the release cycle.
+- [ ] Check the two values the forwarder commits to, then simulate, deploy, and verify as in step 3 of the release cycle.
 
 ### 2. Record the Entry
 
@@ -282,6 +301,14 @@ For **both**:
     "contractAddress": "<FWD_ADDRESS>"
   }
   ```
+
+- [ ] Regenerate the library the deployment tests read the record through, and the bindings, with
+
+  ```sh
+  just contracts-gen
+  ```
+
+  and commit the changes alongside the record. CI reruns the generator and fails on any diff.
 
 - [ ] Bump the `bindings` package version in [`./crates/bindings/Cargo.toml`](./crates/bindings/Cargo.toml) to `A.B.0`, where `A` is the last `MAJOR` version and `B` is the last `MINOR` version number incremented by 1.
 

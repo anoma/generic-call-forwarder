@@ -17,6 +17,18 @@ forwarder. A resource's label commits to the calls it authorizes.
 The generic call forwarder contract (above) — the same forwarder role the protocol
 adapter drives in other applications.
 
+**Environment**:
+One of the two generic call forwarder deployments the repo maintains, each recorded per chain in the deployment record and tracking a branch. Say "environment" (not "network" or "deployment target") — a chain is where an environment lives, not which one it is.
+
+**Staging / Production**:
+The two environments. Each environment's forwarder settles through the protocol adapter proxy of the same environment. The forwarder is immutable and has no owner, so a new version is a new deployment, not an upgrade. The branches tracking them keep their own names, `staging` and `main`.
+
+**Promotion**:
+Moving a commit unchanged from `next` to `staging`, or from `staging` to `main`. The pull request opening one carries the gate proving the environment it targets runs that commit's source. Changes only ever flow this way.
+
+**Deployment record**:
+`crates/bindings/deployments.json` — the forwarder address each environment runs on each chain. A deploy of a new version replaces the chain's entry, and the superseded forwarder stays on the chain unrecorded.
+
 ## Note on upstream names
 
 `generic_call_library` and `generic_call_witness` (the resource logic, witness
