@@ -1,6 +1,14 @@
 # Show commands before running (helps debug failures)
 set shell := ["bash", "-euo", "pipefail", "-c"]
 
+# Recipes read `ALCHEMY_API_KEY` (fork tests, deploys) from the environment;
+# forge does not load this file itself. The file is absent in CI, where the
+# values come from secrets instead, so loading it stays optional.
+# `IS_PRODUCTION` is deliberately not kept here — see the release
+# checklist, which exports it once per deployment session.
+set dotenv-path := "contracts/.env"
+set dotenv-required := false
+
 # Default recipe
 default:
     @just --list
@@ -84,25 +92,27 @@ contracts-deploy deployer chain *args:
         --sig "run(bool)" $IS_PRODUCTION \
         --broadcast --rpc-url {{chain}} --account {{deployer}} {{ args }}
 
-# Verify on sourcify
+# Verify the generic call forwarder on sourcify
 contracts-verify-sourcify address chain *args:
     cd contracts && env -u ETHERSCAN_API_KEY forge verify-contract {{address}} \
         src/GenericCallForwarder.sol:GenericCallForwarder \
         --chain {{chain}} --verifier sourcify --watch {{ args }}
 
-# Verify on etherscan
+# Verify the generic call forwarder on etherscan. Reads the constructor args from the on-chain creation code and
+# forces submission past a prior similar match.
 contracts-verify-etherscan address chain *args:
     cd contracts && forge verify-contract {{address}} \
         src/GenericCallForwarder.sol:GenericCallForwarder \
-        --chain {{chain}} --verifier etherscan --watch {{ args }}
+        --chain {{chain}} --verifier etherscan --watch \
+        --rpc-url {{chain}} --guess-constructor-args --skip-is-verified-check {{ args }}
 
-# Verify on custom explorer
+# Verify the generic call forwarder on a custom explorer
 contracts-verify-custom address chain verifier-url *args:
     cd contracts && forge verify-contract {{address}} \
         src/GenericCallForwarder.sol:GenericCallForwarder \
-        --chain {{chain}} --verifier-url {{verifier-url}}  --watch {{ args }}
+        --chain {{chain}} --verifier-url {{verifier-url}} --watch {{ args }}
 
-# Verify on both sourcify and etherscan
+# Verify the generic call forwarder on both sourcify and etherscan
 contracts-verify address chain: (contracts-verify-sourcify address chain) (contracts-verify-etherscan address chain)
 
 # Publish contracts at the version `GenericCallForwarder` compiles to

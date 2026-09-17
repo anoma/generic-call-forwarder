@@ -12,6 +12,7 @@ This monorepo is structured as follows:
 
 ```
 .
+├── audits
 ├── contracts
 ├── crates
 │   ├── bindings
@@ -35,8 +36,7 @@ Our software undergoes regular [audits](./audits/):
 
 1. Informal Systems
    - Company Website: https://informal.systems
-   - Commit
-     ID: [64c364974b51c31dabb5371e89762c037c9790bb](https://github.com/anoma/generic-call-forwarder/tree/64c364974b51c31dabb5371e89762c037c9790bb)
+   - Commit ID: [64c364974b51c31dabb5371e89762c037c9790bb](https://github.com/anoma/generic-call-forwarder/tree/64c364974b51c31dabb5371e89762c037c9790bb)
    - Started: 2026-06-15
    - Finished: 2026-06-19
    - Last revised: 2026-07-03
@@ -45,7 +45,6 @@ Our software undergoes regular [audits](./audits/):
 
 ## Security
 
-If you believe you've found a security issue, we encourage you to notify us via Email
-at [security@anoma.foundation](mailto:security@anoma.foundation).
+If you believe you've found a security issue, we encourage you to notify us via Email at [security@anoma.foundation](mailto:security@anoma.foundation).
 
 Please do not use the issue tracker for security issues. We welcome working with you to resolve the issue promptly.

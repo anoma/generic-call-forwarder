@@ -82,13 +82,15 @@ These apply to all three cases and are done once per session.
   export ALCHEMY_API_KEY=<KEY>
   ```
 
+  It can live in `contracts/.env`, which `just` loads.
+
 - [ ] Set the Etherscan key
 
   ```sh
   export ETHERSCAN_API_KEY=<KEY>
   ```
 
-- [ ] Select the environment. It picks the CREATE2 salt from [`Parameters.sol`](./contracts/script/Parameters.sol) and the recorded protocol adapter proxy of the same environment, and is deliberately not persisted anywhere so that it is a conscious choice per session.
+- [ ] Select the environment. It picks the CREATE2 salt from [`Parameters.sol`](./contracts/script/Parameters.sol) and the recorded protocol adapter proxy of the same environment, and is deliberately kept out of `contracts/.env` so that it is a conscious choice per session.
 
   ```sh
   export IS_PRODUCTION=false
@@ -112,10 +114,16 @@ A release candidate and a release go through the same cycle. Steps 1 to 5 are re
 
 ### 2. Test the Contracts
 
-- [ ] Run the checks and test suites CI runs with
+- [ ] Run the checks CI runs with
 
   ```sh
-  just all-lint all-test
+  just all-check
+  ```
+
+- [ ] Run the test suites with
+
+  ```sh
+  just all-test
   ```
 
 ### 3. Deploy Staging
