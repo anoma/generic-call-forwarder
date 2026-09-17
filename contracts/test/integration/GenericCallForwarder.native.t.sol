@@ -4,7 +4,7 @@ pragma solidity ^0.8.30;
 import {ERC1967Proxy} from "@openzeppelin-contracts-5.7.0/proxy/ERC1967/ERC1967Proxy.sol";
 import {IForwarder} from "anoma-forwarder-bases-3.0.0/src/interfaces/IForwarder.sol";
 import {INativeTokenReceiver} from "anoma-forwarder-bases-3.0.0/src/interfaces/INativeTokenReceiver.sol";
-import {ERC20Forwarder} from "anomapay-erc20-forwarder-2.0.0-rc.0/src/ERC20Forwarder.sol";
+import {ERC20Forwarder} from "anomapay-erc20-forwarder-2.0.0-rc.1/src/ERC20Forwarder.sol";
 import {Test} from "forge-std-1.16.2/src/Test.sol";
 
 import {WETH} from "solady-0.1.26/src/tokens/WETH.sol";

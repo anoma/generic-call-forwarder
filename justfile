@@ -1,6 +1,14 @@
 # Show commands before running (helps debug failures)
 set shell := ["bash", "-euo", "pipefail", "-c"]
 
+# Recipes read `ALCHEMY_API_KEY` (fork tests, deploys) from the environment;
+# forge does not load this file itself. The file is absent in CI, where the
+# values come from secrets instead, so loading it stays optional.
+# `IS_PRODUCTION` is deliberately not kept here — see the release
+# checklist, which exports it once per deployment session.
+set dotenv-path := "contracts/.env"
+set dotenv-required := false
+
 # Default recipe
 default:
     @just --list
@@ -29,6 +37,7 @@ contracts-lint:
     cd contracts && bunx --bun solhint --config .solhint.json 'src/**/*.sol'
     cd contracts && bunx --bun solhint --config .solhint.other.json 'test/**/*.sol'
     cd contracts && bunx --bun solhint --config .solhint.other.json 'script/**/*.sol'
+    cd contracts && bunx --bun solhint --config .solhint.other.json 'generated/**/*.sol'
 
 # Run slither on contracts
 contracts-static-analysis:
@@ -48,56 +57,62 @@ contracts-fmt-check:
 contracts-test *args:
     cd contracts && forge test {{ args }}
 
+# Regenerate the recorded deployments library from the deployment records
+contracts-gen-deployments:
+    ./scripts/generate-recorded-deployments.sh
+
 # Regenerate Rust bindings from contracts
 contracts-gen-bindings:
     # `forge bind` builds without bytecode, which drops the `deploy` helpers, so
     # build first and let it read those artifacts.
     cd contracts && forge clean && forge build --skip test --skip script && forge bind \
         --skip-build \
-        --select '^(GenericCallForwarder)$' \
+        --select '^(GenericCallForwarder|DeploymentParameters)$' \
         --bindings-path ../crates/bindings/src/generated/ \
         --module \
         --overwrite
 
-# Regenerate the Rust bindings, the only generated files in this repo
-contracts-gen: contracts-gen-bindings
+# Regenerate the recorded deployments library, then the Rust bindings
+contracts-gen: contracts-gen-deployments contracts-gen-bindings
 
 # Simulate the deterministic forwarder deployment (dry-run)
-contracts-simulate chain protocol-adapter logic-ref *args:
+contracts-simulate chain *args:
     @echo "IS_PRODUCTION: $IS_PRODUCTION"
     @echo "Cleaning contracts to ensure reproducible build..."
     @just contracts-clean
     cd contracts && forge script script/DeployGenericCallForwarder.s.sol:DeployGenericCallForwarder \
-        --sig "run(bool,address,bytes32)" $IS_PRODUCTION {{protocol-adapter}} {{logic-ref}} \
+        --sig "run(bool)" $IS_PRODUCTION \
         --rpc-url {{chain}} {{ args }}
 
 # Deploy the forwarder deterministically to the environment selected by IS_PRODUCTION
-contracts-deploy deployer chain protocol-adapter logic-ref *args:
+contracts-deploy deployer chain *args:
     @echo "Cleaning contracts to ensure reproducible build..."
     @just contracts-clean
     cd contracts && forge script script/DeployGenericCallForwarder.s.sol:DeployGenericCallForwarder \
-        --sig "run(bool,address,bytes32)" $IS_PRODUCTION {{protocol-adapter}} {{logic-ref}} \
+        --sig "run(bool)" $IS_PRODUCTION \
         --broadcast --rpc-url {{chain}} --account {{deployer}} {{ args }}
 
-# Verify on sourcify
+# Verify the generic call forwarder on sourcify
 contracts-verify-sourcify address chain *args:
     cd contracts && env -u ETHERSCAN_API_KEY forge verify-contract {{address}} \
         src/GenericCallForwarder.sol:GenericCallForwarder \
         --chain {{chain}} --verifier sourcify --watch {{ args }}
 
-# Verify on etherscan
+# Verify the generic call forwarder on etherscan. Reads the constructor args from the on-chain creation code and
+# forces submission past a prior similar match.
 contracts-verify-etherscan address chain *args:
     cd contracts && forge verify-contract {{address}} \
         src/GenericCallForwarder.sol:GenericCallForwarder \
-        --chain {{chain}} --verifier etherscan --watch {{ args }}
+        --chain {{chain}} --verifier etherscan --watch \
+        --rpc-url {{chain}} --guess-constructor-args --skip-is-verified-check {{ args }}
 
-# Verify on custom explorer
+# Verify the generic call forwarder on a custom explorer
 contracts-verify-custom address chain verifier-url *args:
     cd contracts && forge verify-contract {{address}} \
         src/GenericCallForwarder.sol:GenericCallForwarder \
-        --chain {{chain}} --verifier-url {{verifier-url}}  --watch {{ args }}
+        --chain {{chain}} --verifier-url {{verifier-url}} --watch {{ args }}
 
-# Verify on both sourcify and etherscan
+# Verify the generic call forwarder on both sourcify and etherscan
 contracts-verify address chain: (contracts-verify-sourcify address chain) (contracts-verify-etherscan address chain)
 
 # Publish contracts at the version `GenericCallForwarder` compiles to
@@ -134,6 +149,10 @@ bindings-test *args:
 # Check bindings are up-to-date
 bindings-check: contracts-gen-bindings
     git diff --exit-code crates/bindings/src/generated/
+
+# Check the recorded deployments library is up-to-date
+contracts-deployments-check: contracts-gen-deployments
+    git diff --exit-code contracts/generated/RecordedDeployments.sol
 
 # Publish bindings
 bindings-publish *args:
@@ -224,5 +243,7 @@ all-check:
     @just all-fmt-check
     @echo "==> Linting..."
     @just all-lint
+    @echo "==> Checking the recorded deployments library is up-to-date..."
+    @just contracts-deployments-check
     @echo "==> Checking bindings are up-to-date..."
     @just bindings-check

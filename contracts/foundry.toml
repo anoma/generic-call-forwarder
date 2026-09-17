@@ -17,11 +17,6 @@ src = "src"
 test = "test"
 out = "out"
 script = "script"
-# Let tests and the deploy script read the recorded deployments alongside the Foundry root.
-fs_permissions = [
-    { access = "read", path = "./" },
-    { access = "read", path = "../crates/bindings/deployments.json" },
-]
 libs = ["dependencies"]
 auto_detect_remappings = false
 remappings = [
@@ -29,7 +24,8 @@ remappings = [
     "@openzeppelin-contracts-upgradeable-5.7.0/=dependencies/@openzeppelin-contracts-upgradeable-5.7.0/",
     "@openzeppelin/contracts/=dependencies/@openzeppelin-contracts-5.7.0/",
     "anoma-forwarder-bases-3.0.0/=dependencies/anoma-forwarder-bases-3.0.0/",
-    "anomapay-erc20-forwarder-2.0.0-rc.0/=dependencies/anomapay-erc20-forwarder-2.0.0-rc.0/",
+    "anoma-pa-evm-2.0.0-rc.3/=dependencies/anoma-pa-evm-2.0.0-rc.3/",
+    "anomapay-erc20-forwarder-2.0.0-rc.1/=dependencies/anomapay-erc20-forwarder-2.0.0-rc.1/",
     "forge-std-1.16.2/=dependencies/forge-std-1.16.2/",
     "solady-0.1.26/=dependencies/solady-0.1.26/",
     "solmate/=dependencies/uniswap-permit2-0x000000000022D473030F116dDEE9F6B43aC78BA3/lib/solmate/",
@@ -51,7 +47,8 @@ ignore = ["test/**/*.sol"] # Relaxed the way `.solhint.other.json` relaxes them.
 "@openzeppelin-contracts" = "5.7.0"
 "@openzeppelin-contracts-upgradeable" = "5.7.0"
 "anoma-forwarder-bases" = "3.0.0"
-"anomapay-erc20-forwarder" = "2.0.0-rc.0"
+"anoma-pa-evm" = "2.0.0-rc.3"
+"anomapay-erc20-forwarder" = "2.0.0-rc.1"
 "forge-std" = "1.16.2"
 "solady" = "0.1.26"
 "uniswap-permit2" = "0x000000000022D473030F116dDEE9F6B43aC78BA3"
@@ -86,6 +83,5 @@ monad = "https://monad-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}"
 monad-testnet = "https://monad-testnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}"
 stable-mainnet = "https://stable-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}"
 megaeth = "https://megaeth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}"
-
 
 localhost = "http://localhost:8545"
