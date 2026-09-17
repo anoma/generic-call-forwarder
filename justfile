@@ -59,7 +59,7 @@ contracts-gen-bindings:
     # build first and let it read those artifacts.
     cd contracts && forge clean && forge build --skip test --skip script && forge bind \
         --skip-build \
-        --select '^(GenericCallForwarder)$' \
+        --select '^(GenericCallForwarder|DeploymentParameters)$' \
         --bindings-path ../crates/bindings/src/generated/ \
         --module \
         --overwrite
