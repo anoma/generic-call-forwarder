@@ -3,7 +3,7 @@ pragma solidity ^0.8.30;
 
 import {
     RecordedDeployments as ProtocolAdapterDeployments
-} from "anoma-pa-evm-2.0.0-rc.3/generated/RecordedDeployments.sol";
+} from "anoma-pa-evm-2.0.0-rc.5/generated/RecordedDeployments.sol";
 
 import {DeployGenericCallForwarder} from "../../script/DeployGenericCallForwarder.s.sol";
 import {Parameters} from "../../script/Parameters.sol";
