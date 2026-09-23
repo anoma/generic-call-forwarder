@@ -42,8 +42,7 @@ library RecordedDeployments {
     /// @notice Returns the deployments the staging environment records.
     /// @return deployments The recorded staging deployments.
     function staging() internal pure returns (Deployment[] memory deployments) {
-        deployments = new Deployment[](1);
-        deployments[0] = Deployment({chainId: 11155111, contractAddress: 0xAE9dC2Ad68a062b0A0446Caa3A51591800351E0D});
+        deployments = new Deployment[](0);
     }
 
     /// @notice Returns the deployments the production environment records.
