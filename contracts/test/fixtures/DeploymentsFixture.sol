@@ -3,7 +3,7 @@ pragma solidity ^0.8.30;
 
 import {
     RecordedDeployments as ProtocolAdapterDeployments
-} from "anoma-pa-evm-2.0.0-rc.3/generated/RecordedDeployments.sol";
+} from "anoma-pa-evm-2.0.0-rc.5/generated/RecordedDeployments.sol";
 import {Test} from "forge-std-1.16.2/src/Test.sol";
 import {LibString} from "solady-0.1.26/src/utils/LibString.sol";
 
