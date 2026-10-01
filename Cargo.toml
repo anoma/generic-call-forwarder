@@ -35,7 +35,7 @@ tokio = { version = "1.52", features = ["rt-multi-thread"] }
 # Forwarder bindings (this repo)
 anoma-generic-call-forwarder-bindings = { path = "crates/bindings" }
 
-# Upstream test crates, pinned by git tag (see anoma-pa-testkit ADR-0002). For
+# Upstream test crates, pinned by git tag or commit (see anoma-pa-testkit ADR-0002). For
 # cross-repo development, override locally with a `[patch]` to a path checkout.
-anoma-pa-evm-integration-test = { git = "https://github.com/anoma/pa-evm", tag = "bindings/v3.0.0-rc.10" }
-anomapay-erc20-forwarder-integration-test = { git = "https://github.com/anoma/anomapay-erc20-forwarder", tag = "bindings/v3.0.0-rc.10" }
+anoma-pa-evm-integration-test = { git = "https://github.com/anoma/pa-evm", rev = "08c5f666a27c14bb59107b8143b0a4269fc648d0" }
+anomapay-erc20-forwarder-integration-test = { git = "https://github.com/anoma/anomapay-erc20-forwarder", rev = "f4d05e5c942eb6223f3672b0bd5d3415ffa3fe0f" }
