@@ -6,9 +6,9 @@ import {IERC1271} from "@openzeppelin-contracts-5.7.0/interfaces/IERC1271.sol";
 import {IERC20} from "@openzeppelin-contracts-5.7.0/token/ERC20/IERC20.sol";
 import {Errors} from "@openzeppelin-contracts-5.7.0/utils/Errors.sol";
 import {ReentrancyGuardTransient} from "@openzeppelin-contracts-5.7.0/utils/ReentrancyGuardTransient.sol";
-import {ERC20Example} from "anoma-forwarder-bases-3.0.0/test/examples/ERC20Example.sol";
+import {ERC20Example} from "anoma-forwarder-bases-3.0.1/test/examples/ERC20Example.sol";
 
-import {Test} from "forge-std-1.16.2/src/Test.sol";
+import {Test} from "forge-std-1.17.0/src/Test.sol";
 
 import {WETH} from "solady-0.1.26/src/tokens/WETH.sol";
 import {LibString} from "solady-0.1.26/src/utils/LibString.sol";

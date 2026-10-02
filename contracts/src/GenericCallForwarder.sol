@@ -3,10 +3,10 @@ pragma solidity ^0.8.30;
 
 import {IERC1271} from "@openzeppelin-contracts-5.7.0/interfaces/IERC1271.sol";
 import {Address} from "@openzeppelin-contracts-5.7.0/utils/Address.sol";
-import {ForwarderBase} from "anoma-forwarder-bases-3.0.0/src/ForwarderBase.sol";
-import {IVersion} from "anoma-forwarder-bases-3.0.0/src/interfaces/IVersion.sol";
-import {SweepableNativeTokenReceiver} from "anoma-forwarder-bases-3.0.0/src/SweepableNativeTokenReceiver.sol";
-import {TransientFallbackHandler} from "anoma-forwarder-bases-3.0.0/src/TransientFallbackHandler.sol";
+import {ForwarderBase} from "anoma-forwarder-bases-3.0.1/src/ForwarderBase.sol";
+import {IVersion} from "anoma-forwarder-bases-3.0.1/src/interfaces/IVersion.sol";
+import {SweepableNativeTokenReceiver} from "anoma-forwarder-bases-3.0.1/src/SweepableNativeTokenReceiver.sol";
+import {TransientFallbackHandler} from "anoma-forwarder-bases-3.0.1/src/TransientFallbackHandler.sol";
 
 /// @title GenericCallForwarder
 /// @author Anoma Foundation, 2026
@@ -43,7 +43,7 @@ contract GenericCallForwarder is
     }
 
     /// @inheritdoc IVersion
-    string public constant override VERSION = "2.0.0-rc.2";
+    string public constant override VERSION = "2.0.0-rc.3";
 
     /// @notice Emits the executed calls and their resulting outputs.
     /// @param calls The array of calls executed.

@@ -3,7 +3,11 @@
   "staging": [
     {
       "chainId": 11155111,
-      "contractAddress": "0x4d3342bf4975ac8d325087FE631357679a0E3c82"
+      "contractAddress": "0x87b4952c74c680FE210fcd8AE35d744f1cd9959b"
+    },
+    {
+      "chainId": 84532,
+      "contractAddress": "0x5d5Ca40C5B726d05967dC998b770C1eC60e9553B"
     }
   ]
 }
