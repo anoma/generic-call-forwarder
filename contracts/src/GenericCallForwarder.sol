@@ -43,7 +43,7 @@ contract GenericCallForwarder is
     }
 
     /// @inheritdoc IVersion
-    string public constant override VERSION = "2.0.0-rc.2";
+    string public constant override VERSION = "2.0.0-rc.3";
 
     /// @notice Emits the executed calls and their resulting outputs.
     /// @param calls The array of calls executed.
