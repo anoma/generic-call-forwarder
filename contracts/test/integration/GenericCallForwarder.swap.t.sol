@@ -4,12 +4,12 @@ pragma solidity ^0.8.30;
 import {ERC1967Proxy} from "@openzeppelin-contracts-5.7.0/proxy/ERC1967/ERC1967Proxy.sol";
 import {IERC20} from "@openzeppelin-contracts-5.7.0/token/ERC20/IERC20.sol";
 import {Time} from "@openzeppelin-contracts-5.7.0/utils/types/Time.sol";
-import {IForwarder} from "anoma-forwarder-bases-3.0.0/src/interfaces/IForwarder.sol";
-import {ISweepable} from "anoma-forwarder-bases-3.0.0/src/interfaces/ISweepable.sol";
-import {ERC20Example} from "anoma-forwarder-bases-3.0.0/test/examples/ERC20Example.sol";
+import {IForwarder} from "anoma-forwarder-bases-3.0.1/src/interfaces/IForwarder.sol";
+import {ISweepable} from "anoma-forwarder-bases-3.0.1/src/interfaces/ISweepable.sol";
+import {ERC20Example} from "anoma-forwarder-bases-3.0.1/test/examples/ERC20Example.sol";
 import {ERC20Forwarder} from "anomapay-erc20-forwarder-2.0.0-rc.2/src/ERC20Forwarder.sol";
 import {DeployPermit2} from "anomapay-erc20-forwarder-2.0.0-rc.2/test/script/DeployPermit2.s.sol";
-import {Test} from "forge-std-1.16.2/src/Test.sol";
+import {Test} from "forge-std-1.17.0/src/Test.sol";
 
 import {
     IAllowanceTransfer
