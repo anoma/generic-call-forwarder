@@ -1231,8 +1231,8 @@ dependencies = [
 
 [[package]]
 name = "anomapay-erc20-forwarder-bindings"
-version = "3.0.0-rc.11"
-source = "git+https://github.com/anoma/anomapay-erc20-forwarder?rev=0eb55843100bc6dbce6d263902b13b7497e0da32#0eb55843100bc6dbce6d263902b13b7497e0da32"
+version = "3.0.0-rc.12"
+source = "git+https://github.com/anoma/anomapay-erc20-forwarder?tag=bindings%2Fv3.0.0-rc.12#c1dc2219702a1d47a1adafdb19dd0a0d77b5dc20"
 dependencies = [
  "alloy",
  "alloy-chains",
@@ -1245,7 +1245,7 @@ dependencies = [
 [[package]]
 name = "anomapay-erc20-forwarder-integration-test"
 version = "0.2.0"
-source = "git+https://github.com/anoma/anomapay-erc20-forwarder?rev=0eb55843100bc6dbce6d263902b13b7497e0da32#0eb55843100bc6dbce6d263902b13b7497e0da32"
+source = "git+https://github.com/anoma/anomapay-erc20-forwarder?tag=bindings%2Fv3.0.0-rc.12#c1dc2219702a1d47a1adafdb19dd0a0d77b5dc20"
 dependencies = [
  "alloy",
  "alloy-chains",
@@ -7858,9 +7858,9 @@ dependencies = [
 
 [[package]]
 name = "transfer_library"
-version = "3.0.0-rc.2"
+version = "3.0.0-rc.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b53715d3141e9648013e4fe11d5fbea4e69887f522e10104ff9137a41d245f5d"
+checksum = "c5807abad8cc4b5c18c817a9dd59616cbda1fe5bbf553042ee0b6a55bab21727"
 dependencies = [
  "anoma-rm-risc0",
  "anoma-rm-risc0-gadgets",
@@ -7873,9 +7873,9 @@ dependencies = [
 
 [[package]]
 name = "transfer_witness"
-version = "3.0.0-rc.2"
+version = "3.0.0-rc.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "83fd8a59768682bcf885d87f1eb99a4a270a0cbcf771040ca089d85b3c002707"
+checksum = "70aa57cb4c28cbea96ef4dcd4ca911709fa4acba33c704ec1cb3fa1d9b51e88a"
 dependencies = [
  "alloy-primitives",
  "alloy-sol-types",

@@ -38,4 +38,4 @@ anoma-generic-call-forwarder-bindings = { path = "crates/bindings" }
 # Upstream test crates, pinned by git tag or commit (see anoma-pa-testkit ADR-0002). For
 # cross-repo development, override locally with a `[patch]` to a path checkout.
 anoma-pa-evm-integration-test = { git = "https://github.com/anoma/pa-evm", tag = "bindings/v3.0.0-rc.13" }
-anomapay-erc20-forwarder-integration-test = { git = "https://github.com/anoma/anomapay-erc20-forwarder", rev = "0eb55843100bc6dbce6d263902b13b7497e0da32" }
+anomapay-erc20-forwarder-integration-test = { git = "https://github.com/anoma/anomapay-erc20-forwarder", tag = "bindings/v3.0.0-rc.12" }
