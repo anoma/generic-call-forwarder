@@ -9,7 +9,7 @@ import {ISweepable} from "anoma-forwarder-bases-3.0.0/src/interfaces/ISweepable.
 import {ERC20Example} from "anoma-forwarder-bases-3.0.0/test/examples/ERC20Example.sol";
 import {ERC20Forwarder} from "anomapay-erc20-forwarder-2.0.0-rc.2/src/ERC20Forwarder.sol";
 import {DeployPermit2} from "anomapay-erc20-forwarder-2.0.0-rc.2/test/script/DeployPermit2.s.sol";
-import {Test} from "forge-std-1.16.2/src/Test.sol";
+import {Test} from "forge-std-1.17.0/src/Test.sol";
 
 import {
     IAllowanceTransfer
