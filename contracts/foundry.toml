@@ -20,13 +20,14 @@ script = "script"
 libs = ["dependencies"]
 auto_detect_remappings = false
 # The ERC20 forwarder package imports forge-std 1.16.2 and anoma-forwarder-bases 3.0.0, which only its own dependencies folder contains.
+# The 2.0.0-rc.7.1 package of anoma-pa-evm differs from 2.0.0-rc.7 only in its deployment records, so the imports keep the 2.0.0-rc.7 prefix.
 remappings = [
     "@openzeppelin-contracts-5.7.0/=dependencies/@openzeppelin-contracts-5.7.0/",
     "@openzeppelin-contracts-upgradeable-5.7.0/=dependencies/@openzeppelin-contracts-upgradeable-5.7.0/",
     "@openzeppelin/contracts/=dependencies/@openzeppelin-contracts-5.7.0/",
     "anoma-forwarder-bases-3.0.0/=dependencies/anomapay-erc20-forwarder-2.0.0-rc.2/dependencies/anoma-forwarder-bases-3.0.0/",
     "anoma-forwarder-bases-3.0.1/=dependencies/anoma-forwarder-bases-3.0.1/",
-    "anoma-pa-evm-2.0.0-rc.7/=dependencies/anoma-pa-evm-2.0.0-rc.7/",
+    "anoma-pa-evm-2.0.0-rc.7/=dependencies/anoma-pa-evm-2.0.0-rc.7.1/",
     "anomapay-erc20-forwarder-2.0.0-rc.2/=dependencies/anomapay-erc20-forwarder-2.0.0-rc.2/",
     "forge-std-1.16.2/=dependencies/anomapay-erc20-forwarder-2.0.0-rc.2/dependencies/forge-std-1.16.2/",
     "forge-std-1.17.0/=dependencies/forge-std-1.17.0/",
@@ -51,7 +52,7 @@ ignore = ["test/**/*.sol"] # Relaxed the way `.solhint.other.json` relaxes them.
 "@openzeppelin-contracts" = "5.7.0"
 "@openzeppelin-contracts-upgradeable" = "5.7.0"
 "anoma-forwarder-bases" = "3.0.1"
-"anoma-pa-evm" = "2.0.0-rc.7"
+"anoma-pa-evm" = "2.0.0-rc.7.1"
 "anomapay-erc20-forwarder" = "2.0.0-rc.2"
 "forge-std" = "1.17.0"
 "solady" = "0.1.26"
