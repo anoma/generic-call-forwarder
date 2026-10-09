@@ -1041,7 +1041,7 @@ dependencies = [
  "alloy",
  "alloy-chains",
  "anoma-generic-call-library",
- "anoma-pa-evm-bindings 3.0.0-rc.13 (registry+https://github.com/rust-lang/crates.io-index)",
+ "anoma-pa-evm-bindings 3.0.0-rc.15 (registry+https://github.com/rust-lang/crates.io-index)",
  "dotenvy",
  "serde",
  "serde_json",
@@ -1098,9 +1098,9 @@ dependencies = [
 
 [[package]]
 name = "anoma-pa-evm-bindings"
-version = "3.0.0-rc.13"
+version = "3.0.0-rc.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "951b222364a13ab4ddd35f08786dba411ea68a3380c6b7378ca53f00df28a00a"
+checksum = "ba8b60169f7f51c9bac74651c6d50b8fa7fae245c7e8f6956d4601cac5ec0dcf"
 dependencies = [
  "alloy",
  "alloy-chains",
@@ -1113,8 +1113,8 @@ dependencies = [
 
 [[package]]
 name = "anoma-pa-evm-bindings"
-version = "3.0.0-rc.13"
-source = "git+https://github.com/anoma/pa-evm?tag=bindings%2Fv3.0.0-rc.13#498248a6564a359a91dbb8dd805b556aec6361c0"
+version = "3.0.0-rc.15"
+source = "git+https://github.com/anoma/pa-evm?tag=bindings%2Fv3.0.0-rc.15#5db97e7120c1369943c9d07b90ab828d0d5ce9c7"
 dependencies = [
  "alloy",
  "alloy-chains",
@@ -1128,11 +1128,11 @@ dependencies = [
 [[package]]
 name = "anoma-pa-evm-integration-test"
 version = "0.1.0"
-source = "git+https://github.com/anoma/pa-evm?tag=bindings%2Fv3.0.0-rc.13#498248a6564a359a91dbb8dd805b556aec6361c0"
+source = "git+https://github.com/anoma/pa-evm?tag=bindings%2Fv3.0.0-rc.15#5db97e7120c1369943c9d07b90ab828d0d5ce9c7"
 dependencies = [
  "alloy",
  "alloy-chains",
- "anoma-pa-evm-bindings 3.0.0-rc.13 (git+https://github.com/anoma/pa-evm?tag=bindings%2Fv3.0.0-rc.13)",
+ "anoma-pa-evm-bindings 3.0.0-rc.15 (git+https://github.com/anoma/pa-evm?tag=bindings%2Fv3.0.0-rc.15)",
  "anoma-pa-testkit",
  "anoma-risc0-verifier-bindings",
  "anoma-rm-risc0",
@@ -1232,7 +1232,7 @@ dependencies = [
 [[package]]
 name = "anomapay-erc20-forwarder-bindings"
 version = "3.0.0-rc.12"
-source = "git+https://github.com/anoma/anomapay-erc20-forwarder?tag=bindings%2Fv3.0.0-rc.12#c1dc2219702a1d47a1adafdb19dd0a0d77b5dc20"
+source = "git+https://github.com/anoma/anomapay-erc20-forwarder?rev=58842a18c7be8ce6b9e6686f5d12b18ea7d40baf#58842a18c7be8ce6b9e6686f5d12b18ea7d40baf"
 dependencies = [
  "alloy",
  "alloy-chains",
@@ -1245,7 +1245,7 @@ dependencies = [
 [[package]]
 name = "anomapay-erc20-forwarder-integration-test"
 version = "0.2.0"
-source = "git+https://github.com/anoma/anomapay-erc20-forwarder?tag=bindings%2Fv3.0.0-rc.12#c1dc2219702a1d47a1adafdb19dd0a0d77b5dc20"
+source = "git+https://github.com/anoma/anomapay-erc20-forwarder?rev=58842a18c7be8ce6b9e6686f5d12b18ea7d40baf#58842a18c7be8ce6b9e6686f5d12b18ea7d40baf"
 dependencies = [
  "alloy",
  "alloy-chains",
