@@ -32,7 +32,7 @@ use common::setup_transfer_generic_call_e2e_env;
 use common::{commitment_root, execute_tx, prove_actions, setup_transfer_generic_call_local_env};
 use it::deploy::dex_router::deploy_dex_router_mock;
 use it::fixtures::generic_call;
-use it::state::addresses::generic_call_forwarder_v1_address;
+use it::state::addresses::generic_call_forwarder_address;
 use rstest::*;
 
 use anoma_generic_call_witness::GenericCall;
@@ -82,7 +82,7 @@ async fn calls_allow_to_swap_erc20s_on_a_dex<Env: Environment>(
     let mut env = env_with_setup.context("env setup failed")?;
     let chain_id = chain_id(&env)?;
     let erc20_forwarder = erc20_forwarder_address(&env)?;
-    let generic_forwarder = generic_call_forwarder_v1_address(&env)?;
+    let generic_forwarder = generic_call_forwarder_address(&env)?;
     let provider = default_signer(&env).context("failed to retrieve default signer")?;
 
     let sender = identities::alice().context("failed to build sender keychain")?;

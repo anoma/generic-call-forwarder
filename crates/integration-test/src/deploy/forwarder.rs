@@ -4,7 +4,7 @@ use alloy::providers::Provider;
 use anoma_generic_call_forwarder_bindings::generated::generic_call_forwarder::GenericCallForwarder;
 use anyhow::Context;
 
-use crate::state::addresses::insert_generic_call_forwarder_v1_address;
+use crate::state::addresses::insert_generic_call_forwarder_address;
 
 #[inline]
 pub fn generic_call_forwarder<P>(
@@ -43,7 +43,7 @@ where
 {
     let address = deploy_generic_call_forwarder(provider, protocol_adapter, logic_ref).await?;
 
-    insert_generic_call_forwarder_v1_address(builder, address);
+    insert_generic_call_forwarder_address(builder, address);
 
     Ok(address)
 }
