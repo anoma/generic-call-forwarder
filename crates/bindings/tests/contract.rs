@@ -135,9 +135,8 @@ async fn fwd_instance(
 ) -> GenericCallForwarderInstance<DynProvider> {
     let rpc_url = alchemy_url(chain).expect("Couldn't get RPC URL for chain");
 
-    // anvil's Amsterdam estimate of a creation leaves out the state gas of the new account.
     let provider = ProviderBuilder::new()
-        .connect_anvil_with_wallet_and_config(|a| a.fork(rpc_url).args(["--hardfork", "osaka"]))
+        .connect_anvil_with_wallet_and_config(|a| a.fork(rpc_url))
         .expect("Couldn't create anvil provider");
     generic_call_forwarder(&provider.erased(), environment)
         .await
