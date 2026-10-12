@@ -15,7 +15,7 @@ use anomapay_erc20_forwarder_integration_test::deploy::erc20_bindings::WETH9;
 use anomapay_erc20_forwarder_integration_test::deploy::erc20_bindings::ierc20;
 use anomapay_erc20_forwarder_integration_test::fixtures::{transfer, unwrap, wrap};
 use anomapay_erc20_forwarder_integration_test::state::erc20::erc20_address;
-use anomapay_erc20_forwarder_integration_test::state::forwarder::erc20_forwarder_v1_address;
+use anomapay_erc20_forwarder_integration_test::state::forwarder::erc20_forwarder_address;
 use anyhow::Context;
 #[cfg(feature = "e2e")]
 use common::setup_transfer_generic_call_e2e_env;
@@ -37,7 +37,7 @@ async fn calls_allow_to_unwrap_native_tokens<Env: Environment>(
 ) -> anyhow::Result<()> {
     let mut env = env_with_setup.context("env setup failed")?;
     let chain_id = chain_id(&env)?;
-    let erc20_forwarder = erc20_forwarder_v1_address(&env)?;
+    let erc20_forwarder = erc20_forwarder_address(&env)?;
     let generic_forwarder = generic_call_forwarder_v1_address(&env)?;
     let weth = erc20_address(&env, "weth")?;
     let provider = default_signer(&env).context("failed to retrieve default signer")?;
