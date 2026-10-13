@@ -14,7 +14,7 @@ pub enum BindingsError {
     #[error("The chain ID {0} is not in the list of named chains.")]
     ChainIdUnknown(u64),
     #[error(
-        "The current protocol adapter version has not been deployed on the provided chain '{0}'."
+        "The deployment record of the environment has no generic call forwarder on the chain '{0}'."
     )]
     UnsupportedChain(String),
 }
