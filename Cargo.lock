@@ -1231,8 +1231,8 @@ dependencies = [
 
 [[package]]
 name = "anomapay-erc20-forwarder-bindings"
-version = "3.0.0-rc.12"
-source = "git+https://github.com/anoma/anomapay-erc20-forwarder?rev=039713ac67976104645b36ea468e0ab0d391ad26#039713ac67976104645b36ea468e0ab0d391ad26"
+version = "3.0.0-rc.13"
+source = "git+https://github.com/anoma/anomapay-erc20-forwarder?tag=bindings%2Fv3.0.0-rc.13#e3e0bb4c490e7ef10eeb01bce40bff4c7119f8cd"
 dependencies = [
  "alloy",
  "alloy-chains",
@@ -1245,7 +1245,7 @@ dependencies = [
 [[package]]
 name = "anomapay-erc20-forwarder-integration-test"
 version = "0.2.0"
-source = "git+https://github.com/anoma/anomapay-erc20-forwarder?rev=039713ac67976104645b36ea468e0ab0d391ad26#039713ac67976104645b36ea468e0ab0d391ad26"
+source = "git+https://github.com/anoma/anomapay-erc20-forwarder?tag=bindings%2Fv3.0.0-rc.13#e3e0bb4c490e7ef10eeb01bce40bff4c7119f8cd"
 dependencies = [
  "alloy",
  "alloy-chains",
