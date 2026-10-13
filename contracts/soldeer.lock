@@ -30,10 +30,10 @@ integrity = "a9f7c94e735f6a498c83326973926b76db29607907807adccf4df46afd34e8a0"
 
 [[dependencies]]
 name = "anomapay-erc20-forwarder"
-version = "2.0.0-rc.4"
-url = "https://soldeer-revisions.s3.amazonaws.com/anomapay-erc20-forwarder/2_0_0-rc_4_02-10-2026_15:48:00_contracts.zip"
-checksum = "6739746ae91c8cbd83b3e8eec0045afb2014fa81978d90fc9fe8d2db47f5ca86"
-integrity = "f21b7b2cb44c753d56f0d7ab024dd1584618034667ab952a4c755922c0e68262"
+version = "2.0.0-rc.5"
+url = "https://soldeer-revisions.s3.amazonaws.com/anomapay-erc20-forwarder/2_0_0-rc_5_13-10-2026_07:22:45_contracts.zip"
+checksum = "f120e7218e875dc988172a4c322aec2d8a560279d45f3442f46566fdd764e059"
+integrity = "6791bf89c13fa16ee363d634172c09ab4692918907bab46109093f6510f456bd"
 
 [[dependencies]]
 name = "forge-std"
