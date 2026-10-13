@@ -77,7 +77,7 @@ async fn setup_transfer_generic_call_env_on_builder(
         deployer,
     )
     .await
-    .context("failed to deploy and insert ERC20 forwarder v1")?;
+    .context("failed to deploy and insert the ERC20 forwarder")?;
 
     let generic_call_logic_ref = B256::from(<[u8; 32]>::from(generic_call_logic::verifying_key()));
     deploy_and_insert_generic_call_forwarder(
@@ -87,7 +87,7 @@ async fn setup_transfer_generic_call_env_on_builder(
         generic_call_logic_ref,
     )
     .await
-    .context("failed to deploy and insert generic call forwarder v1")?;
+    .context("failed to deploy and insert the generic call forwarder")?;
 
     ierc20(token, provider.clone())
         .approve(PERMIT2_CANONICAL_ADDRESS, U256::MAX)
