@@ -51,7 +51,7 @@ pub fn build(
     let compliance_witness = compliance::from_resources(
         vec![consumed_witness],
         vec![created_ephemeral],
-        resource::kind_table(),
+        resource::kind_tree(),
     );
 
     let action_tree_root = ArmTree::new(vec![consumed_nullifier, created_ephemeral.commitment()])
