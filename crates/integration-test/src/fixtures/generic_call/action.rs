@@ -1,6 +1,7 @@
 use anoma_generic_call_library::GenericCall;
 use anoma_generic_call_library::GenericCallLogic;
 use anoma_pa_testkit::witness::ActionWitnesses;
+use anoma_rm_risc0::Digest;
 use anoma_rm_risc0::action_tree::ActionTree as ArmTree;
 use anoma_rm_risc0::compliance;
 use anoma_rm_risc0::resource::{ConsumedResourceWitness, Resource};
@@ -15,6 +16,8 @@ use crate::logic;
 pub struct ActionData {
     pub witnesses: ActionWitnesses,
     pub consumed_ephemeral: Resource,
+    /// The nullifier of the consumed resource, which carries the calls: the tag that order constraints name.
+    pub consumed_ephemeral_nullifier: Digest,
     pub created_ephemeral: Resource,
 }
 
@@ -51,7 +54,7 @@ pub fn build(
     let compliance_witness = compliance::from_resources(
         vec![consumed_witness],
         vec![created_ephemeral],
-        resource::kind_table(),
+        resource::kind_tree(),
     );
 
     let action_tree_root = ArmTree::new(vec![consumed_nullifier, created_ephemeral.commitment()])
@@ -86,6 +89,7 @@ pub fn build(
     Ok(ActionData {
         witnesses,
         consumed_ephemeral,
+        consumed_ephemeral_nullifier: consumed_nullifier,
         created_ephemeral,
     })
 }

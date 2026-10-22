@@ -3,7 +3,7 @@ use anoma_generic_call_witness::calculate_label_ref;
 use anoma_generic_call_witness::calculate_value_ref;
 use anoma_generic_call_witness::encode_generic_call_forwarder_input;
 use anoma_rm_risc0::Digest;
-use anoma_rm_risc0::kind_table::KindTable;
+use anoma_rm_risc0::kind_tree::KindTree;
 use anoma_rm_risc0::nullifier_key::NullifierKey;
 use anoma_rm_risc0::nullifier_key::NullifierKeyCommitment;
 use anoma_rm_risc0::resource::Resource;
@@ -117,10 +117,10 @@ pub(super) fn nullifier_key(seed: u8) -> NullifierKey {
     NullifierKey::from_bytes([seed; 32])
 }
 
-static EMPTY_KIND_TABLE: LazyLock<KindTable> = LazyLock::new(KindTable::empty);
+static EMPTY_KIND_TREE: LazyLock<KindTree> = LazyLock::new(KindTree::empty);
 
-/// The kind table the fixtures prove against: the loaded one, or the empty table
-/// if none is loaded. The e2e setup loads none; a test that needs an alias loads its table first.
-pub(super) fn kind_table() -> &'static KindTable {
-    anoma_rm_risc0::constants::global_kind_table().unwrap_or(&EMPTY_KIND_TABLE)
+/// The kind tree the fixtures prove against: the loaded one, or the empty tree
+/// if none is loaded. The e2e setup loads none; a test that needs an alias loads its tree first.
+pub(super) fn kind_tree() -> &'static KindTree {
+    anoma_rm_risc0::constants::global_kind_tree().unwrap_or(&EMPTY_KIND_TREE)
 }

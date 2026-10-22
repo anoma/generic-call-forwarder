@@ -4,7 +4,9 @@
 //!
 //! Mirrors the Solidity `test_calls_allow_swapping_fund_on_a_dex` in
 //! `contracts/test/GenericCallForwarder.t.sol`, but as a full integration test:
-//! every step is a risc0-proven transaction executed against a local chain.
+//! every step is a risc0-proven transaction executed against a local chain, and
+//! the unwrap, the swap and the wrap share one transaction, ordered by their
+//! order constraints.
 
 use alloy::primitives::aliases::{U48, U160};
 use alloy::primitives::{Address, U256};
@@ -156,43 +158,12 @@ async fn calls_allow_to_swap_erc20s_on_a_dex<Env: Environment>(
         .await
         .context("failed to execute transfer action")?;
 
-    // 3. Unwrap token A into the generic-call forwarder.
-    let unwrap_path = env
-        .protocol_adapter()
-        .commitment_tree()
-        .path_to(transferred.created_persistent.commitment())
-        .context("failed to generate unwrap merkle path")?;
-    let unwrap = unwrap::build(
-        transferred.created_persistent,
-        erc20_forwarder,
-        token_a,
-        21,
-        Some(unwrap_path),
-        unwrap::Overrides {
-            ethereum_account_addr: Some(generic_forwarder.to_vec()),
-            ..Default::default()
-        },
-    )
-    .context("failed to build unwrap action")?;
-    let tx = prove_actions(&env, &[unwrap.witnesses])
-        .await
-        .context("failed to prove unwrap action")?;
-    execute_tx(&mut env, tx)
-        .await
-        .context("failed to execute unwrap action")?;
-
-    anyhow::ensure!(
-        erc20_balance(token_a, generic_forwarder, provider.clone()).await? == amount_in_u256,
-        "generic-call forwarder must hold token A after the unwrap"
-    );
-    anyhow::ensure!(
-        erc20_balance(token_a, erc20_forwarder, provider.clone()).await? == U256::ZERO,
-        "ERC20 forwarder must hold no token A after the unwrap"
-    );
-
-    // 4. Generic call: from inside the forwarder, approve Permit2 + the router to
-    //    pull token A, swap token A -> token B (paid back to the forwarder), and
-    //    approve Permit2 to spend token B for the subsequent wrap.
+    // 3. Unwrap token A into the generic-call forwarder, swap it for token B, and wrap token B back, in one
+    //    transaction. The actions are listed in reverse order, so only the order constraints make the protocol
+    //    adapter run the unwrap first, then the generic call, then the wrap.
+    //
+    //    The generic call, from inside the forwarder, approves Permit2 and the router to pull token A, swaps token A
+    //    for token B (paid back to the forwarder), and approves Permit2 to spend token B for the wrap.
     let expiration = U48::from(4_294_967_295u64);
     let calls = vec![
         GenericCall {
@@ -246,29 +217,27 @@ async fn calls_allow_to_swap_erc20s_on_a_dex<Env: Environment>(
     )
     .context("failed to build generic call swap action")?;
 
-    let tx = prove_actions(&env, &[swap.witnesses])
-        .await
-        .context("failed to prove generic call swap action")?;
-    execute_tx(&mut env, tx)
-        .await
-        .context("failed to execute generic call swap action")?;
+    let unwrap_path = env
+        .protocol_adapter()
+        .commitment_tree()
+        .path_to(transferred.created_persistent.commitment())
+        .context("failed to generate unwrap merkle path")?;
+    let unwrap = unwrap::build(
+        transferred.created_persistent,
+        erc20_forwarder,
+        token_a,
+        21,
+        Some(unwrap_path),
+        unwrap::Overrides {
+            ethereum_account_addr: Some(generic_forwarder.to_vec()),
+            before_tags: vec![swap.consumed_ephemeral_nullifier],
+            ..Default::default()
+        },
+    )
+    .context("failed to build unwrap action")?;
 
-    anyhow::ensure!(
-        erc20_balance(token_a, generic_forwarder, provider.clone()).await? == U256::ZERO,
-        "generic-call forwarder must hold no token A after the swap"
-    );
-    anyhow::ensure!(
-        erc20_balance(token_b, generic_forwarder, provider.clone()).await? == amount_out_u256,
-        "generic-call forwarder must hold token B after the swap"
-    );
-    anyhow::ensure!(
-        erc20_balance(token_a, dex_router, provider.clone()).await? == amount_in_u256,
-        "DEX router must have pulled token A during the swap"
-    );
-
-    // 5. Wrap token B (held by the generic-call forwarder) back into a resource.
-    //    The forwarder authorizes the Permit2 pull via ERC-1271, so the permit
-    //    signature is an accepted 65-byte placeholder.
+    // The forwarder authorizes the Permit2 pull of the wrap via ERC-1271, so the permit signature is an accepted
+    // 65-byte placeholder.
     let mut dummy_permit_sig = vec![0u8; 65];
     dummy_permit_sig[64] = 27;
     let wrap_b = wrap::build(
@@ -280,17 +249,32 @@ async fn calls_allow_to_swap_erc20s_on_a_dex<Env: Environment>(
         wrap::Overrides {
             ethereum_account_addr: Some(generic_forwarder.to_vec()),
             permit_signature: Some(dummy_permit_sig),
+            after_tags: vec![swap.consumed_ephemeral_nullifier],
             ..Default::default()
         },
     )
     .await
     .context("failed to build token B wrap action")?;
-    let tx = prove_actions(&env, &[wrap_b.witnesses])
+
+    let tx = prove_actions(&env, &[wrap_b.witnesses, swap.witnesses, unwrap.witnesses])
         .await
-        .context("failed to prove token B wrap action")?;
+        .context("failed to prove the swap transaction")?;
     execute_tx(&mut env, tx)
         .await
-        .context("failed to execute token B wrap action")?;
+        .context("failed to execute the swap transaction")?;
+
+    anyhow::ensure!(
+        erc20_balance(token_a, dex_router, provider.clone()).await? == amount_in_u256,
+        "DEX router must have pulled token A during the swap"
+    );
+    anyhow::ensure!(
+        erc20_balance(token_a, generic_forwarder, provider.clone()).await? == U256::ZERO,
+        "generic-call forwarder must hold no token A after the swap"
+    );
+    anyhow::ensure!(
+        erc20_balance(token_a, erc20_forwarder, provider.clone()).await? == U256::ZERO,
+        "ERC20 forwarder must hold no token A after the unwrap"
+    );
 
     anyhow::ensure!(
         erc20_balance(token_b, erc20_forwarder, provider.clone()).await? == amount_out_u256,
