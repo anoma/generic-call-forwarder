@@ -3,12 +3,10 @@ use anoma_generic_call_witness::calculate_label_ref;
 use anoma_generic_call_witness::calculate_value_ref;
 use anoma_generic_call_witness::encode_generic_call_forwarder_input;
 use anoma_rm_risc0::Digest;
-use anoma_rm_risc0::kind_tree::KindTree;
 use anoma_rm_risc0::nullifier_key::NullifierKey;
 use anoma_rm_risc0::nullifier_key::NullifierKeyCommitment;
 use anoma_rm_risc0::resource::Resource;
 use anyhow::Context;
-use std::sync::LazyLock;
 
 use crate::logic;
 
@@ -79,10 +77,10 @@ pub(super) fn consumed(
     })
 }
 
+/// The created ephemeral resource. The action builder sets its nonce.
 pub(super) fn created(
     seed: u8,
     nk_commitment: NullifierKeyCommitment,
-    consumed_nullifier: Digest,
     forwarder_addr: &[u8],
     calls: &[GenericCall],
     overrides: &Overrides,
@@ -98,16 +96,13 @@ pub(super) fn created(
         .created_label_ref
         .unwrap_or(calculate_label_ref(forwarder_addr));
 
-    let default_nonce = Resource::derive_nonce_from_nullifiers(0, &[consumed_nullifier])
-        .context("failed to derive the created resource nonce")?;
-
     Ok(Resource {
         logic_ref: logic::verifying_key(),
         label_ref,
         quantity: overrides.created_quantity.unwrap_or(0),
         value_ref,
         is_ephemeral: overrides.created_is_ephemeral.unwrap_or(true),
-        nonce: overrides.created_nonce.unwrap_or(default_nonce),
+        nonce: [0; 32],
         nk_commitment,
         rand_seed: [seed.wrapping_add(33); 32],
     })
@@ -115,12 +110,4 @@ pub(super) fn created(
 
 pub(super) fn nullifier_key(seed: u8) -> NullifierKey {
     NullifierKey::from_bytes([seed; 32])
-}
-
-static EMPTY_KIND_TREE: LazyLock<KindTree> = LazyLock::new(KindTree::empty);
-
-/// The kind tree the fixtures prove against: the loaded one, or the empty tree
-/// if none is loaded. The e2e setup loads none; a test that needs an alias loads its tree first.
-pub(super) fn kind_tree() -> &'static KindTree {
-    anoma_rm_risc0::constants::global_kind_tree().unwrap_or(&EMPTY_KIND_TREE)
 }

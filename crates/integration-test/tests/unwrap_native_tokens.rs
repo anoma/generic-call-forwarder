@@ -74,7 +74,6 @@ async fn calls_allow_to_unwrap_native_tokens<Env: Environment>(
         rand_seed,
         wrap::Overrides::default(),
     )
-    .await
     .context("failed to build wrap action")?;
     let tx = prove_actions(&env, &[wrap.witnesses])
         .await
