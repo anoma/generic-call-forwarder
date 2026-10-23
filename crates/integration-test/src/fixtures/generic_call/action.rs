@@ -4,7 +4,7 @@ use anoma_pa_testkit::witness::ActionWitnesses;
 use anoma_rm_risc0::Digest;
 use anoma_rm_risc0::action_tree::ActionTree as ArmTree;
 use anoma_rm_risc0::compliance;
-use anoma_rm_risc0::resource::{ConsumedResourceWitness, Resource};
+use anoma_rm_risc0::resource::{ConsumedResourceWitness, Resource, ResourceWitness};
 use anyhow::Context;
 
 use super::resource;
@@ -52,8 +52,10 @@ pub fn build(
     let consumed_witness =
         ConsumedResourceWitness::from_resource(consumed_ephemeral, nf_key.clone());
     let compliance_witness = compliance::from_resources(
-        vec![consumed_witness],
-        vec![created_ephemeral],
+        vec![
+            ResourceWitness::Consumed(consumed_witness),
+            ResourceWitness::Created(created_ephemeral),
+        ],
         resource::kind_tree(),
     );
 

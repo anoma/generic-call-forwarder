@@ -5,8 +5,8 @@
 //! Mirrors the Solidity `test_calls_allow_swapping_fund_on_a_dex` in
 //! `contracts/test/GenericCallForwarder.t.sol`, but as a full integration test:
 //! every step is a risc0-proven transaction executed against a local chain, and
-//! the unwrap, the swap and the wrap share one transaction, ordered by their
-//! order constraints.
+//! the unwrap, the swap and the wrap share one transaction, in the order of its
+//! actions.
 
 use alloy::primitives::aliases::{U48, U160};
 use alloy::primitives::{Address, U256};
@@ -127,7 +127,6 @@ async fn calls_allow_to_swap_erc20s_on_a_dex<Env: Environment>(
         11,
         wrap::Overrides::default(),
     )
-    .await
     .context("failed to build token A wrap action")?;
     let tx = prove_actions(&env, &[wrap.witnesses])
         .await
@@ -159,8 +158,7 @@ async fn calls_allow_to_swap_erc20s_on_a_dex<Env: Environment>(
         .context("failed to execute transfer action")?;
 
     // 3. Unwrap token A into the generic-call forwarder, swap it for token B, and wrap token B back, in one
-    //    transaction. The actions are listed in reverse order, so only the order constraints make the protocol
-    //    adapter run the unwrap first, then the generic call, then the wrap.
+    //    transaction. The protocol adapter runs the actions in their order: the unwrap, the generic call, the wrap.
     //
     //    The generic call, from inside the forwarder, approves Permit2 and the router to pull token A, swaps token A
     //    for token B (paid back to the forwarder), and approves Permit2 to spend token B for the wrap.
@@ -230,7 +228,6 @@ async fn calls_allow_to_swap_erc20s_on_a_dex<Env: Environment>(
         Some(unwrap_path),
         unwrap::Overrides {
             ethereum_account_addr: Some(generic_forwarder.to_vec()),
-            before_tags: vec![swap.consumed_ephemeral_nullifier],
             ..Default::default()
         },
     )
@@ -249,14 +246,12 @@ async fn calls_allow_to_swap_erc20s_on_a_dex<Env: Environment>(
         wrap::Overrides {
             ethereum_account_addr: Some(generic_forwarder.to_vec()),
             permit_signature: Some(dummy_permit_sig),
-            after_tags: vec![swap.consumed_ephemeral_nullifier],
             ..Default::default()
         },
     )
-    .await
     .context("failed to build token B wrap action")?;
 
-    let tx = prove_actions(&env, &[wrap_b.witnesses, swap.witnesses, unwrap.witnesses])
+    let tx = prove_actions(&env, &[unwrap.witnesses, swap.witnesses, wrap_b.witnesses])
         .await
         .context("failed to prove the swap transaction")?;
     execute_tx(&mut env, tx)
