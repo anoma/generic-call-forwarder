@@ -12,7 +12,7 @@ contract DeployGenericCallForwarderMock is DeployGenericCallForwarder {
         _PROTOCOL_ADAPTER = protocolAdapter;
     }
 
-    function _protocolAdapter(bool) internal view override returns (address protocolAdapter) {
-        protocolAdapter = _PROTOCOL_ADAPTER;
+    function _recordedProxy(bool) internal view override returns (address proxy) {
+        proxy = _PROTOCOL_ADAPTER;
     }
 }

@@ -131,7 +131,7 @@ A release candidate and a release go through the same cycle. Steps 1 to 5 are re
 For each chain in the `staging` section of the record:
 
 - [ ] Check the two values the forwarder commits to. The deploy script reads both itself:
-  - the protocol adapter proxy of the **same** environment on this chain, from `deployments.json` of the `anoma-pa-evm-bindings` dependency in [`./contracts/foundry.toml`](./contracts/foundry.toml). The script reverts with `ProtocolAdapterNotRecorded` if the environment records none, so bump the dependency first: its `version` and `tag`, the two paths in `fs_permissions`, and `_DIRECTORY` in [`ProtocolAdapterDeployments`](./contracts/script/ProtocolAdapterDeployments.sol).
+  - the protocol adapter proxy of the **same** environment on this chain, from `deployments.json` of the `anoma-pa-evm-bindings` dependency in [`./contracts/foundry.toml`](./contracts/foundry.toml). The script reverts with `DeploymentNotRecorded` if the environment records none, so bump the dependency first: its `version` and `tag`, the two paths in `fs_permissions`, and `_DIRECTORY` in [`ProtocolAdapterDeployments`](./contracts/script/ProtocolAdapterDeployments.sol).
   - `LOGIC_REF` in [`Parameters.sol`](./contracts/script/Parameters.sol), which `just bindings-test` checks against the `GENERIC_CALL_ID` of the [`generic_call_library`](https://github.com/anoma/generic-call-resource) version pinned in [`./Cargo.toml`](./Cargo.toml).
 
 - [ ] **Simulate** the deployment by running
