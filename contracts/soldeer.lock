@@ -16,24 +16,24 @@ integrity = "1a08068b2fe262d4f6ae80e0be44965480b1a532d40722c80634d8963337743d"
 
 [[dependencies]]
 name = "anoma-forwarder-bases"
-version = "3.0.1"
-url = "https://soldeer-revisions.s3.amazonaws.com/anoma-forwarder-bases/3_0_1_02-10-2026_07:37:10_contracts.zip"
-checksum = "6847369177f5a13d13e95cdf3dbcbbd1cf82c5833afc5e5de8894cee8540cea7"
-integrity = "b2448714fd44f39f370b48736bd3047dd8af57461abd2f9301823720191b8194"
+version = "3.1.0"
+url = "https://soldeer-revisions.s3.amazonaws.com/anoma-forwarder-bases/3_1_0_22-10-2026_12:15:38_contracts.zip"
+checksum = "8bf86a162ddb2f59d8e2ebff1763660e8796d486cf91e883367c6aabc559ca7d"
+integrity = "0ad41f829796f2a75e0553ba6962e28b70433293bc417de387f481798f15f04a"
 
 [[dependencies]]
 name = "anoma-pa-evm"
-version = "2.0.0-rc.11"
-url = "https://soldeer-revisions.s3.amazonaws.com/anoma-pa-evm/2_0_0-rc_11_13-10-2026_12:16:00_contracts.zip"
-checksum = "17fa0b78cfca89491620b3045f7cd7a0c617b7d402a3949cd88e35dbfb918a63"
-integrity = "1d44f3f22c4ad72bd9d1d527c764510b6243c5068c24885d88cd8b9f039cae6f"
+version = "2.0.0-rc.12"
+url = "https://soldeer-revisions.s3.amazonaws.com/anoma-pa-evm/2_0_0-rc_12_22-10-2026_20:22:20_contracts.zip"
+checksum = "e856ee4f505fa8573d353208636af70b2e0fe459eb4bb955c83de125ad382ee5"
+integrity = "bf74d387b3d34e5e408802c77fccff18d6899abdb0c34e13fa02abb6402b63c0"
 
 [[dependencies]]
 name = "anomapay-erc20-forwarder"
-version = "2.0.0-rc.7"
-url = "https://soldeer-revisions.s3.amazonaws.com/anomapay-erc20-forwarder/2_0_0-rc_7_13-10-2026_15:58:59_contracts.zip"
-checksum = "7c7f08a6dda776c7daf2a245cb3318fa29bf256d37d9a6a7402a0d3d89d953e9"
-integrity = "1d3da0814070de9a24dbde157c3207b6b56a730dfa47df9b228988864ce784b3"
+version = "2.0.0-rc.8"
+url = "https://soldeer-revisions.s3.amazonaws.com/anomapay-erc20-forwarder/2_0_0-rc_8_23-10-2026_07:16:14_contracts.zip"
+checksum = "609fcb9e3f7a78e8b9b1abc8c1b2f172f43d313126d9d6f96f6e7fb24e49e700"
+integrity = "d535c2046870ba95f30733ef1a1cce564e9980c34fc214a5c4289331eb9f0fec"
 
 [[dependencies]]
 name = "forge-std"
