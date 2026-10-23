@@ -1096,8 +1096,8 @@ dependencies = [
 
 [[package]]
 name = "anoma-pa-evm-bindings"
-version = "3.0.0-rc.17"
-source = "git+https://github.com/anoma/pa-evm?rev=58af90ab0dd126af8334e882a06eabeebd62685c#58af90ab0dd126af8334e882a06eabeebd62685c"
+version = "3.0.0-rc.18"
+source = "git+https://github.com/anoma/pa-evm?tag=bindings%2Fv3.0.0-rc.18#d7b44b857299423dff1509658234682f7ef4e9ad"
 dependencies = [
  "alloy",
  "alloy-chains",
@@ -1111,7 +1111,7 @@ dependencies = [
 [[package]]
 name = "anoma-pa-evm-integration-test"
 version = "0.1.0"
-source = "git+https://github.com/anoma/pa-evm?rev=58af90ab0dd126af8334e882a06eabeebd62685c#58af90ab0dd126af8334e882a06eabeebd62685c"
+source = "git+https://github.com/anoma/pa-evm?tag=bindings%2Fv3.0.0-rc.18#d7b44b857299423dff1509658234682f7ef4e9ad"
 dependencies = [
  "alloy",
  "alloy-chains",
@@ -1127,8 +1127,8 @@ dependencies = [
 
 [[package]]
 name = "anoma-pa-testkit"
-version = "1.0.0-rc.2"
-source = "git+https://github.com/anoma/pa-testkit?rev=579a6b352ba7891029e64389f02c7da8844c7cac#579a6b352ba7891029e64389f02c7da8844c7cac"
+version = "1.0.0-rc.3"
+source = "git+https://github.com/anoma/pa-testkit?tag=v1.0.0-rc.3#b75cc7b63b67fb07b84163dfb254757027d6600a"
 dependencies = [
  "anoma-rm-risc0",
  "anoma-rm-risc0-gadgets",
@@ -1148,9 +1148,9 @@ dependencies = [
 
 [[package]]
 name = "anoma-risc0-verifier-bindings"
-version = "1.2.4"
+version = "1.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5f516f09859ae44c8c05b121e89cd73892e80c402fb742d02a7c0d2a20671412"
+checksum = "5ea3179812534dee8ba582cfd04d858a2a482f46fdddf0f7f03d83c7aca4b822"
 dependencies = [
  "alloy",
  "serde",
@@ -1210,8 +1210,8 @@ dependencies = [
 
 [[package]]
 name = "anomapay-erc20-forwarder-bindings"
-version = "3.0.0-rc.17"
-source = "git+https://github.com/anoma/anomapay-erc20-forwarder?rev=ffa3782bc4eaac09a907a5e37f85ee1696b77fe4#ffa3782bc4eaac09a907a5e37f85ee1696b77fe4"
+version = "3.0.0-rc.18"
+source = "git+https://github.com/anoma/anomapay-erc20-forwarder?tag=bindings%2Fv3.0.0-rc.18#0b3630b359daa16e5233dd0c356c95d98b22098a"
 dependencies = [
  "alloy",
  "alloy-chains",
@@ -1224,7 +1224,7 @@ dependencies = [
 [[package]]
 name = "anomapay-erc20-forwarder-integration-test"
 version = "0.2.0"
-source = "git+https://github.com/anoma/anomapay-erc20-forwarder?rev=ffa3782bc4eaac09a907a5e37f85ee1696b77fe4#ffa3782bc4eaac09a907a5e37f85ee1696b77fe4"
+source = "git+https://github.com/anoma/anomapay-erc20-forwarder?tag=bindings%2Fv3.0.0-rc.18#0b3630b359daa16e5233dd0c356c95d98b22098a"
 dependencies = [
  "alloy",
  "alloy-chains",
@@ -5031,9 +5031,9 @@ dependencies = [
 
 [[package]]
 name = "mockall"
-version = "0.14.0"
+version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f58d964098a5f9c6b63d0798e5372fd04708193510a7af313c22e9f29b7b620b"
+checksum = "1a6ceddfe3ce334925e96bf420fdb2dcee5bed6c632a168ece622676dadeaf8a"
 dependencies = [
  "cfg-if",
  "downcast",
@@ -5045,9 +5045,9 @@ dependencies = [
 
 [[package]]
 name = "mockall_derive"
-version = "0.14.0"
+version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ca41ce716dda6a9be188b385aa78ee5260fc25cd3802cb2a8afdc6afbe6b6dbf"
+checksum = "9cfe16fbe8a314aeec0b861ac24e60b1e123e97634bab045475b9d6a18416fd8"
 dependencies = [
  "cfg-if",
  "proc-macro2",
@@ -5749,7 +5749,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8a56d757972c98b346a9b766e3f02746cde6dd1cd1d1d563472929fdd74bec4d"
 dependencies = [
  "anyhow",
- "itertools 0.12.1",
+ "itertools 0.14.0",
  "proc-macro2",
  "quote",
  "syn 2.0.119",
@@ -5762,7 +5762,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b570b25f7617e43d59005d0990ccb79e950a423952cea19671b7a876da390adf"
 dependencies = [
  "anyhow",
- "itertools 0.12.1",
+ "itertools 0.14.0",
  "proc-macro2",
  "quote",
  "syn 2.0.119",
