@@ -131,7 +131,7 @@ A release candidate and a release go through the same cycle. Steps 1 to 5 are re
 For each chain in the `staging` section of the record:
 
 - [ ] Check the two values the forwarder commits to. The deploy script reads both itself:
-  - the protocol adapter proxy of the **same** environment on this chain, from the records of the `anoma-pa-evm` package in [`./contracts/foundry.toml`](./contracts/foundry.toml). The script reverts with `ProtocolAdapterNotRecorded` if the package records none, so bump the package first.
+  - the protocol adapter proxy of the **same** environment on this chain, from the records of the `anoma-pa-evm` package in [`./contracts/foundry.toml`](./contracts/foundry.toml). The script reverts with `DeploymentNotRecorded` if the package records none, so bump the package first.
   - `LOGIC_REF` in [`Parameters.sol`](./contracts/script/Parameters.sol), which `just bindings-test` checks against the `GENERIC_CALL_ID` of the [`generic_call_library`](https://github.com/anoma/generic-call-resource) version pinned in [`./Cargo.toml`](./Cargo.toml).
 
 - [ ] **Simulate** the deployment by running
