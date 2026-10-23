@@ -1,11 +1,9 @@
 use anoma_generic_call_library::GenericCall;
 use anoma_generic_call_library::GenericCallLogic;
-use anoma_pa_testkit::witness::ActionWitnesses;
+use anoma_pa_testkit::witness::{ActionWitnesses, LogicWitness};
 use anoma_rm_risc0::Digest;
-use anoma_rm_risc0::action_tree::ActionTree as ArmTree;
-use anoma_rm_risc0::compliance;
-use anoma_rm_risc0::resource::{ConsumedResourceWitness, Resource, ResourceWitness};
-use anyhow::Context;
+use anoma_rm_risc0::resource::Resource;
+use anomapay_erc20_forwarder_integration_test::fixtures::action::{self, Logic, Part};
 
 use super::resource;
 use super::resource::Overrides;
@@ -16,9 +14,15 @@ use crate::logic;
 pub struct ActionData {
     pub witnesses: ActionWitnesses,
     pub consumed_ephemeral: Resource,
-    /// The nullifier of the consumed resource, which carries the calls: the tag that order constraints name.
-    pub consumed_ephemeral_nullifier: Digest,
     pub created_ephemeral: Resource,
+}
+
+/// The resources of a generic call: the consumed ephemeral resource, whose
+/// label commits to the forwarder calls, and the created ephemeral resource,
+/// which carries no calls.
+pub struct Parts {
+    pub consumed: Part,
+    pub created: Part,
 }
 
 /// Build a generic-call action: consumes an ephemeral resource whose label
@@ -30,68 +34,87 @@ pub fn build(
     calls: Vec<GenericCall>,
     overrides: Overrides,
 ) -> anyhow::Result<ActionData> {
+    let Parts { consumed, created } = parts(seed, forwarder_addr, calls, overrides)?;
+    let action = action::build(vec![consumed, created])?;
+    let [consumed_ephemeral, created_ephemeral] = <[Resource; 2]>::try_from(action.resources)
+        .map_err(|resources| {
+            anyhow::anyhow!("a generic call has 2 resources, not {}", resources.len())
+        })?;
+
+    Ok(ActionData {
+        witnesses: action.witnesses,
+        consumed_ephemeral,
+        created_ephemeral,
+    })
+}
+
+/// The resources of a generic-call action, for an action that
+/// [`action::build`] assembles from several kinds.
+pub fn parts(
+    seed: u8,
+    forwarder_addr: Vec<u8>,
+    calls: Vec<GenericCall>,
+    overrides: Overrides,
+) -> anyhow::Result<Parts> {
     let created_calls: Vec<GenericCall> = Vec::new();
 
     let nf_key = resource::nullifier_key(seed);
     let nk_commitment = nf_key.commit();
 
-    let consumed_ephemeral =
-        resource::consumed(seed, nk_commitment, &forwarder_addr, &calls, &overrides)?;
-    let consumed_nullifier = consumed_ephemeral
-        .nullifier(&nf_key)
-        .context("failed to compute consumed nullifier")?;
-    let created_ephemeral = resource::created(
+    let consumed = resource::consumed(seed, nk_commitment, &forwarder_addr, &calls, &overrides)?;
+    let created = resource::created(
         seed,
         nk_commitment,
-        consumed_nullifier,
         &forwarder_addr,
         &created_calls,
         &overrides,
     )?;
 
-    let consumed_witness =
-        ConsumedResourceWitness::from_resource(consumed_ephemeral, nf_key.clone());
-    let compliance_witness = compliance::from_resources(
-        vec![
-            ResourceWitness::Consumed(consumed_witness),
-            ResourceWitness::Created(created_ephemeral),
-        ],
-        resource::kind_tree(),
+    let consumed_nf_key = nf_key.clone();
+    let consumed_forwarder_addr = forwarder_addr.clone();
+    let consumed_logic: Logic = Box::new(
+        move |resource: Resource,
+              action_tree_root: Digest|
+              -> anyhow::Result<Box<dyn LogicWitness>> {
+            Ok(Box::new(logic::Witness::new(
+                GenericCallLogic::consumed_ephemeral_resource_logic(
+                    resource,
+                    action_tree_root,
+                    consumed_nf_key,
+                    consumed_forwarder_addr,
+                    calls,
+                )
+                .witness,
+            )))
+        },
+    );
+    let created_logic: Logic = Box::new(
+        move |resource: Resource,
+              action_tree_root: Digest|
+              -> anyhow::Result<Box<dyn LogicWitness>> {
+            Ok(Box::new(logic::Witness::new(
+                GenericCallLogic::created_ephemeral_resource_logic(
+                    resource,
+                    action_tree_root,
+                    forwarder_addr,
+                    created_calls,
+                )
+                .witness,
+            )))
+        },
     );
 
-    let action_tree_root = ArmTree::new(vec![consumed_nullifier, created_ephemeral.commitment()])
-        .root()
-        .context("failed to compute action tree root")?;
-
-    let consumed_logic_witness = GenericCallLogic::consumed_ephemeral_resource_logic(
-        consumed_ephemeral,
-        action_tree_root,
-        nf_key,
-        forwarder_addr.clone(),
-        calls.clone(),
-    )
-    .witness;
-
-    let created_logic_witness = GenericCallLogic::created_ephemeral_resource_logic(
-        created_ephemeral,
-        action_tree_root,
-        forwarder_addr,
-        created_calls,
-    )
-    .witness;
-
-    let witnesses = ActionWitnesses {
-        compliance_witness: Box::new(compliance_witness),
-        logic_witnesses: vec![
-            Box::new(logic::Witness::new(consumed_logic_witness)),
-            Box::new(logic::Witness::new(created_logic_witness)),
-        ],
-    };
-
-    Ok(ActionData {
-        witnesses,
-        consumed_ephemeral,
-        consumed_ephemeral_nullifier: consumed_nullifier,
-        created_ephemeral,
+    Ok(Parts {
+        consumed: Part::Consumed {
+            resource: consumed,
+            nf_key,
+            merkle_path: None,
+            logic: consumed_logic,
+        },
+        created: Part::Created {
+            resource: created,
+            nonce: overrides.created_nonce,
+            logic: created_logic,
+        },
     })
 }

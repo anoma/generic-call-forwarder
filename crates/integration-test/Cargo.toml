@@ -18,6 +18,8 @@ anoma-pa-testkit = { workspace = true, features = ["fixtures"] }
 # Normal dep (not dev) only because the `e2e` feature references it; the lib
 # itself uses it solely via tests.
 anoma-pa-evm-integration-test = { workspace = true }
+# The generic-call fixture builds its actions with the action builder of the ERC20 fixtures.
+anomapay-erc20-forwarder-integration-test = { workspace = true }
 anoma-generic-call-forwarder-bindings = { workspace = true }
 anoma-generic-call-library = { workspace = true }
 anoma-generic-call-witness = { workspace = true }
@@ -38,7 +40,5 @@ risc0-zkvm = { workspace = true }
 
 [dev-dependencies]
 anoma-pa-testkit = { workspace = true, features = ["mocks"] }
-# generic-call only needs the AnomaPay ERC20 app *deployed* in its test setup.
-anomapay-erc20-forwarder-integration-test = { workspace = true }
 rstest = { workspace = true }
 tokio = { workspace = true }
