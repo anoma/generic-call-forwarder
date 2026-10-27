@@ -18,20 +18,21 @@ use anoma_pa_evm_integration_test::state::actors::default_signer;
 mod common;
 use anoma_pa_evm_integration_test::keychain::EvmSigner;
 use anoma_pa_evm_integration_test::state::chains::chain_id;
-use anoma_pa_testkit::environment::CommitmentTree;
 use anoma_pa_testkit::environment::Environment;
-use anoma_pa_testkit::environment::ProtocolAdapter;
-use anoma_pa_testkit::fixtures::identities;
+use anoma_pa_testkit::fixtures::{action, identities};
 use anomapay_erc20_forwarder_integration_test::deploy::erc20_bindings::{
     deploy_and_mint_example_erc20, erc20_example,
 };
 use anomapay_erc20_forwarder_integration_test::deploy::permit2::PERMIT2_CANONICAL_ADDRESS;
-use anomapay_erc20_forwarder_integration_test::fixtures::{action, transfer, unwrap, wrap};
+use anomapay_erc20_forwarder_integration_test::fixtures::{ephemeral, persistent};
 use anomapay_erc20_forwarder_integration_test::state::forwarder::erc20_forwarder_address;
 use anyhow::Context;
 #[cfg(feature = "e2e")]
 use common::setup_transfer_generic_call_e2e_env;
-use common::{commitment_root, execute_tx, prove_actions, setup_transfer_generic_call_local_env};
+use common::{
+    commitment_path, commitment_root, execute_tx, prove_actions,
+    setup_transfer_generic_call_local_env,
+};
 use it::deploy::dex_router::deploy_dex_router_mock;
 use it::fixtures::generic_call;
 use it::state::addresses::generic_call_forwarder_address;
@@ -88,6 +89,7 @@ async fn calls_allow_to_swap_erc20s_on_a_dex<Env: Environment>(
     let provider = default_signer(&env).context("failed to retrieve default signer")?;
 
     let sender = identities::alice().context("failed to build sender keychain")?;
+    let receiver = identities::bob().context("failed to build receiver keychain")?;
 
     let amount_in = 100u128;
     let amount_out = 50u128; // the mock router pays out a fixed amountOutMin
@@ -119,16 +121,20 @@ async fn calls_allow_to_swap_erc20s_on_a_dex<Env: Environment>(
     let before_root = commitment_root(&env)?;
 
     // 1. Wrap token A into a shielded resource.
-    let wrap = wrap::build(
-        chain_id,
-        erc20_forwarder,
-        token_a,
-        amount_in,
-        11,
-        wrap::Overrides::default(),
-    )
+    let wrap = action::build([
+        ephemeral::consumed(
+            &sender,
+            chain_id,
+            erc20_forwarder,
+            token_a,
+            amount_in,
+            11,
+            ephemeral::Overrides::default(),
+        ),
+        persistent::created(&sender, erc20_forwarder, token_a, amount_in, 12),
+    ])
     .context("failed to build token A wrap action")?;
-    let tx = prove_actions(&env, &[wrap.witnesses])
+    let tx = prove_actions(&env, [&wrap])
         .await
         .context("failed to prove token A wrap action")?;
     execute_tx(&mut env, tx)
@@ -136,21 +142,15 @@ async fn calls_allow_to_swap_erc20s_on_a_dex<Env: Environment>(
         .context("failed to execute token A wrap action")?;
 
     // 2. Transfer the resource (sender -> receiver) so the receiver can unwrap it.
-    let transfer_path = env
-        .protocol_adapter()
-        .commitment_tree()
-        .path_to(wrap.created_persistent.commitment())
+    let wrapped = wrap.resources()[1];
+    let transfer_path = commitment_path(&env, wrapped.commitment())
         .context("failed to generate transfer merkle path")?;
-    let transferred = transfer::build(
-        wrap.created_persistent,
-        erc20_forwarder,
-        token_a,
-        17,
-        Some(transfer_path),
-        transfer::Overrides::default(),
-    )
+    let transfer = action::build([
+        persistent::consumed(&sender, wrapped, transfer_path, None),
+        persistent::created(&receiver, erc20_forwarder, token_a, wrapped.quantity, 17),
+    ])
     .context("failed to build transfer action")?;
-    let tx = prove_actions(&env, &[transferred.witnesses])
+    let tx = prove_actions(&env, [&transfer])
         .await
         .context("failed to prove transfer action")?;
     execute_tx(&mut env, tx)
@@ -208,60 +208,44 @@ async fn calls_allow_to_swap_erc20s_on_a_dex<Env: Environment>(
         },
     ];
 
-    let swap = generic_call::parts(
-        31,
-        generic_forwarder.to_vec(),
-        calls,
-        generic_call::Overrides::default(),
-    )
-    .context("failed to build the generic call parts")?;
-
-    let unwrap_path = env
-        .protocol_adapter()
-        .commitment_tree()
-        .path_to(transferred.created_persistent.commitment())
+    let transferred = transfer.resources()[1];
+    let unwrap_path = commitment_path(&env, transferred.commitment())
         .context("failed to generate unwrap merkle path")?;
-    let unwrap = unwrap::parts(
-        transferred.created_persistent,
-        erc20_forwarder,
-        token_a,
-        21,
-        Some(unwrap_path),
-        unwrap::Overrides {
-            ethereum_account_addr: Some(generic_forwarder.to_vec()),
-            ..Default::default()
-        },
-    )
-    .context("failed to build the unwrap parts")?;
 
     // The forwarder authorizes the Permit2 pull of the wrap via ERC-1271, so the permit signature is an accepted
     // 65-byte placeholder.
     let mut dummy_permit_sig = vec![0u8; 65];
     dummy_permit_sig[64] = 27;
-    let wrap_b = wrap::parts(
-        chain_id,
-        erc20_forwarder,
-        token_b,
-        amount_out,
-        41,
-        wrap::Overrides {
-            ethereum_account_addr: Some(generic_forwarder.to_vec()),
-            permit_signature: Some(dummy_permit_sig),
-            ..Default::default()
-        },
-    )
-    .context("failed to build the token B wrap parts")?;
 
-    let swap_action = action::build(vec![
-        unwrap.consumed,
-        unwrap.created,
-        swap.consumed,
-        swap.created,
-        wrap_b.consumed,
-        wrap_b.created,
+    let swap_action = action::build([
+        persistent::consumed(&receiver, transferred, unwrap_path, None),
+        ephemeral::created(
+            generic_forwarder,
+            erc20_forwarder,
+            token_a,
+            transferred.quantity,
+            21,
+        ),
+        generic_call::consumed(generic_forwarder, calls, 31)
+            .context("failed to build the consumed generic call resource")?,
+        generic_call::created(generic_forwarder, Vec::new(), 32)
+            .context("failed to build the created generic call resource")?,
+        ephemeral::consumed(
+            &receiver,
+            chain_id,
+            erc20_forwarder,
+            token_b,
+            amount_out,
+            41,
+            ephemeral::Overrides {
+                ethereum_account_addr: Some(generic_forwarder),
+                permit_signature: Some(dummy_permit_sig),
+            },
+        ),
+        persistent::created(&receiver, erc20_forwarder, token_b, amount_out, 42),
     ])
     .context("failed to build the swap action")?;
-    let tx = prove_actions(&env, &[swap_action.witnesses])
+    let tx = prove_actions(&env, [&swap_action])
         .await
         .context("failed to prove the swap transaction")?;
     execute_tx(&mut env, tx)

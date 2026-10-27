@@ -1099,7 +1099,7 @@ dependencies = [
 [[package]]
 name = "anoma-pa-evm-bindings"
 version = "3.0.0-rc.19"
-source = "git+https://github.com/anoma/pa-evm?tag=bindings%2Fv3.0.0-rc.19#6083daf3637bf01cfc75bda7ca7d026388da2c40"
+source = "git+https://github.com/anoma/pa-evm?rev=4808edb45b5e0a20db5ab4a5428367a1fe36c278#4808edb45b5e0a20db5ab4a5428367a1fe36c278"
 dependencies = [
  "alloy",
  "alloy-chains",
@@ -1113,7 +1113,7 @@ dependencies = [
 [[package]]
 name = "anoma-pa-evm-integration-test"
 version = "0.1.0"
-source = "git+https://github.com/anoma/pa-evm?tag=bindings%2Fv3.0.0-rc.19#6083daf3637bf01cfc75bda7ca7d026388da2c40"
+source = "git+https://github.com/anoma/pa-evm?rev=4808edb45b5e0a20db5ab4a5428367a1fe36c278#4808edb45b5e0a20db5ab4a5428367a1fe36c278"
 dependencies = [
  "alloy",
  "alloy-chains",
@@ -1129,9 +1129,9 @@ dependencies = [
 
 [[package]]
 name = "anoma-pa-testkit"
-version = "1.0.0-rc.4"
+version = "1.0.0-rc.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ed9fb12caf145f4754efed1d9993c97c087bed87634c6271072a2311faaf4b03"
+checksum = "f330139292100a80487d3c746b729f699aa9f9017e076d3083ecef22fe4b621b"
 dependencies = [
  "anoma-rm-risc0",
  "anoma-rm-risc0-gadgets",
@@ -1217,7 +1217,7 @@ dependencies = [
 [[package]]
 name = "anomapay-erc20-forwarder-bindings"
 version = "3.0.0-rc.18"
-source = "git+https://github.com/anoma/anomapay-erc20-forwarder?rev=118a409fa6bd1ac21fdef2504fb0986fe61672bb#118a409fa6bd1ac21fdef2504fb0986fe61672bb"
+source = "git+https://github.com/anoma/anomapay-erc20-forwarder?rev=86aae30d218fc7576cdd1e2a68737ccb0c644aff#86aae30d218fc7576cdd1e2a68737ccb0c644aff"
 dependencies = [
  "alloy",
  "alloy-chains",
@@ -1230,7 +1230,7 @@ dependencies = [
 [[package]]
 name = "anomapay-erc20-forwarder-integration-test"
 version = "0.2.0"
-source = "git+https://github.com/anoma/anomapay-erc20-forwarder?rev=118a409fa6bd1ac21fdef2504fb0986fe61672bb#118a409fa6bd1ac21fdef2504fb0986fe61672bb"
+source = "git+https://github.com/anoma/anomapay-erc20-forwarder?rev=86aae30d218fc7576cdd1e2a68737ccb0c644aff#86aae30d218fc7576cdd1e2a68737ccb0c644aff"
 dependencies = [
  "alloy",
  "alloy-chains",
