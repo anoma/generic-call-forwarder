@@ -11,6 +11,8 @@ pub type EvmE2eEnv = anoma_pa_evm_integration_test::envs::e2e::Environment;
 pub type EvmLocalEnv = anoma_pa_evm_integration_test::envs::local::Environment;
 
 use alloy::primitives::{B256, U256};
+#[cfg(feature = "e2e")]
+use alloy::providers::ext::AnvilApi;
 use anoma_generic_call_forwarder_integration_test::deploy::forwarder::deploy_and_insert_generic_call_forwarder;
 use anoma_generic_call_forwarder_integration_test::logic as generic_call_logic;
 use anoma_pa_evm_integration_test::keychain::EvmSigner;
@@ -41,6 +43,16 @@ pub async fn setup_transfer_generic_call_local_env() -> anyhow::Result<EvmLocalE
 #[cfg(feature = "e2e")]
 pub async fn setup_transfer_generic_call_e2e_env() -> anyhow::Result<EvmE2eEnv> {
     EvmE2eEnv::setup(async |builder: &mut StateBuilder| {
+        let provider = default_signer_in_state(builder.as_state())
+            .context("failed to retrieve default signer from setup state")?;
+        let deployer = identities::alice()
+            .context("failed to build sender keychain")?
+            .address();
+        // anvil estimates the gas of a creation at nonce 0, so the deployer must start at nonce 1.
+        provider
+            .anvil_set_nonce(deployer, 1)
+            .await
+            .context("failed to set the deployer nonce to 1")?;
         setup_transfer_generic_call_env_on_builder(builder).await
     })
     .await
