@@ -65,8 +65,6 @@ async fn calls_allow_to_unwrap_native_tokens<Env: Environment>(
         .call()
         .await
         .context("failed to read generic call forwarder WETH balance before unwrap")?;
-    let rand_seed = 11;
-
     let wrap = action::build([
         ephemeral::consumed(
             &sender,
@@ -74,10 +72,10 @@ async fn calls_allow_to_unwrap_native_tokens<Env: Environment>(
             erc20_forwarder,
             weth,
             amount,
-            rand_seed,
+            [11; 32],
             ephemeral::Overrides::default(),
         ),
-        persistent::created(&sender, erc20_forwarder, weth, amount, rand_seed + 1),
+        persistent::created(&sender, erc20_forwarder, weth, amount),
     ])
     .context("failed to build wrap action")?;
     let tx = prove_actions(&env, [&wrap])
@@ -111,17 +109,9 @@ async fn calls_allow_to_unwrap_native_tokens<Env: Environment>(
     let transfer_path = commitment_path(&env, wrapped.commitment())
         .context("failed to generate transfer merkle path")?;
 
-    let rand_seed = 17;
-
     let transfer = action::build([
         persistent::consumed(&sender, wrapped, transfer_path, None),
-        persistent::created(
-            &recipient,
-            erc20_forwarder,
-            weth,
-            wrapped.quantity,
-            rand_seed,
-        ),
+        persistent::created(&recipient, erc20_forwarder, weth, wrapped.quantity),
     ])
     .context("failed to build transfer action")?;
     let tx = prove_actions(&env, [&transfer])
@@ -135,8 +125,6 @@ async fn calls_allow_to_unwrap_native_tokens<Env: Environment>(
     let unwrap_path = commitment_path(&env, transferred.commitment())
         .context("failed to generate unwrap merkle path")?;
 
-    let rand_seed = 21;
-
     let unwrap = action::build([
         persistent::consumed(&recipient, transferred, unwrap_path, None),
         ephemeral::created(
@@ -144,7 +132,6 @@ async fn calls_allow_to_unwrap_native_tokens<Env: Environment>(
             erc20_forwarder,
             weth,
             transferred.quantity,
-            rand_seed,
         ),
     ])
     .context("failed to build unwrap action")?;

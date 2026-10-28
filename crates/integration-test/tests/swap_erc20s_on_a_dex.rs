@@ -128,10 +128,10 @@ async fn calls_allow_to_swap_erc20s_on_a_dex<Env: Environment>(
             erc20_forwarder,
             token_a,
             amount_in,
-            11,
+            [11; 32],
             ephemeral::Overrides::default(),
         ),
-        persistent::created(&sender, erc20_forwarder, token_a, amount_in, 12),
+        persistent::created(&sender, erc20_forwarder, token_a, amount_in),
     ])
     .context("failed to build token A wrap action")?;
     let tx = prove_actions(&env, [&wrap])
@@ -147,7 +147,7 @@ async fn calls_allow_to_swap_erc20s_on_a_dex<Env: Environment>(
         .context("failed to generate transfer merkle path")?;
     let transfer = action::build([
         persistent::consumed(&sender, wrapped, transfer_path, None),
-        persistent::created(&receiver, erc20_forwarder, token_a, wrapped.quantity, 17),
+        persistent::created(&receiver, erc20_forwarder, token_a, wrapped.quantity),
     ])
     .context("failed to build transfer action")?;
     let tx = prove_actions(&env, [&transfer])
@@ -224,7 +224,6 @@ async fn calls_allow_to_swap_erc20s_on_a_dex<Env: Environment>(
             erc20_forwarder,
             token_a,
             transferred.quantity,
-            21,
         ),
         generic_call::consumed(generic_forwarder, calls, 31)
             .context("failed to build the consumed generic call resource")?,
@@ -236,13 +235,13 @@ async fn calls_allow_to_swap_erc20s_on_a_dex<Env: Environment>(
             erc20_forwarder,
             token_b,
             amount_out,
-            41,
+            [41; 32],
             ephemeral::Overrides {
                 ethereum_account_addr: Some(generic_forwarder),
                 permit_signature: Some(dummy_permit_sig),
             },
         ),
-        persistent::created(&receiver, erc20_forwarder, token_b, amount_out, 42),
+        persistent::created(&receiver, erc20_forwarder, token_b, amount_out),
     ])
     .context("failed to build the swap action")?;
     let tx = prove_actions(&env, [&swap_action])
