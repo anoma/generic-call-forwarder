@@ -149,12 +149,10 @@ async fn calls_allow_to_unwrap_native_tokens<Env: Environment>(
         },
     ];
 
-    let rand_seed = 31;
-
     let generic_call_action = action::build([
-        generic_call::consumed(generic_forwarder, calls, rand_seed)
+        generic_call::consumed(generic_forwarder, calls, [31; 32])
             .context("failed to build the consumed generic call resource")?,
-        generic_call::created(generic_forwarder, Vec::new(), rand_seed + 1)
+        generic_call::created(generic_forwarder, Vec::new())
             .context("failed to build the created generic call resource")?,
     ])
     .context("failed to build generic call action")?;

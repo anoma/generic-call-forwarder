@@ -225,9 +225,9 @@ async fn calls_allow_to_swap_erc20s_on_a_dex<Env: Environment>(
             token_a,
             transferred.quantity,
         ),
-        generic_call::consumed(generic_forwarder, calls, 31)
+        generic_call::consumed(generic_forwarder, calls, [31; 32])
             .context("failed to build the consumed generic call resource")?,
-        generic_call::created(generic_forwarder, Vec::new(), 32)
+        generic_call::created(generic_forwarder, Vec::new())
             .context("failed to build the created generic call resource")?,
         ephemeral::consumed(
             &receiver,

@@ -13,16 +13,18 @@ use anoma_rm_risc0::nullifier_key::{NullifierKey, NullifierKeyCommitment};
 use anoma_rm_risc0::resource::Resource;
 use anyhow::Context;
 
+use crate::fixtures::CREATED_RAND_SEED;
 use crate::logic;
 
-/// A consumed generic call resource whose forwarder call has `forwarder` make `calls`. `seed`
-/// sets its nonce, its nullifier key and its random fields.
+/// A consumed generic call resource whose forwarder call has `forwarder` make `calls`. `nonce`
+/// sets its nonce, its nullifier key and its random seed.
 pub fn consumed(
     forwarder: Address,
-    calls: Vec<GenericCall>,
-    seed: u8,
+    calls: impl IntoIterator<Item = GenericCall>,
+    nonce: [u8; 32],
 ) -> anyhow::Result<ActionResource> {
-    let nf_key = NullifierKey::from_bytes([seed; 32]);
+    let calls: Vec<GenericCall> = calls.into_iter().collect();
+    let nf_key = NullifierKey::from_bytes(nonce);
     let resource = Resource {
         logic_ref: logic::verifying_key(),
         label_ref: calculate_label_ref(forwarder.as_ref()),
@@ -30,9 +32,9 @@ pub fn consumed(
         quantity: 0,
         value_ref: value_ref(&calls)?,
         is_ephemeral: true,
-        nonce: [seed; 32],
+        nonce,
         nk_commitment: nf_key.commit(),
-        rand_seed: [seed; 32],
+        rand_seed: nonce,
     };
     let logic_nf_key = nf_key.clone();
     Ok(ActionResource::consumed(
@@ -51,13 +53,12 @@ pub fn consumed(
     ))
 }
 
-/// A created generic call resource whose forwarder call has `forwarder` make `calls`. `seed` sets
-/// its random fields.
+/// A created generic call resource whose forwarder call has `forwarder` make `calls`.
 pub fn created(
     forwarder: Address,
-    calls: Vec<GenericCall>,
-    seed: u8,
+    calls: impl IntoIterator<Item = GenericCall>,
 ) -> anyhow::Result<ActionResource> {
+    let calls: Vec<GenericCall> = calls.into_iter().collect();
     let resource = ResourceToCreate {
         logic_ref: logic::verifying_key(),
         label_ref: calculate_label_ref(forwarder.as_ref()),
@@ -67,7 +68,7 @@ pub fn created(
         is_ephemeral: true,
         // No one consumes the resource, so any nullifier key commitment works.
         nk_commitment: NullifierKeyCommitment::default(),
-        rand_seed: [seed; 32],
+        rand_seed: CREATED_RAND_SEED,
     };
     Ok(ActionResource::created(
         resource,
