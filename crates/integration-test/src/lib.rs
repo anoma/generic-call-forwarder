@@ -1,7 +1,7 @@
 //! Integration-test harness for the Anoma generic call forwarder.
 //!
 //! Exposes the generic-call provisioning helpers (`deploy`, `state`), the
-//! resource `logic` (verifying key + witness adapter), and the action `fixtures`.
+//! verifying key of the resource `logic`, and the generic call resource in `fixtures`.
 //! Scenario setups and the scenarios live under `tests/`.
 
 pub mod deploy;

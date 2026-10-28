@@ -7,19 +7,20 @@ use anoma_pa_evm_integration_test::state::actors::default_signer;
 mod common;
 use anoma_pa_evm_integration_test::keychain::EvmSigner;
 use anoma_pa_evm_integration_test::state::chains::chain_id;
-use anoma_pa_testkit::environment::CommitmentTree;
 use anoma_pa_testkit::environment::Environment;
-use anoma_pa_testkit::environment::ProtocolAdapter;
-use anoma_pa_testkit::fixtures::identities;
+use anoma_pa_testkit::fixtures::{action, identities};
 use anomapay_erc20_forwarder_integration_test::deploy::erc20_bindings::WETH9;
 use anomapay_erc20_forwarder_integration_test::deploy::erc20_bindings::ierc20;
-use anomapay_erc20_forwarder_integration_test::fixtures::{transfer, unwrap, wrap};
+use anomapay_erc20_forwarder_integration_test::fixtures::{ephemeral, persistent};
 use anomapay_erc20_forwarder_integration_test::state::erc20::erc20_address;
 use anomapay_erc20_forwarder_integration_test::state::forwarder::erc20_forwarder_address;
 use anyhow::Context;
 #[cfg(feature = "e2e")]
 use common::setup_transfer_generic_call_e2e_env;
-use common::{commitment_root, execute_tx, prove_actions, setup_transfer_generic_call_local_env};
+use common::{
+    commitment_path, commitment_root, execute_tx, prove_actions,
+    setup_transfer_generic_call_local_env,
+};
 use it::fixtures::generic_call;
 use it::state::addresses::generic_call_forwarder_address;
 use rstest::*;
@@ -66,16 +67,20 @@ async fn calls_allow_to_unwrap_native_tokens<Env: Environment>(
         .context("failed to read generic call forwarder WETH balance before unwrap")?;
     let rand_seed = 11;
 
-    let wrap = wrap::build(
-        chain_id,
-        erc20_forwarder,
-        weth,
-        amount,
-        rand_seed,
-        wrap::Overrides::default(),
-    )
+    let wrap = action::build([
+        ephemeral::consumed(
+            &sender,
+            chain_id,
+            erc20_forwarder,
+            weth,
+            amount,
+            rand_seed,
+            ephemeral::Overrides::default(),
+        ),
+        persistent::created(&sender, erc20_forwarder, weth, amount, rand_seed + 1),
+    ])
     .context("failed to build wrap action")?;
-    let tx = prove_actions(&env, &[wrap.witnesses])
+    let tx = prove_actions(&env, [&wrap])
         .await
         .context("failed to prove wrap action")?;
     execute_tx(&mut env, tx)
@@ -102,49 +107,46 @@ async fn calls_allow_to_unwrap_native_tokens<Env: Environment>(
         "ERC20 forwarder WETH must equal wrap amount"
     );
 
-    let created_persistent_merkle_path = env
-        .protocol_adapter()
-        .commitment_tree()
-        .path_to(wrap.created_persistent.commitment())
+    let wrapped = wrap.resources()[1];
+    let transfer_path = commitment_path(&env, wrapped.commitment())
         .context("failed to generate transfer merkle path")?;
 
     let rand_seed = 17;
 
-    let transfer = transfer::build(
-        wrap.created_persistent,
-        erc20_forwarder,
-        weth,
-        rand_seed,
-        Some(created_persistent_merkle_path),
-        transfer::Overrides::default(),
-    )
+    let transfer = action::build([
+        persistent::consumed(&sender, wrapped, transfer_path, None),
+        persistent::created(
+            &recipient,
+            erc20_forwarder,
+            weth,
+            wrapped.quantity,
+            rand_seed,
+        ),
+    ])
     .context("failed to build transfer action")?;
-    let tx = prove_actions(&env, &[transfer.witnesses])
+    let tx = prove_actions(&env, [&transfer])
         .await
         .context("failed to prove transfer action")?;
     execute_tx(&mut env, tx)
         .await
         .context("failed to execute transfer action")?;
 
-    let unwrap_merkle_path = env
-        .protocol_adapter()
-        .commitment_tree()
-        .path_to(transfer.created_persistent.commitment())
+    let transferred = transfer.resources()[1];
+    let unwrap_path = commitment_path(&env, transferred.commitment())
         .context("failed to generate unwrap merkle path")?;
 
     let rand_seed = 21;
 
-    let unwrap = unwrap::build(
-        transfer.created_persistent,
-        erc20_forwarder,
-        weth,
-        rand_seed,
-        Some(unwrap_merkle_path),
-        unwrap::Overrides {
-            ethereum_account_addr: Some(generic_forwarder.to_vec()),
-            ..unwrap::Overrides::default()
-        },
-    )
+    let unwrap = action::build([
+        persistent::consumed(&recipient, transferred, unwrap_path, None),
+        ephemeral::created(
+            generic_forwarder,
+            erc20_forwarder,
+            weth,
+            transferred.quantity,
+            rand_seed,
+        ),
+    ])
     .context("failed to build unwrap action")?;
 
     let calls = vec![
@@ -162,16 +164,15 @@ async fn calls_allow_to_unwrap_native_tokens<Env: Environment>(
 
     let rand_seed = 31;
 
-    let generic_call_action = generic_call::build(
-        rand_seed,
-        generic_forwarder.to_vec(),
-        calls,
-        generic_call::Overrides::default(),
-    )
-    .context("failed to build generic call action")?
-    .witnesses;
+    let generic_call_action = action::build([
+        generic_call::consumed(generic_forwarder, calls, rand_seed)
+            .context("failed to build the consumed generic call resource")?,
+        generic_call::created(generic_forwarder, Vec::new(), rand_seed + 1)
+            .context("failed to build the created generic call resource")?,
+    ])
+    .context("failed to build generic call action")?;
 
-    let tx = prove_actions(&env, &[unwrap.witnesses])
+    let tx = prove_actions(&env, [&unwrap])
         .await
         .context("failed to prove unwrap action")?;
     execute_tx(&mut env, tx)
@@ -193,7 +194,7 @@ async fn calls_allow_to_unwrap_native_tokens<Env: Environment>(
         .await
         .context("failed to read recipient ETH balance before")?;
 
-    let tx = prove_actions(&env, &[generic_call_action])
+    let tx = prove_actions(&env, [&generic_call_action])
         .await
         .context("failed to prove generic call action")?;
     execute_tx(&mut env, tx)
