@@ -4,7 +4,7 @@ use anoma_pa_testkit::environment::State;
 use anoma_pa_testkit::environment::StateBuilder;
 use anyhow::Context;
 
-use super::keys::generic_call_forwarder_addr_key;
+use super::keys::{dex_router_addr_key, generic_call_forwarder_addr_key};
 
 #[inline]
 pub fn insert_generic_call_forwarder_address(builder: &mut StateBuilder, address: Address) {
@@ -25,6 +25,22 @@ pub fn generic_call_forwarder_address_in_state(state: &State) -> anyhow::Result<
         .get::<Address>(generic_call_forwarder_addr_key())
         .copied()
         .context("failed to retrieve generic call forwarder address from env")
+}
+
+#[inline]
+pub fn insert_dex_router_address(builder: &mut StateBuilder, address: Address) {
+    builder.insert(dex_router_addr_key(), address);
+}
+
+#[inline]
+pub fn dex_router_address<E>(env: &E) -> anyhow::Result<Address>
+where
+    E: Environment,
+{
+    env.state()
+        .get::<Address>(dex_router_addr_key())
+        .copied()
+        .context("failed to retrieve DEX router address from env")
 }
 
 #[cfg(test)]

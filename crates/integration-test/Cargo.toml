@@ -22,6 +22,7 @@ anoma-generic-call-forwarder-bindings = { workspace = true }
 anoma-generic-call-library = { workspace = true }
 anoma-generic-call-witness = { workspace = true }
 anoma-rm-risc0 = { workspace = true }
+anomapay-erc20-forwarder-integration-test = { workspace = true }
 
 alloy = { workspace = true, features = [
   "contract",
@@ -38,6 +39,5 @@ risc0-zkvm = { workspace = true }
 
 [dev-dependencies]
 anoma-pa-testkit = { workspace = true, features = ["mocks"] }
-anomapay-erc20-forwarder-integration-test = { workspace = true }
 rstest = { workspace = true }
 tokio = { workspace = true }
