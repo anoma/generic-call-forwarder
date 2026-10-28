@@ -20,7 +20,7 @@ use rstest::*;
 #[case::local(setup_transfer_generic_call_local_env())]
 #[cfg_attr(feature = "e2e", case::e2e_test(setup_transfer_generic_call_e2e_env()))]
 #[tokio::test]
-async fn calls_allow_to_unwrap_native_tokens<Env: Environment>(
+async fn execute_unwraps_native_tokens<Env: Environment>(
     #[future(awt)]
     #[case]
     env_with_setup: anyhow::Result<Env>,

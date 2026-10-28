@@ -58,7 +58,7 @@ async fn erc20_balance<P: Provider + Clone>(
 #[case::local(setup_dex_swap_local_env())]
 #[cfg_attr(feature = "e2e", case::e2e_test(setup_dex_swap_e2e_env()))]
 #[tokio::test]
-async fn calls_allow_to_swap_erc20s_on_a_dex<Env: Environment>(
+async fn execute_swaps_erc20s_on_a_dex<Env: Environment>(
     #[future(awt)]
     #[case]
     env_with_setup: anyhow::Result<Env>,
