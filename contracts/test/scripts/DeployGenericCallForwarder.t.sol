@@ -7,6 +7,7 @@ import {
 
 import {DeployGenericCallForwarder} from "../../script/DeployGenericCallForwarder.s.sol";
 import {Parameters} from "../../script/Parameters.sol";
+import {RecordedDeploymentsScript} from "../../script/RecordedDeploymentsScript.s.sol";
 import {GenericCallForwarder} from "../../src/GenericCallForwarder.sol";
 import {DeploymentsFixture} from "../fixtures/DeploymentsFixture.sol";
 import {DeployGenericCallForwarderMock} from "../mocks/DeployGenericCallForwarder.m.sol";
@@ -52,7 +53,7 @@ contract DeployGenericCallForwarderTest is DeploymentsFixture {
 
         vm.expectRevert(
             abi.encodeWithSelector(
-                DeployGenericCallForwarder.ProtocolAdapterNotRecorded.selector,
+                RecordedDeploymentsScript.DeploymentNotRecorded.selector,
                 _environmentName({isProduction: false}),
                 block.chainid
             )
