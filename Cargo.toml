@@ -14,15 +14,15 @@ edition = "2024"
 alloy = { version = "2.5.0", features = ["full", "eip712", "node-bindings"] }
 alloy-chains = "0.2.39"
 # The circuit crates are pinned exactly: another build has another logic ref, and so another kind.
-anoma-generic-call-library = "=2.0.0-rc.3"
-anoma-generic-call-witness = "=2.0.0-rc.3"
-anoma-pa-evm-bindings = { git = "https://github.com/anoma/pa-evm", rev = "4808edb45b5e0a20db5ab4a5428367a1fe36c278" }
-anoma-pa-testkit = "1.0.0-rc.5"
-anoma-rm-risc0 = { version = "2.0.0-rc.8", features = [
+anoma-generic-call-library = "=2.0.0-rc.4"
+anoma-generic-call-witness = "=2.0.0-rc.4"
+anoma-pa-evm-bindings = { git = "https://github.com/anoma/pa-evm", tag = "bindings/v3.0.0-rc.20" }
+anoma-pa-testkit = "1.0.0-rc.6"
+anoma-rm-risc0 = { version = "2.0.0-rc.8.1", features = [
   "bonsai",
   "aggregation",
 ] }
-anoma-rm-risc0-gadgets = "2.0.0-rc.8"
+anoma-rm-risc0-gadgets = "2.0.0-rc.8.1"
 anyhow = "1.0.104"
 bincode = "1.3.3"
 dotenvy = "0.15.7"
@@ -40,5 +40,5 @@ anoma-generic-call-forwarder-bindings = { path = "crates/bindings" }
 
 # Upstream test crates, pinned by git tag or commit (see anoma-pa-testkit ADR-0002). For
 # cross-repo development, override locally with a `[patch]` to a path checkout.
-anoma-pa-evm-integration-test = { git = "https://github.com/anoma/pa-evm", rev = "4808edb45b5e0a20db5ab4a5428367a1fe36c278" }
-anomapay-erc20-forwarder-integration-test = { git = "https://github.com/anoma/anomapay-erc20-forwarder", rev = "86aae30d218fc7576cdd1e2a68737ccb0c644aff" }
+anoma-pa-evm-integration-test = { git = "https://github.com/anoma/pa-evm", tag = "bindings/v3.0.0-rc.20" }
+anomapay-erc20-forwarder-integration-test = { git = "https://github.com/anoma/anomapay-erc20-forwarder", tag = "bindings/v3.0.0-rc.19" }
