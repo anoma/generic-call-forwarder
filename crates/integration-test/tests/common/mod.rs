@@ -5,6 +5,9 @@
 //! includes it with `mod common;`. Reusable helpers (assertions, provisioning)
 //! live in the testkit and the integration-test crates instead.
 
+// Each test binary compiles only the subset of helpers it uses.
+#![allow(dead_code)]
+
 #[cfg(feature = "e2e")]
 pub type EvmE2eEnv = anoma_pa_evm_integration_test::envs::e2e::Environment;
 
@@ -13,22 +16,25 @@ pub type EvmLocalEnv = anoma_pa_evm_integration_test::envs::local::Environment;
 use alloy::primitives::{B256, U256};
 #[cfg(feature = "e2e")]
 use alloy::providers::ext::AnvilApi;
+use anoma_generic_call_forwarder_integration_test::deploy::dex_router::deploy_dex_router_mock;
 use anoma_generic_call_forwarder_integration_test::deploy::forwarder::deploy_and_insert_generic_call_forwarder;
 use anoma_generic_call_forwarder_integration_test::logic as generic_call_logic;
+use anoma_generic_call_forwarder_integration_test::state::addresses::insert_dex_router_address;
 use anoma_pa_evm_integration_test::keychain::EvmSigner;
 use anoma_pa_evm_integration_test::state::actors::default_signer_in_state;
 use anoma_pa_evm_integration_test::state::pa::pa_address_in_state;
 use anoma_pa_testkit::environment::StateBuilder;
 use anoma_pa_testkit::fixtures::identities;
-use anomapay_erc20_forwarder_integration_test::deploy::erc20_bindings::deploy_and_insert_weth;
-use anomapay_erc20_forwarder_integration_test::deploy::erc20_bindings::ierc20;
+use anomapay_erc20_forwarder_integration_test::deploy::erc20_bindings::{
+    deploy_and_insert_example_erc20, deploy_and_insert_weth, erc20_example, ierc20,
+};
 use anomapay_erc20_forwarder_integration_test::deploy::forwarder::deploy_and_insert_erc20_forwarder;
 use anomapay_erc20_forwarder_integration_test::deploy::permit2::PERMIT2_CANONICAL_ADDRESS;
 use anomapay_erc20_forwarder_integration_test::deploy::permit2::deploy_permit2_canonical_from_state;
 use anomapay_erc20_forwarder_integration_test::logic as erc20_logic;
 use anyhow::Context;
 
-pub use anoma_pa_testkit::{commitment_path, commitment_root, execute_tx, prove_actions};
+pub use anoma_pa_testkit::{commitment_root, execute_tx, prove_actions};
 
 pub async fn setup_transfer_generic_call_local_env() -> anyhow::Result<EvmLocalEnv> {
     EvmLocalEnv::setup(async |builder: &mut StateBuilder| {
@@ -43,19 +49,45 @@ pub async fn setup_transfer_generic_call_local_env() -> anyhow::Result<EvmLocalE
 #[cfg(feature = "e2e")]
 pub async fn setup_transfer_generic_call_e2e_env() -> anyhow::Result<EvmE2eEnv> {
     EvmE2eEnv::setup(async |builder: &mut StateBuilder| {
-        let provider = default_signer_in_state(builder.as_state())
-            .context("failed to retrieve default signer from setup state")?;
-        let deployer = identities::alice()
-            .context("failed to build sender keychain")?
-            .address();
-        // anvil estimates the gas of a creation at nonce 0, so the deployer must start at nonce 1.
-        provider
-            .anvil_set_nonce(deployer, 1)
-            .await
-            .context("failed to set the deployer nonce to 1")?;
+        start_the_deployer_at_nonce_1(builder).await?;
         setup_transfer_generic_call_env_on_builder(builder).await
     })
     .await
+}
+
+pub async fn setup_dex_swap_local_env() -> anyhow::Result<EvmLocalEnv> {
+    EvmLocalEnv::setup(async |builder: &mut StateBuilder| {
+        deploy_permit2_canonical_from_state(builder.as_state())
+            .await
+            .context("failed to deploy Permit2 at canonical address")?;
+        setup_transfer_generic_call_env_on_builder(builder).await?;
+        setup_dex_swap_on_builder(builder).await
+    })
+    .await
+}
+
+#[cfg(feature = "e2e")]
+pub async fn setup_dex_swap_e2e_env() -> anyhow::Result<EvmE2eEnv> {
+    EvmE2eEnv::setup(async |builder: &mut StateBuilder| {
+        start_the_deployer_at_nonce_1(builder).await?;
+        setup_transfer_generic_call_env_on_builder(builder).await?;
+        setup_dex_swap_on_builder(builder).await
+    })
+    .await
+}
+
+/// anvil estimates the gas of a creation at nonce 0, so the deployer must start at nonce 1.
+#[cfg(feature = "e2e")]
+async fn start_the_deployer_at_nonce_1(builder: &StateBuilder) -> anyhow::Result<()> {
+    let provider = default_signer_in_state(builder.as_state())
+        .context("failed to retrieve default signer from setup state")?;
+    let deployer = identities::alice()
+        .context("failed to build sender keychain")?
+        .address();
+    provider
+        .anvil_set_nonce(deployer, 1)
+        .await
+        .context("failed to set the deployer nonce to 1")
 }
 
 async fn setup_transfer_generic_call_env_on_builder(
@@ -109,6 +141,50 @@ async fn setup_transfer_generic_call_env_on_builder(
         .get_receipt()
         .await
         .context("failed to fetch WETH permit2 approval receipt")?;
+
+    Ok(())
+}
+
+/// Deploys token A, which alice holds and lets Permit2 take, the DEX router, and token B, which
+/// the router holds to pay out swaps.
+async fn setup_dex_swap_on_builder(builder: &mut StateBuilder) -> anyhow::Result<()> {
+    let provider = default_signer_in_state(builder.as_state())
+        .context("failed to retrieve default signer from setup state")?;
+    let alice = identities::alice()
+        .context("failed to build alice's keychain")?
+        .address();
+
+    let token_a = deploy_and_insert_example_erc20(
+        builder,
+        "token_a",
+        provider.clone(),
+        alice,
+        U256::from(1_000_000u64),
+    )
+    .await
+    .context("failed to deploy and insert token A")?;
+    let router = deploy_dex_router_mock(provider.clone(), PERMIT2_CANONICAL_ADDRESS)
+        .await
+        .context("failed to deploy the DEX router")?;
+    insert_dex_router_address(builder, router);
+    deploy_and_insert_example_erc20(
+        builder,
+        "token_b",
+        provider.clone(),
+        router,
+        U256::from(1_000_000u64),
+    )
+    .await
+    .context("failed to deploy and insert token B")?;
+
+    erc20_example(token_a, provider)
+        .approve(PERMIT2_CANONICAL_ADDRESS, U256::MAX)
+        .send()
+        .await
+        .context("failed to submit the Permit2 approval of token A")?
+        .get_receipt()
+        .await
+        .context("failed to fetch the Permit2 approval receipt of token A")?;
 
     Ok(())
 }
