@@ -1,242 +1,151 @@
 use alloy::primitives::U256;
 use alloy::providers::Provider;
-use alloy::sol_types::SolCall;
 use anoma_generic_call_forwarder_integration_test as it;
 use anoma_pa_evm_integration_test::state::actors::default_signer;
 
 mod common;
 use anoma_pa_evm_integration_test::keychain::EvmSigner;
-use anoma_pa_evm_integration_test::state::chains::chain_id;
-use anoma_pa_testkit::environment::CommitmentTree;
 use anoma_pa_testkit::environment::Environment;
-use anoma_pa_testkit::environment::ProtocolAdapter;
-use anoma_pa_testkit::fixtures::identities;
-use anomapay_erc20_forwarder_integration_test::deploy::erc20_bindings::WETH9;
+use anoma_pa_testkit::fixtures::{action, identities};
 use anomapay_erc20_forwarder_integration_test::deploy::erc20_bindings::ierc20;
-use anomapay_erc20_forwarder_integration_test::fixtures::{transfer, unwrap, wrap};
-use anomapay_erc20_forwarder_integration_test::state::erc20::erc20_address;
-use anomapay_erc20_forwarder_integration_test::state::forwarder::erc20_forwarder_address;
+use anomapay_erc20_forwarder_integration_test::fixtures::token::Token;
 use anyhow::Context;
 #[cfg(feature = "e2e")]
 use common::setup_transfer_generic_call_e2e_env;
 use common::{commitment_root, execute_tx, prove_actions, setup_transfer_generic_call_local_env};
-use it::fixtures::generic_call;
-use it::state::addresses::generic_call_forwarder_address;
+use it::fixtures::{call, generic_call};
 use rstest::*;
-
-use anoma_generic_call_witness::GenericCall;
 
 #[rstest]
 #[case::local(setup_transfer_generic_call_local_env())]
 #[cfg_attr(feature = "e2e", case::e2e_test(setup_transfer_generic_call_e2e_env()))]
 #[tokio::test]
-async fn calls_allow_to_unwrap_native_tokens<Env: Environment>(
+async fn execute_unwraps_native_tokens<Env: Environment>(
     #[future(awt)]
     #[case]
     env_with_setup: anyhow::Result<Env>,
 ) -> anyhow::Result<()> {
     let mut env = env_with_setup.context("env setup failed")?;
-    let chain_id = chain_id(&env)?;
-    let erc20_forwarder = erc20_forwarder_address(&env)?;
-    let generic_forwarder = generic_call_forwarder_address(&env)?;
-    let weth = erc20_address(&env, "weth")?;
+    let weth = Token::new(&env, "weth")?;
+    let gcf = generic_call::Forwarder::new(&env)?;
     let provider = default_signer(&env).context("failed to retrieve default signer")?;
 
     let amount = 1u128;
     let amount_u256 = U256::from(amount);
-    let sender = identities::alice().context("failed to build sender keychain")?;
-    let recipient = identities::bob().context("failed to build recipient keychain")?;
+    let alice = identities::alice().context("failed to build alice's keychain")?;
+    let bob = identities::bob().context("failed to build bob's keychain")?;
 
     let before_root = commitment_root(&env)?;
 
-    let sender_weth_before = ierc20(weth, provider.clone())
-        .balanceOf(sender.address())
+    let alice_weth_before = ierc20(weth.address(), provider.clone())
+        .balanceOf(alice.address())
         .call()
         .await
-        .context("failed to read sender WETH balance before wrap")?;
-    let erc20_forwarder_weth_before_wrap = ierc20(weth, provider.clone())
-        .balanceOf(erc20_forwarder)
+        .context("failed to read alice's WETH balance before the wrap")?;
+    let erc20_forwarder_weth_before = ierc20(weth.address(), provider.clone())
+        .balanceOf(weth.forwarder())
         .call()
         .await
-        .context("failed to read ERC20 forwarder WETH balance before wrap")?;
-    let generic_forwarder_weth_before_unwrap = ierc20(weth, provider.clone())
-        .balanceOf(generic_forwarder)
-        .call()
-        .await
-        .context("failed to read generic call forwarder WETH balance before unwrap")?;
-    let rand_seed = 11;
+        .context("failed to read the ERC20 forwarder's WETH balance before the wrap")?;
 
-    let wrap = wrap::build(
-        chain_id,
-        erc20_forwarder,
-        weth,
-        amount,
-        rand_seed,
-        wrap::Overrides::default(),
-    )
-    .await
-    .context("failed to build wrap action")?;
-    let tx = prove_actions(&env, &[wrap.witnesses])
+    // 1. Alice wraps WETH into a resource of bob.
+    let wrap = weth
+        .wrap(&alice, amount)
+        .to(&bob)
+        .build(&env)
+        .context("failed to build the wrap")?;
+    let resource = wrap.resources()[1];
+    let tx = prove_actions(&env, [&wrap])
         .await
-        .context("failed to prove wrap action")?;
+        .context("failed to prove the wrap")?;
     execute_tx(&mut env, tx)
         .await
-        .context("failed to execute wrap action")?;
+        .context("failed to execute the wrap")?;
 
-    let sender_weth_after_wrap = ierc20(weth, provider.clone())
-        .balanceOf(sender.address())
+    let alice_weth_after_wrap = ierc20(weth.address(), provider.clone())
+        .balanceOf(alice.address())
         .call()
         .await
-        .context("failed to read sender WETH balance after wrap")?;
+        .context("failed to read alice's WETH balance after the wrap")?;
     anyhow::ensure!(
-        sender_weth_before - sender_weth_after_wrap == amount_u256,
-        "sender WETH must decrease by wrap amount"
+        alice_weth_before - alice_weth_after_wrap == amount_u256,
+        "alice's WETH must decrease by the wrap amount"
     );
-
-    let erc20_forwarder_weth_after_wrap = ierc20(weth, provider.clone())
-        .balanceOf(erc20_forwarder)
+    let erc20_forwarder_weth_after_wrap = ierc20(weth.address(), provider.clone())
+        .balanceOf(weth.forwarder())
         .call()
         .await
-        .context("failed to read ERC20 forwarder WETH balance after wrap")?;
+        .context("failed to read the ERC20 forwarder's WETH balance after the wrap")?;
     anyhow::ensure!(
-        erc20_forwarder_weth_after_wrap - erc20_forwarder_weth_before_wrap == amount_u256,
-        "ERC20 forwarder WETH must equal wrap amount"
+        erc20_forwarder_weth_after_wrap - erc20_forwarder_weth_before == amount_u256,
+        "the ERC20 forwarder's WETH must grow by the wrap amount"
     );
 
-    let created_persistent_merkle_path = env
-        .protocol_adapter()
-        .commitment_tree()
-        .path_to(wrap.created_persistent.commitment())
-        .context("failed to generate transfer merkle path")?;
-
-    let rand_seed = 17;
-
-    let transfer = transfer::build(
-        wrap.created_persistent,
-        erc20_forwarder,
-        weth,
-        rand_seed,
-        Some(created_persistent_merkle_path),
-        transfer::Overrides::default(),
-    )
-    .context("failed to build transfer action")?;
-    let tx = prove_actions(&env, &[transfer.witnesses])
+    let bob_eth_before = provider
+        .get_balance(bob.address())
         .await
-        .context("failed to prove transfer action")?;
-    execute_tx(&mut env, tx)
-        .await
-        .context("failed to execute transfer action")?;
+        .context("failed to read bob's ETH balance before the unwrap")?;
 
-    let unwrap_merkle_path = env
-        .protocol_adapter()
-        .commitment_tree()
-        .path_to(transfer.created_persistent.commitment())
-        .context("failed to generate unwrap merkle path")?;
-
-    let rand_seed = 21;
-
-    let unwrap = unwrap::build(
-        transfer.created_persistent,
-        erc20_forwarder,
-        weth,
-        rand_seed,
-        Some(unwrap_merkle_path),
-        unwrap::Overrides {
-            ethereum_account_addr: Some(generic_forwarder.to_vec()),
-            ..unwrap::Overrides::default()
-        },
-    )
-    .context("failed to build unwrap action")?;
-
-    let calls = vec![
-        GenericCall {
-            to: weth.to_vec(),
-            value: 0,
-            data: WETH9::withdrawCall { wad: amount_u256 }.abi_encode(),
-        },
-        GenericCall {
-            to: recipient.address().to_vec(),
-            value: amount,
-            data: Vec::new(),
-        },
+    // 2. One action, in the order of its forwarder calls: the unwrap releases bob's WETH to the
+    //    generic call forwarder, and the calls turn it into native tokens and send them to bob.
+    let calls = [
+        call::weth::withdraw(weth.address(), amount_u256),
+        call::send(bob.address(), amount),
     ];
-
-    let rand_seed = 31;
-
-    let generic_call_action = generic_call::build(
-        rand_seed,
-        generic_forwarder.to_vec(),
-        calls,
-        generic_call::Overrides::default(),
+    let unwrap = action::build(
+        [
+            weth.unwrap((&bob, resource))
+                .to(gcf.address())
+                .resources(&env)?,
+            vec![
+                gcf.created(calls)
+                    .context("failed to build the generic call resource")?,
+            ],
+        ]
+        .into_iter()
+        .flatten(),
     )
-    .context("failed to build generic call action")?
-    .witnesses;
-
-    let tx = prove_actions(&env, &[unwrap.witnesses])
+    .context("failed to build the unwrap action")?;
+    let tx = prove_actions(&env, [&unwrap])
         .await
-        .context("failed to prove unwrap action")?;
+        .context("failed to prove the unwrap action")?;
     execute_tx(&mut env, tx)
         .await
-        .context("failed to execute unwrap action")?;
+        .context("failed to execute the unwrap action")?;
 
-    let generic_forwarder_weth_after_unwrap = ierc20(weth, provider.clone())
-        .balanceOf(generic_forwarder)
+    let erc20_forwarder_weth_after = ierc20(weth.address(), provider.clone())
+        .balanceOf(weth.forwarder())
         .call()
         .await
-        .context("failed to read generic call forwarder WETH balance after unwrap")?;
+        .context("failed to read the ERC20 forwarder's WETH balance after the unwrap")?;
     anyhow::ensure!(
-        generic_forwarder_weth_after_unwrap - generic_forwarder_weth_before_unwrap == amount_u256,
-        "generic call forwarder WETH must equal unwrap amount before generic call"
+        erc20_forwarder_weth_after == erc20_forwarder_weth_before,
+        "the unwrap must release the WETH of the wrap"
     );
-
-    let recipient_eth_before = provider
-        .get_balance(recipient.address())
-        .await
-        .context("failed to read recipient ETH balance before")?;
-
-    let tx = prove_actions(&env, &[generic_call_action])
-        .await
-        .context("failed to prove generic call action")?;
-    execute_tx(&mut env, tx)
-        .await
-        .context("failed to execute generic call action")?;
-
-    let erc20_forwarder_weth_after = ierc20(weth, provider.clone())
-        .balanceOf(erc20_forwarder)
+    let gcf_weth_after = ierc20(weth.address(), provider.clone())
+        .balanceOf(gcf.address())
         .call()
         .await
-        .context("failed to read ERC20 forwarder WETH balance after generic call")?;
+        .context("failed to read the generic call forwarder's WETH balance after the calls")?;
     anyhow::ensure!(
-        erc20_forwarder_weth_after == U256::ZERO,
-        "ERC20 forwarder WETH should be zero after unwrap"
+        gcf_weth_after == U256::ZERO,
+        "the generic call forwarder must hold no WETH after the withdrawal"
     );
-
-    let generic_forwarder_weth_after = ierc20(weth, provider.clone())
-        .balanceOf(generic_forwarder)
-        .call()
+    let gcf_eth_after = provider
+        .get_balance(gcf.address())
         .await
-        .context("failed to read generic call forwarder WETH balance after generic call")?;
+        .context("failed to read the generic call forwarder's ETH balance after the calls")?;
     anyhow::ensure!(
-        generic_forwarder_weth_after == U256::ZERO,
-        "generic call forwarder WETH should be zero after withdraw"
+        gcf_eth_after == U256::ZERO,
+        "the generic call forwarder must hold no ETH after sending it"
     );
-
-    let generic_forwarder_eth_after = provider
-        .get_balance(generic_forwarder)
+    let bob_eth_after = provider
+        .get_balance(bob.address())
         .await
-        .context("failed to read generic call forwarder ETH balance after generic call")?;
+        .context("failed to read bob's ETH balance after the unwrap")?;
     anyhow::ensure!(
-        generic_forwarder_eth_after == U256::ZERO,
-        "generic call forwarder ETH should be zero after forwarding"
-    );
-
-    let recipient_eth_after = provider
-        .get_balance(recipient.address())
-        .await
-        .context("failed to read recipient ETH balance after")?;
-    anyhow::ensure!(
-        recipient_eth_after - recipient_eth_before == amount_u256,
-        "recipient ETH must increase by transfer amount"
+        bob_eth_after - bob_eth_before == amount_u256,
+        "bob's ETH must grow by the unwrap amount"
     );
 
     let after_root = commitment_root(&env)?;

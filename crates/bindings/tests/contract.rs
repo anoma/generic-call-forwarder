@@ -5,8 +5,10 @@
 #[cfg(test)]
 extern crate dotenvy;
 
-use alloy::primitives::{Address, B256};
+use alloy::primitives::{Address, B256, U256};
+use alloy::providers::ext::AnvilApi;
 use alloy::providers::{DynProvider, Provider, ProviderBuilder};
+use alloy::signers::local::PrivateKeySigner;
 use alloy_chains::NamedChain;
 use anoma_generic_call_forwarder_bindings::addresses::{
     Environment, generic_call_forwarder_deployments_map,
@@ -135,9 +137,17 @@ async fn fwd_instance(
 ) -> GenericCallForwarderInstance<DynProvider> {
     let rpc_url = alchemy_url(chain).expect("Couldn't get RPC URL for chain");
 
+    // anvil estimates the gas of a creation as if the sender had nonce 0, so the deployer must be
+    // an account that the forked chain has never seen.
+    let deployer = PrivateKeySigner::random();
     let provider = ProviderBuilder::new()
-        .connect_anvil_with_wallet_and_config(|a| a.fork(rpc_url))
-        .expect("Couldn't create anvil provider");
+        .wallet(deployer.clone())
+        .connect_anvil_with_config(|a| a.fork(rpc_url));
+    provider
+        .anvil_set_balance(deployer.address(), U256::from(10).pow(U256::from(18)))
+        .await
+        .expect("Couldn't fund the deployer");
+
     generic_call_forwarder(&provider.erased(), environment)
         .await
         .expect("Couldn't get generic call forwarder instance")
