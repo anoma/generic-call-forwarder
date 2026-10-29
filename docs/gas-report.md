@@ -1,7 +1,7 @@
 | src/GenericCallForwarder.sol:GenericCallForwarder Contract |                 |       |        |        |         |
 |------------------------------------------------------------|-----------------|-------|--------|--------|---------|
 | Deployment Cost                                            | Deployment Size |       |        |        |         |
-|                                                          0 |            4285 |       |        |        |         |
+|                                                     877010 |            4285 |       |        |        |         |
 |                                                            |                 |       |        |        |         |
 | Function Name                                              | Min             | Avg   | Median | Max    | # Calls |
 | VERSION                                                    |             589 |   589 |    589 |    589 |       3 |
