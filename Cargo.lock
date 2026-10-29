@@ -1098,8 +1098,8 @@ dependencies = [
 
 [[package]]
 name = "anoma-pa-evm-bindings"
-version = "3.0.0-rc.20"
-source = "git+https://github.com/anoma/pa-evm?tag=bindings%2Fv3.0.0-rc.20#f08a7182803a2245f9518a116556609dd1ede25d"
+version = "3.0.0-rc.21"
+source = "git+https://github.com/anoma/pa-evm?tag=bindings%2Fv3.0.0-rc.21#a1ad5c2ceec7143d0d98af7d538dd9d08f7a8063"
 dependencies = [
  "alloy",
  "alloy-chains",
@@ -1113,7 +1113,7 @@ dependencies = [
 [[package]]
 name = "anoma-pa-evm-integration-test"
 version = "0.1.0"
-source = "git+https://github.com/anoma/pa-evm?tag=bindings%2Fv3.0.0-rc.20#f08a7182803a2245f9518a116556609dd1ede25d"
+source = "git+https://github.com/anoma/pa-evm?tag=bindings%2Fv3.0.0-rc.21#a1ad5c2ceec7143d0d98af7d538dd9d08f7a8063"
 dependencies = [
  "alloy",
  "alloy-chains",
@@ -1129,9 +1129,9 @@ dependencies = [
 
 [[package]]
 name = "anoma-pa-testkit"
-version = "1.0.0-rc.6"
+version = "1.0.0-rc.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b14dfbc9dbf6e334918cc1c9ca1a9b81bdeb876203a7a07f6ce22a31f1279910"
+checksum = "7f1f97548c45f0adce1d6bac9f99b8ca991a9587957109adc54422962dc0d5f3"
 dependencies = [
  "anoma-rm-risc0",
  "anoma-rm-risc0-gadgets",
@@ -1161,9 +1161,9 @@ dependencies = [
 
 [[package]]
 name = "anoma-rm-core"
-version = "2.0.0-rc.8.1"
+version = "2.0.0-rc.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "574ea77bcf67d82cab018d334bf896132c37746892e91d348c5e2588a4912648"
+checksum = "36ba9c592504514b685e3e92c802af7f3108f3d6b9b8868ddbc20c8d6e54325c"
 dependencies = [
  "bincode",
  "bytemuck",
@@ -1175,9 +1175,9 @@ dependencies = [
 
 [[package]]
 name = "anoma-rm-risc0"
-version = "2.0.0-rc.8.1"
+version = "2.0.0-rc.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e6ca86610b1937f07c443c5902297107b6939b8232763e649c79d02b08b13fd1"
+checksum = "f6ac294be40197650b1e78609e876642ebb364427287d59a9cf1bfac8abf016a"
 dependencies = [
  "alloy-primitives",
  "alloy-sol-types",
@@ -1198,9 +1198,9 @@ dependencies = [
 
 [[package]]
 name = "anoma-rm-risc0-gadgets"
-version = "2.0.0-rc.8.1"
+version = "2.0.0-rc.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6bd2c5904affd6cdab244bfc48f4e8af311b02ae5ea05cb661774df14fe45f4e"
+checksum = "a0b2dd20e28b4e0956f719148721deb63e87c7791496f466fe892bb74fdba9d9"
 dependencies = [
  "aes-gcm",
  "alloy-primitives",
@@ -1217,7 +1217,7 @@ dependencies = [
 [[package]]
 name = "anomapay-erc20-forwarder-bindings"
 version = "3.0.0-rc.19"
-source = "git+https://github.com/anoma/anomapay-erc20-forwarder?tag=bindings%2Fv3.0.0-rc.19#8b7fdb44a06aedef1caf98468bf9450d7629824c"
+source = "git+https://github.com/anoma/anomapay-erc20-forwarder?rev=a65ca1f6a4f4e4cb1e57508bd48942da4e6f3418#a65ca1f6a4f4e4cb1e57508bd48942da4e6f3418"
 dependencies = [
  "alloy",
  "alloy-chains",
@@ -1230,21 +1230,54 @@ dependencies = [
 [[package]]
 name = "anomapay-erc20-forwarder-integration-test"
 version = "0.2.0"
-source = "git+https://github.com/anoma/anomapay-erc20-forwarder?tag=bindings%2Fv3.0.0-rc.19#8b7fdb44a06aedef1caf98468bf9450d7629824c"
+source = "git+https://github.com/anoma/anomapay-erc20-forwarder?rev=a65ca1f6a4f4e4cb1e57508bd48942da4e6f3418#a65ca1f6a4f4e4cb1e57508bd48942da4e6f3418"
 dependencies = [
  "alloy",
  "alloy-chains",
+ "anoma-pa-evm-bindings",
  "anoma-pa-evm-integration-test",
  "anoma-pa-testkit",
  "anoma-rm-risc0",
  "anoma-rm-risc0-gadgets",
  "anomapay-erc20-forwarder-bindings",
+ "anomapay_emergency_migrating_erc20_library",
+ "anomapay_emergency_migrating_erc20_witness",
  "anomapay_erc20_library",
  "anomapay_erc20_witness",
  "anyhow",
  "bincode",
  "risc0-zkvm",
- "transfer_library",
+]
+
+[[package]]
+name = "anomapay_emergency_migrating_erc20_library"
+version = "2.0.0-rc.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a98d6f984f231a9e05703282a49bf4449f8657c16411f030c70dfacd4188ee9e"
+dependencies = [
+ "anoma-rm-risc0",
+ "anoma-rm-risc0-gadgets",
+ "anomapay_emergency_migrating_erc20_witness",
+ "anomapay_erc20_witness",
+ "hex",
+ "k256",
+ "lazy_static",
+ "serde",
+]
+
+[[package]]
+name = "anomapay_emergency_migrating_erc20_witness"
+version = "2.0.0-rc.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0ef5dab3b3dd97c7a76ae878c5c1a36e55ef3a723da64ad82c0802bb102d55c7"
+dependencies = [
+ "alloy-primitives",
+ "alloy-sol-types",
+ "anoma-rm-risc0",
+ "anoma-rm-risc0-gadgets",
+ "anomapay_erc20_witness",
+ "bincode",
+ "serde",
 ]
 
 [[package]]
@@ -7877,35 +7910,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0e0d2eaa99c3c2e41547cfa109e910a68ea03823cccad4a0525dcbc9b01e8c71"
 dependencies = [
  "tracing-core",
-]
-
-[[package]]
-name = "transfer_library"
-version = "3.0.0-rc.2.1"
-source = "git+https://github.com/anoma/anomapay-erc20-resource?rev=4b9562e5e918d4a6182872d50f183eb7fe9caf37#4b9562e5e918d4a6182872d50f183eb7fe9caf37"
-dependencies = [
- "anoma-rm-risc0",
- "anoma-rm-risc0-gadgets",
- "hex",
- "k256",
- "lazy_static",
- "serde",
- "transfer_witness",
-]
-
-[[package]]
-name = "transfer_witness"
-version = "3.0.0-rc.2.1"
-source = "git+https://github.com/anoma/anomapay-erc20-resource?rev=4b9562e5e918d4a6182872d50f183eb7fe9caf37#4b9562e5e918d4a6182872d50f183eb7fe9caf37"
-dependencies = [
- "alloy-primitives",
- "alloy-sol-types",
- "anoma-rm-risc0",
- "anoma-rm-risc0-gadgets",
- "bincode",
- "k256",
- "rand 0.9.5",
- "serde",
 ]
 
 [[package]]
