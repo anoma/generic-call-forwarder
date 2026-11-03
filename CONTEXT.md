@@ -1,6 +1,6 @@
 # Generic Call Forwarder
 
-The forwarder contract and integration-test layer that lets ARM resources trigger **arbitrary EVM calls** through the [Anoma EVM protocol adapter](https://github.com/anoma/pa-evm).
+The forwarder contract and integration-test layer that lets resources of the Anoma Resource Machine (ARM) trigger **arbitrary EVM calls** through the protocol adapter.
 
 ## Language
 
@@ -8,10 +8,43 @@ The forwarder contract and integration-test layer that lets ARM resources trigge
 The EVM contract through which the protocol adapter executes a list of arbitrary calls on behalf of an action. Use "generic call forwarder" for the contract.
 
 **Generic Call**:
-A single `(to, value, data)` EVM call carried by a resource and executed by the forwarder. A resource's label commits to the calls it authorizes.
+A single `(to, value, data)` EVM call carried by a resource and executed by the forwarder. A resource's value commits to the calls it authorizes.
 
 **Forwarder**:
 The generic call forwarder contract (above) — the same forwarder role the protocol adapter drives in other applications.
+
+**Protocol adapter**:
+The contract that verifies transactions on a chain.
+
+**External call**:
+A call that the protocol adapter makes to a forwarder when it processes a resource.
+
+**Ephemeral resource**:
+A resource that exists only in one transaction.
+
+**Resource logic**:
+The circuit that decides when a transaction can create or consume a resource.
+
+**Logic ref**:
+The hash that identifies the code of a resource logic.
+
+**Label ref**:
+The hash of the data that separates the resources of one resource logic.
+
+**Kind**:
+The hash to curve of the logic ref and the label ref of a resource.
+
+**Kind point**:
+The point that the compliance circuit multiplies by the quantity of a resource.
+
+**Kind tree**:
+A Merkle tree that gives kinds their kind points. Two kinds with the same kind point are aliases.
+
+**In-circuit check**:
+A check that a circuit makes: a proof of the circuit is valid only if the check holds. For example, the generic call circuit checks that the value of a resource commits to its calls.
+
+**Out-of-circuit check**:
+A check outside the circuits, for example a check that the forwarder makes on chain.
 
 **Environment**:
 One of the two generic call forwarder deployments the repo maintains, each recorded per chain in the deployment record and tracking a branch. Say "environment" (not "network" or "deployment target") — a chain is where an environment lives, not which one it is.
@@ -24,6 +57,9 @@ Moving a commit unchanged from `next` to `staging`, or from `staging` to `main`.
 
 **Deployment record**:
 `crates/bindings/deployments.json` — the forwarder address each environment runs on each chain. A deploy of a new version replaces the chain's entry, and the superseded forwarder stays on the chain unrecorded.
+
+**Legacy protocol adapter**:
+The immutable protocol adapter that a chain used before the Galileo upgrade.
 
 ## Note on upstream names
 
