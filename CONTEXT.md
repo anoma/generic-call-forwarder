@@ -5,13 +5,13 @@ The forwarder contract and integration-test layer that lets resources of the Ano
 ## Language
 
 **Generic Call Forwarder**:
-The EVM contract through which the protocol adapter executes a list of arbitrary calls on behalf of an action. Use "generic call forwarder" for the contract.
+The contract that makes a list of calls to other contracts for a resource, when the protocol adapter calls it. Use "generic call forwarder" for the contract.
 
 **Generic Call**:
 A single `(to, value, data)` EVM call carried by a resource and executed by the forwarder. A resource's value commits to the calls it authorizes.
 
 **Forwarder**:
-The generic call forwarder contract (above) — the same forwarder role the protocol adapter drives in other applications.
+A contract of an application that the protocol adapter calls. In this repository, the generic call forwarder.
 
 **Protocol adapter**:
 The contract that verifies transactions on a chain.
@@ -50,7 +50,7 @@ A check outside the circuits, for example a check that the forwarder makes on ch
 One of the two generic call forwarder deployments the repo maintains, each recorded per chain in the deployment record and tracking a branch. Say "environment" (not "network" or "deployment target") — a chain is where an environment lives, not which one it is.
 
 **Staging / Production**:
-The two environments. Each environment's forwarder settles through the protocol adapter proxy of the same environment. The forwarder is immutable and has no owner, so a new version is a new deployment, not an upgrade. The branches tracking them keep their own names, `staging` and `main`.
+The two environments. Each environment's forwarder accepts calls only from the protocol adapter proxy of the same environment. The forwarder is immutable and has no owner, so a new version is a new deployment, not an upgrade. The branches tracking them keep their own names, `staging` and `main`.
 
 **Promotion**:
 Moving a commit unchanged from `next` to `staging`, or from `staging` to `main`. The pull request opening one carries the gate proving the environment it targets runs that commit's source. Changes only ever flow this way.
@@ -60,6 +60,9 @@ Moving a commit unchanged from `next` to `staging`, or from `staging` to `main`.
 
 **Legacy protocol adapter**:
 The immutable protocol adapter that a chain used before the Galileo upgrade.
+
+**Galileo upgrade**:
+The replacement of the legacy protocol adapter of a chain with the protocol adapter, once for each chain.
 
 ## Note on upstream names
 

@@ -1,6 +1,6 @@
 # Deployments
 
-This document specifies the deployments of the generic call forwarder and their parameters. The [overview](./README.md) lists the other documents.
+This document specifies the deployments of the generic call forwarder and their parameters. The [overview](./README.md) lists the other documents, and the glossary [`CONTEXT.md`](../CONTEXT.md#language) defines the terms.
 
 ## 1. One deployment for each protocol adapter
 

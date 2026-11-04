@@ -1,6 +1,6 @@
 # Contract and Calls
 
-This document specifies the generic call forwarder: its resources, the calls that it makes, and its other functions. The code is in [`contracts/src/GenericCallForwarder.sol`](../contracts/src/GenericCallForwarder.sol). The [overview](./README.md) lists the other documents.
+This document specifies the generic call forwarder: its resources, the calls that it makes, and its other functions. The code is in [`contracts/src/GenericCallForwarder.sol`](../contracts/src/GenericCallForwarder.sol). The [overview](./README.md) lists the other documents, and the glossary [`CONTEXT.md`](../CONTEXT.md#language) defines the terms.
 
 ## 1. Resources and calls
 
