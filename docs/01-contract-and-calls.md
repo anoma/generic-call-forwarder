@@ -8,7 +8,7 @@ The resource logic of the forwarder is the generic call circuit. A generic call 
 
 The protocol adapter makes the external calls in the order of the resources of the action. So one action can unwrap tokens to the forwarder, swap them, and wrap the result.
 
-The kind tree of each chain gives the generic call kind its own kind point, so that the compliance circuit does not calculate it. This entry makes no alias.
+The kind tree of each chain gives the generic call kind its own kind base, so that the compliance circuit does not calculate it. This entry makes no alias.
 
 ## 2. Contract
 
