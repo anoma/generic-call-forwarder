@@ -21,6 +21,6 @@ The kind tree of each chain gives the generic call kind its own kind point, so t
 
 ## 3. Trust assumptions
 
-- **Any prover can make the forwarder call any contract.** The in-circuit checks of the generic call circuit cover only that the resource is ephemeral, that its label ref names the forwarder, and that its value commits to the calls. Other resources of the same action must authorize what the calls do, for example the signature of the user on an unwrap.
-- **Tokens that stay in the forwarder belong to nobody.** After a transaction, anyone can move them with `sweep` or with the calls of a later transaction. A transaction must leave no tokens and no allowances in the forwarder.
-- **Each signature check through the forwarder passes.** A contract that trusts `isValidSignature` of the forwarder must get its authorization from the action, not from the signature.
+- **Other resources of the action authorize the calls.** Any prover can make the forwarder call any contract: the in-circuit checks of the generic call circuit cover only that the resource is ephemeral, that its label ref names the forwarder, and that its value commits to the calls. For example, the signature of the user on an unwrap authorizes what the calls do.
+- **A transaction leaves no tokens and no allowances in the forwarder.** Tokens that stay in the forwarder belong to nobody: after a transaction, anyone can move them with `sweep` or with the calls of a later transaction.
+- **No contract takes a signature of the forwarder as an authorization.** `isValidSignature` accepts every signature, so a contract that checks signatures of the forwarder must get its authorization from the action.
