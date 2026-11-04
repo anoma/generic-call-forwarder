@@ -34,11 +34,12 @@ The hash of the data that separates the resources of one resource logic.
 **Kind**:
 The hash to curve of the logic ref and the label ref of a resource.
 
-**Kind point**:
+**Kind base**:
 The point that the compliance circuit multiplies by the quantity of a resource.
+_Avoid_: kind point
 
 **Kind tree**:
-A Merkle tree that gives kinds their kind points. Two kinds with the same kind point are aliases.
+A Merkle tree that gives kinds their kind bases. Two kinds with the same kind base are aliases.
 
 **In-circuit check**:
 A check that a circuit makes: a proof of the circuit is valid only if the check holds. For example, the generic call circuit checks that the value of a resource commits to its calls.
