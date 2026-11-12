@@ -118,8 +118,15 @@ contracts-verify-custom address chain verifier-url *args:
         src/GenericCallForwarder.sol:GenericCallForwarder \
         --chain {{chain}} --verifier-url {{verifier-url}} --watch {{ args }}
 
-# Verify the generic call forwarder on both sourcify and etherscan
-contracts-verify address chain: (contracts-verify-sourcify address chain) (contracts-verify-etherscan address chain)
+# Verify the generic call forwarder on both sourcify and etherscan; a failure on one explorer does not stop the other
+contracts-verify address chain:
+    #!/usr/bin/env bash
+    set -uo pipefail
+    failed=""
+    for explorer in sourcify etherscan; do
+        just contracts-verify-$explorer {{address}} {{chain}} || failed+=" $explorer"
+    done
+    if [ -n "$failed" ]; then echo "Verification of {{address}} failed on:$failed" >&2; exit 1; fi
 
 # Publish contracts at the version `GenericCallForwarder` compiles to
 contracts-publish *args:

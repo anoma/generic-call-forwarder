@@ -6,6 +6,8 @@
 
 A forwarder contract written in Solidity allowing generic EVM calls to be triggered by resources using the [Anoma EVM protocol adapter](https://github.com/anoma/pa-evm).
 
+The [documentation](./docs/README.md) specifies the forwarder and its deployments.
+
 ## Project Structure
 
 This monorepo is structured as follows:
