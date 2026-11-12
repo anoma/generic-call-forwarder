@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
+import {ILogicRefSpecific} from "anoma-forwarder-bases-3.1.0/src/interfaces/ILogicRefSpecific.sol";
+import {IProtocolAdapterSpecific} from "anoma-forwarder-bases-3.1.0/src/interfaces/IProtocolAdapterSpecific.sol";
 import {
     RecordedDeployments as ProtocolAdapterDeployments
 } from "anoma-pa-evm-2.0.0-rc.16/generated/RecordedDeployments.sol";
@@ -10,7 +12,6 @@ import {LibString} from "solady-0.1.26/src/utils/LibString.sol";
 import {RecordedDeployments} from "../../generated/RecordedDeployments.sol";
 import {DeployGenericCallForwarder} from "../../script/DeployGenericCallForwarder.s.sol";
 import {Parameters} from "../../script/Parameters.sol";
-import {GenericCallForwarder} from "../../src/GenericCallForwarder.sol";
 
 /// @notice A test fixture providing the generic call forwarder deployments recorded per environment in
 /// `deployments.json` — the single source of truth for the deterministic deployments — through the generated
@@ -54,30 +55,48 @@ abstract contract DeploymentsFixture is Test {
             address recorded = deployments[i].contractAddress;
             string memory context = _deploymentContext({isProduction: isProduction, chainId: chainId});
 
-            _selectForkAt(chainId);
-            assertGt(recorded.code.length, 0, string.concat(context, ": deployment missing on-chain"));
-
-            GenericCallForwarder forwarder = GenericCallForwarder(payable(recorded));
+            address protocolAdapter = abi.decode(
+                _call({
+                    chainId: chainId,
+                    target: recorded,
+                    data: abi.encodeCall(IProtocolAdapterSpecific.getProtocolAdapter, ())
+                }),
+                (address)
+            );
             assertEq(
-                forwarder.getProtocolAdapter(),
+                protocolAdapter,
                 ProtocolAdapterDeployments.protocolAdapterProxy({isProduction: isProduction, chainId: chainId}),
                 string.concat(context, ": does not settle through the recorded protocol adapter")
             );
-            assertEq(forwarder.getLogicRef(), Parameters.LOGIC_REF, string.concat(context, ": logic ref differs"));
 
-            // Deployed after the fork is selected, because selecting one discards the contracts deployed before.
+            bytes32 logicRef = abi.decode(
+                _call({chainId: chainId, target: recorded, data: abi.encodeCall(ILogicRefSpecific.getLogicRef, ())}),
+                (bytes32)
+            );
+            assertEq(logicRef, Parameters.LOGIC_REF, string.concat(context, ": logic ref differs"));
+
+            // The prediction reads the protocol adapter that the records name for `block.chainid`.
+            vm.chainId(chainId);
             address predicted = new DeployGenericCallForwarder().predict({isProduction: isProduction});
             assertEq(predicted, recorded, string.concat(context, ": recorded address differs from the prediction"));
         }
     }
 
-    /// @notice Selects a fork of the supported network with the provided chain ID.
-    /// @param chainId The chain ID of the supported network to fork.
-    function _selectForkAt(uint256 chainId) internal {
-        string memory networkName = _supportedNetworks[chainId];
-        assertGt(bytes(networkName).length, 0, string.concat(chainId.toString(), ": unsupported network"));
+    /// @notice Returns the result of a call to an account on a supported network, run by the network's RPC endpoint.
+    /// @param chainId The chain ID of the network.
+    /// @param target The account to call.
+    /// @param data The calldata.
+    /// @return result The return data.
+    /// @dev The endpoint runs the call, because forge cannot fork Monad and the other networks in one run.
+    function _call(uint256 chainId, address target, bytes memory data) internal returns (bytes memory result) {
+        string memory network = _supportedNetworks[chainId];
+        assertGt(bytes(network).length, 0, string.concat(chainId.toString(), ": unsupported network"));
 
-        vm.selectFork(vm.createFork(networkName));
+        vm.serializeAddress({objectKey: "transaction", valueKey: "to", value: target});
+        string memory transaction = vm.serializeBytes({objectKey: "transaction", valueKey: "data", value: data});
+        result =
+            vm.rpc({urlOrAlias: network, method: "eth_call", params: string.concat("[", transaction, ",\"latest\"]")});
+        assertGt(result.length, 0, string.concat(network, ": ", vm.toString(target), " returned no data"));
     }
 
     /// @notice Returns the deployments of an environment, as `RecordedDeployments` records them.

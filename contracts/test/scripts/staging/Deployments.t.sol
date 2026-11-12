@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
+import {IVersion} from "anoma-forwarder-bases-3.1.0/src/interfaces/IVersion.sol";
+
 import {RecordedDeployments} from "../../../generated/RecordedDeployments.sol";
-import {GenericCallForwarder} from "../../../src/GenericCallForwarder.sol";
 import {DeploymentsFixture} from "../../fixtures/DeploymentsFixture.sol";
 
 /// @notice Checks the staging deployments recorded in `deployments.json`. The forwarder is immutable, so every check
@@ -23,8 +24,14 @@ contract DeploymentsStagingTest is DeploymentsFixture {
         RecordedDeployments.Deployment[] memory deployments = _recordedDeployments({isProduction: false});
 
         for (uint256 i = 0; i < deployments.length; ++i) {
-            _selectForkAt(deployments[i].chainId);
-            string memory version = GenericCallForwarder(payable(deployments[i].contractAddress)).VERSION();
+            string memory version = abi.decode(
+                _call({
+                    chainId: deployments[i].chainId,
+                    target: deployments[i].contractAddress,
+                    data: abi.encodeCall(IVersion.VERSION, ())
+                }),
+                (string)
+            );
             string memory context = _deploymentContext({isProduction: false, chainId: deployments[i].chainId});
 
             assertTrue(
