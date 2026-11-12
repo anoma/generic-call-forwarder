@@ -2,9 +2,6 @@
 //! `VERIFY_*` flags arm them per environment, because between a version bump on `next` and the
 //! environment's redeployment the source and the deployments legitimately disagree.
 
-#[cfg(test)]
-extern crate dotenvy;
-
 use alloy::primitives::{Address, B256};
 use alloy::providers::{DynProvider, Provider, ProviderBuilder};
 use alloy_chains::NamedChain;
