@@ -34,7 +34,7 @@ Changes flow one way, `next` → `staging` → `main`, and the promotion pull re
 - **`staging`** receives `next`. A pull request into it requires every entry in the staging section to run the source version, checked with `VERIFY_STAGING_DEPLOYMENTS`.
 - **`main`** receives `staging`. A pull request into it requires every entry in the production section to run the source version and carry no prerelease suffix, checked with `VERIFY_PRODUCTION_DEPLOYMENTS`.
 
-The flags gate the deployment tests in the contracts and the crates suites alike; unset, the gated tests skip and no chain is forked.
+The flags gate the deployment tests in the contracts and the crates suites alike; unset, the gated tests skip and read no chain.
 
 Deploy **every** chain of an environment before opening its promotion pull request — one chain left behind blocks the promotion for all of them.
 
@@ -188,7 +188,7 @@ After the last chain:
 
 ### 4. Promote `next` into `staging`
 
-- [ ] Open a pull request from `next` into `staging`. CI sets `VERIFY_STAGING_DEPLOYMENTS`, so the deployment tests fork every chain in the staging section and check that it runs the address this source predicts under the environment salt. CI also runs the e2e cases against the staging deployment on Sepolia, proven by the queue the `QUEUE_BASE_URL` secret names.
+- [ ] Open a pull request from `next` into `staging`. CI sets `VERIFY_STAGING_DEPLOYMENTS`, so the deployment tests read every chain in the staging section and check that it runs the address this source predicts under the environment salt. CI also runs the e2e cases against the staging deployment on Sepolia, proven by the queue the `QUEUE_BASE_URL` secret names.
 
 - [ ] Merge it once green.
 
