@@ -3,6 +3,7 @@ pragma solidity ^0.8.30;
 
 import {Script} from "forge-std-1.17.0/src/Script.sol";
 
+import {DeploymentRecords} from "./DeploymentRecords.sol";
 import {ProtocolAdapterDeployments} from "./ProtocolAdapterDeployments.sol";
 
 /// @title RecordedDeploymentsScript
@@ -14,20 +15,13 @@ abstract contract RecordedDeploymentsScript is Script {
     /// @notice Thrown if the environment records no protocol adapter proxy for the chain.
     error DeploymentNotRecorded(string environment, uint256 chainId);
 
-    /// @notice Returns the name of an environment, which keys its deployments in `deployments.json`.
-    /// @param isProduction Whether to name the production or the staging environment.
-    /// @return name The environment name.
-    function environmentName(bool isProduction) public pure returns (string memory name) {
-        name = isProduction ? "production" : "staging";
-    }
-
     /// @notice Returns the protocol adapter proxy the environment records for the chain `--rpc-url` names, and reverts
     /// unless it is recorded.
     /// @param isProduction Whether to read the production or the staging proxy.
     /// @return proxy The recorded protocol adapter proxy.
     function _requireRecordedProxy(bool isProduction) internal view returns (address proxy) {
         proxy = _recordedProxy(isProduction);
-        require(proxy != address(0), DeploymentNotRecorded(environmentName(isProduction), block.chainid));
+        require(proxy != address(0), DeploymentNotRecorded(DeploymentRecords.environment(isProduction), block.chainid));
     }
 
     /// @notice Returns the protocol adapter proxy the environment records for the chain `--rpc-url` names.
