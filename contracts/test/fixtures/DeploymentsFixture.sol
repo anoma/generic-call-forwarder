@@ -13,8 +13,7 @@ import {ProtocolAdapterDeployments} from "../../script/ProtocolAdapterDeployment
 import {RecordedDeployments} from "../../script/RecordedDeployments.sol";
 
 /// @notice A test fixture providing the generic call forwarder deployments recorded per environment in
-/// `deployments.json` — the single source of truth for the deterministic deployments — through the generated
-/// `RecordedDeployments` library.
+/// `deployments.json` — the single source of truth for the deterministic deployments — through `RecordedDeployments`.
 abstract contract DeploymentsFixture is Test {
     using LibString for *;
 
@@ -47,7 +46,7 @@ abstract contract DeploymentsFixture is Test {
     /// deployment runs this source.
     /// @param isProduction Whether to check the production or the staging environment.
     function _expectSourceDeployments(bool isProduction) internal {
-        RecordedDeployments.Deployment[] memory deployments = _recordedDeployments(isProduction);
+        RecordedDeployments.Deployment[] memory deployments = RecordedDeployments.deployments(isProduction);
 
         for (uint256 i = 0; i < deployments.length; ++i) {
             uint256 chainId = deployments[i].chainId;
@@ -96,17 +95,6 @@ abstract contract DeploymentsFixture is Test {
         result =
             vm.rpc({urlOrAlias: network, method: "eth_call", params: string.concat("[", transaction, ",\"latest\"]")});
         assertGt(result.length, 0, string.concat(network, ": ", vm.toString(target), " returned no data"));
-    }
-
-    /// @notice Returns the deployments of an environment, as `RecordedDeployments` records them.
-    /// @param isProduction Whether to return the production or the staging environment.
-    /// @return deployments The recorded deployments.
-    function _recordedDeployments(bool isProduction)
-        internal
-        view
-        returns (RecordedDeployments.Deployment[] memory deployments)
-    {
-        deployments = isProduction ? RecordedDeployments.production() : RecordedDeployments.staging();
     }
 
     /// @notice Returns the `<environment>, <chain ID>` prefix identifying a recorded deployment in assert messages.

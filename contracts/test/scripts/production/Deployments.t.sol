@@ -21,7 +21,7 @@ contract DeploymentsProductionTest is DeploymentsFixture {
     }
 
     function test_recorded_deployments_run_a_release_version() public onlyProduction {
-        RecordedDeployments.Deployment[] memory deployments = _recordedDeployments({isProduction: true});
+        RecordedDeployments.Deployment[] memory deployments = RecordedDeployments.deployments({isProduction: true});
 
         for (uint256 i = 0; i < deployments.length; ++i) {
             string memory version = abi.decode(

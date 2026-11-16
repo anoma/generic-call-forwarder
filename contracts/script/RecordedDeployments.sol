@@ -21,25 +21,13 @@ library RecordedDeployments {
     /// @notice The name of the bindings package.
     string internal constant _PACKAGE_NAME = "anoma-generic-call-forwarder-bindings";
 
-    /// @notice Returns the deployments the staging environment records.
-    /// @return deployments The recorded staging deployments.
-    function staging() internal view returns (Deployment[] memory deployments) {
-        deployments = _deployments({isProduction: false});
-    }
-
-    /// @notice Returns the deployments the production environment records.
-    /// @return deployments The recorded production deployments.
-    function production() internal view returns (Deployment[] memory deployments) {
-        deployments = _deployments({isProduction: true});
-    }
-
     /// @notice Returns the deployments an environment records.
     /// @param isProduction Whether to return the production or the staging environment.
-    /// @return deployments The recorded deployments.
-    function _deployments(bool isProduction) private view returns (Deployment[] memory deployments) {
+    /// @return recorded The recorded deployments.
+    function deployments(bool isProduction) internal view returns (Deployment[] memory recorded) {
         bytes memory encoded =
             DeploymentRecords.entries({json: _records(), key: DeploymentRecords.environment(isProduction)});
-        deployments = abi.decode(encoded, (Deployment[]));
+        recorded = abi.decode(encoded, (Deployment[]));
     }
 
     /// @notice Returns the content of the records file.
