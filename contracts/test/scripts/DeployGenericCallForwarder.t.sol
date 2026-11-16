@@ -2,7 +2,7 @@
 pragma solidity ^0.8.30;
 
 import {DeployGenericCallForwarder} from "../../script/DeployGenericCallForwarder.s.sol";
-import {DeploymentRecords} from "../../script/libs/DeploymentRecords.sol";
+import {DeploymentsJson} from "../../script/libs/DeploymentsJson.sol";
 import {Parameters} from "../../script/libs/Parameters.sol";
 import {ProtocolAdapterDeployments} from "../../script/libs/ProtocolAdapterDeployments.sol";
 import {GenericCallForwarder} from "../../src/GenericCallForwarder.sol";
@@ -51,7 +51,7 @@ contract DeployGenericCallForwarderTest is DeploymentsFixture {
         vm.expectRevert(
             abi.encodeWithSelector(
                 DeployGenericCallForwarder.DeploymentNotRecorded.selector,
-                DeploymentRecords.environment({isProduction: false}),
+                DeploymentsJson.environment({isProduction: false}),
                 block.chainid
             )
         );
@@ -82,7 +82,7 @@ contract DeployGenericCallForwarderTest is DeploymentsFixture {
             )
         );
 
-        string memory environment = DeploymentRecords.environment(isProduction);
+        string memory environment = DeploymentsJson.environment(isProduction);
 
         assertEq(forwarder, predicted, string.concat(environment, ": forwarder address differs from the prediction"));
         assertGt(forwarder.code.length, 0, string.concat(environment, ": forwarder is not deployed"));
