@@ -2,9 +2,9 @@
 pragma solidity ^0.8.30;
 
 import {DeployGenericCallForwarder} from "../../script/DeployGenericCallForwarder.s.sol";
-import {DeploymentRecords} from "../../script/DeploymentRecords.sol";
-import {Parameters} from "../../script/Parameters.sol";
-import {ProtocolAdapterDeployments} from "../../script/ProtocolAdapterDeployments.sol";
+import {DeploymentRecords} from "../../script/libs/DeploymentRecords.sol";
+import {Parameters} from "../../script/libs/Parameters.sol";
+import {ProtocolAdapterDeployments} from "../../script/libs/ProtocolAdapterDeployments.sol";
 import {GenericCallForwarder} from "../../src/GenericCallForwarder.sol";
 import {DeploymentsFixture} from "../fixtures/DeploymentsFixture.sol";
 import {DeployGenericCallForwarderMock} from "../mocks/DeployGenericCallForwarder.m.sol";

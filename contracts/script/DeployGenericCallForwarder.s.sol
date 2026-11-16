@@ -4,9 +4,9 @@ pragma solidity ^0.8.30;
 import {Script} from "forge-std-1.17.0/src/Script.sol";
 
 import {GenericCallForwarder} from "../src/GenericCallForwarder.sol";
-import {DeploymentRecords} from "./DeploymentRecords.sol";
-import {Parameters} from "./Parameters.sol";
-import {ProtocolAdapterDeployments} from "./ProtocolAdapterDeployments.sol";
+import {DeploymentRecords} from "./libs/DeploymentRecords.sol";
+import {Parameters} from "./libs/Parameters.sol";
+import {ProtocolAdapterDeployments} from "./libs/ProtocolAdapterDeployments.sol";
 
 /// @title DeployGenericCallForwarder
 /// @author Anoma Foundation, 2026
