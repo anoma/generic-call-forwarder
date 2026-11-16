@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
-import {DeploymentRecords} from "./DeploymentRecords.sol";
+import {DeploymentsJson} from "./DeploymentsJson.sol";
 
 /// @title RecordedDeployments
 /// @author Anoma Foundation, 2026
@@ -21,30 +21,18 @@ library RecordedDeployments {
     /// @notice The name of the bindings package.
     string internal constant _PACKAGE_NAME = "anoma-generic-call-forwarder-bindings";
 
-    /// @notice Returns the deployments the staging environment records.
-    /// @return deployments The recorded staging deployments.
-    function staging() internal view returns (Deployment[] memory deployments) {
-        deployments = _deployments({isProduction: false});
-    }
-
-    /// @notice Returns the deployments the production environment records.
-    /// @return deployments The recorded production deployments.
-    function production() internal view returns (Deployment[] memory deployments) {
-        deployments = _deployments({isProduction: true});
-    }
-
     /// @notice Returns the deployments an environment records.
     /// @param isProduction Whether to return the production or the staging environment.
-    /// @return deployments The recorded deployments.
-    function _deployments(bool isProduction) private view returns (Deployment[] memory deployments) {
+    /// @return recorded The recorded deployments.
+    function deployments(bool isProduction) internal view returns (Deployment[] memory recorded) {
         bytes memory encoded =
-            DeploymentRecords.entries({json: _records(), key: DeploymentRecords.environment(isProduction)});
-        deployments = abi.decode(encoded, (Deployment[]));
+            DeploymentsJson.entries({json: _records(), key: DeploymentsJson.environment(isProduction)});
+        recorded = abi.decode(encoded, (Deployment[]));
     }
 
     /// @notice Returns the content of the records file.
     /// @return json The JSON text of the file.
     function _records() private view returns (string memory json) {
-        json = DeploymentRecords.read({directory: _DIRECTORY, packageName: _PACKAGE_NAME});
+        json = DeploymentsJson.read({directory: _DIRECTORY, packageName: _PACKAGE_NAME});
     }
 }

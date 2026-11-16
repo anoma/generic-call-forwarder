@@ -3,7 +3,7 @@ pragma solidity ^0.8.30;
 
 import {IVersion} from "anoma-forwarder-bases-3.1.0/src/interfaces/IVersion.sol";
 
-import {RecordedDeployments} from "../../../script/RecordedDeployments.sol";
+import {RecordedDeployments} from "../../../script/libs/RecordedDeployments.sol";
 import {DeploymentsFixture} from "../../fixtures/DeploymentsFixture.sol";
 
 /// @notice Checks the production deployments recorded in `deployments.json`. The forwarder is immutable and unowned,
@@ -21,7 +21,7 @@ contract DeploymentsProductionTest is DeploymentsFixture {
     }
 
     function test_recorded_deployments_run_a_release_version() public onlyProduction {
-        RecordedDeployments.Deployment[] memory deployments = _recordedDeployments({isProduction: true});
+        RecordedDeployments.Deployment[] memory deployments = RecordedDeployments.deployments({isProduction: true});
 
         for (uint256 i = 0; i < deployments.length; ++i) {
             string memory version = abi.decode(
