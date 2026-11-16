@@ -17,9 +17,9 @@ library ProtocolAdapterDeployments {
 
     /// @notice Returns the chains on which an environment records a protocol adapter proxy.
     /// @param isProduction Whether to read the production or the staging environment.
-    /// @return chainIds The chain IDs, in the order of the records.
-    function chainIds(bool isProduction) internal view returns (uint256[] memory chainIds) {
-        chainIds = DeploymentRecords.chainIds({json: _records(), key: DeploymentRecords.environment(isProduction)});
+    /// @return ids The chain IDs, in the order of the records.
+    function chainIds(bool isProduction) internal view returns (uint256[] memory ids) {
+        ids = DeploymentRecords.chainIds({json: _records(), key: DeploymentRecords.environment(isProduction)});
     }
 
     /// @notice Returns the protocol adapter proxy an environment records for a chain.
