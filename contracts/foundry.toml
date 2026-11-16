@@ -8,6 +8,14 @@ optimizer = true
 via_ir = true
 optimizer_runs = 10_000
 allow_internal_expect_revert = true
+# Let scripts and tests read the deployment records of the forwarder and of the protocol adapter, each with the
+# `Cargo.toml` that names its package.
+fs_permissions = [
+    { access = "read", path = "../crates/bindings/deployments.json" },
+    { access = "read", path = "../crates/bindings/Cargo.toml" },
+    { access = "read", path = "dependencies/anoma-pa-evm-bindings-3.0.0-rc.22/crates/bindings/deployments.json" },
+    { access = "read", path = "dependencies/anoma-pa-evm-bindings-3.0.0-rc.22/crates/bindings/Cargo.toml" },
+]
 # Deterministic deployment settings (https://book.getfoundry.sh/guides/deterministic-deployments-using-create2#configuring-your-foundrytoml)
 # We intentionally omit `cbor_metadata = false` since the metadata helps verification. 
 # Instead we ensure that only the files required for the deploy script are built within the justfile.
@@ -24,7 +32,7 @@ remappings = [
     "@openzeppelin-contracts-upgradeable-5.7.0/=dependencies/@openzeppelin-contracts-upgradeable-5.7.0/",
     "@openzeppelin/contracts/=dependencies/@openzeppelin-contracts-5.7.0/",
     "anoma-forwarder-bases-3.1.0/=dependencies/anoma-forwarder-bases-3.1.0/",
-    "anoma-pa-evm-2.0.0-rc.16/=dependencies/anoma-pa-evm-2.0.0-rc.16/",
+    "anoma-pa-evm-bindings-3.0.0-rc.22/=dependencies/anoma-pa-evm-bindings-3.0.0-rc.22/",
     "anomapay-erc20-forwarder-2.0.0-rc.10/=dependencies/anomapay-erc20-forwarder-2.0.0-rc.10/",
     "forge-std-1.17.0/=dependencies/forge-std-1.17.0/",
     "solady-0.1.26/=dependencies/solady-0.1.26/",
@@ -48,7 +56,7 @@ ignore = ["test/**/*.sol"] # Relaxed the way `.solhint.other.json` relaxes them.
 "@openzeppelin-contracts" = "5.7.0"
 "@openzeppelin-contracts-upgradeable" = "5.7.0"
 "anoma-forwarder-bases" = "3.1.0"
-"anoma-pa-evm" = "2.0.0-rc.16"
+"anoma-pa-evm-bindings" = { version = "3.0.0-rc.22", git = "https://github.com/anoma/pa-evm.git", tag = "bindings/v3.0.0-rc.22" }
 "anomapay-erc20-forwarder" = "2.0.0-rc.10"
 "forge-std" = "1.17.0"
 "solady" = "0.1.26"

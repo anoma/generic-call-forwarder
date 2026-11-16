@@ -1,18 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
-import {
-    RecordedDeployments as ProtocolAdapterDeployments
-} from "anoma-pa-evm-2.0.0-rc.16/generated/RecordedDeployments.sol";
-
 import {DeployGenericCallForwarder} from "../../script/DeployGenericCallForwarder.s.sol";
 import {Parameters} from "../../script/Parameters.sol";
+import {ProtocolAdapterDeployments} from "../../script/ProtocolAdapterDeployments.sol";
 import {GenericCallForwarder} from "../../src/GenericCallForwarder.sol";
 import {DeploymentsFixture} from "../fixtures/DeploymentsFixture.sol";
 import {DeployGenericCallForwarderMock} from "../mocks/DeployGenericCallForwarder.m.sol";
 
 /// @notice Checks the deploy script against a fresh chain, settling through a given protocol adapter because the
-/// records name no test deployment. The deployments it records are checked in `Deployments.t.sol` and its promotion
+/// records hold no test deployment. The deployments it records are checked in `Deployments.t.sol` and its promotion
 /// gates instead.
 contract DeployGenericCallForwarderTest is DeploymentsFixture {
     address internal immutable _PROTOCOL_ADAPTER = makeAddr("protocol adapter");
@@ -100,23 +97,22 @@ contract DeployGenericCallForwarderTest is DeploymentsFixture {
         );
     }
 
-    /// @notice Runs the deploy script on every chain the protocol adapter package records for the environment and
+    /// @notice Runs the deploy script on every chain on which the environment records a protocol adapter proxy and
     /// checks that the forwarder settles through the recorded protocol adapter proxy.
     /// @param isProduction Whether to deploy the production or the staging environment forwarders.
     function _expectRecordedProtocolAdapters(bool isProduction) private {
-        ProtocolAdapterDeployments.Deployment[] memory deployments =
-            isProduction ? ProtocolAdapterDeployments.production() : ProtocolAdapterDeployments.staging();
+        uint256[] memory chainIds = ProtocolAdapterDeployments.chainIds(isProduction);
 
-        for (uint256 i = 0; i < deployments.length; ++i) {
-            vm.chainId(deployments[i].chainId);
+        for (uint256 i = 0; i < chainIds.length; ++i) {
+            vm.chainId(chainIds[i]);
 
             address forwarder = new DeployGenericCallForwarder().run({isProduction: isProduction});
 
             assertEq(
                 GenericCallForwarder(payable(forwarder)).getProtocolAdapter(),
-                deployments[i].proxy.addr,
+                ProtocolAdapterDeployments.protocolAdapterProxy({isProduction: isProduction, chainId: chainIds[i]}),
                 string.concat(
-                    _deploymentContext({isProduction: isProduction, chainId: deployments[i].chainId}),
+                    _deploymentContext({isProduction: isProduction, chainId: chainIds[i]}),
                     ": protocol adapter differs from the record"
                 )
             );

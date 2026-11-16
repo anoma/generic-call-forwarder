@@ -22,11 +22,10 @@ checksum = "8bf86a162ddb2f59d8e2ebff1763660e8796d486cf91e883367c6aabc559ca7d"
 integrity = "0ad41f829796f2a75e0553ba6962e28b70433293bc417de387f481798f15f04a"
 
 [[dependencies]]
-name = "anoma-pa-evm"
-version = "2.0.0-rc.16"
-url = "https://soldeer-revisions.s3.amazonaws.com/anoma-pa-evm/2_0_0-rc_16_12-11-2026_20:22:56_contracts.zip"
-checksum = "c5894583671855f922886c86a7e580262a65314745d04f3b7a2d0661a24b3d43"
-integrity = "f2d0c3e5e74800b6d672da94c3475c2929c90bc97508b0f420e104ac791f4f04"
+name = "anoma-pa-evm-bindings"
+version = "3.0.0-rc.22"
+git = "https://github.com/anoma/pa-evm.git"
+rev = "85a6e6adada36d1b875bfb40b727bb7c027f6666"
 
 [[dependencies]]
 name = "anomapay-erc20-forwarder"
