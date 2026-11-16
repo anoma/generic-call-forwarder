@@ -3,8 +3,8 @@ pragma solidity ^0.8.30;
 
 import {DeployGenericCallForwarder} from "../../script/DeployGenericCallForwarder.s.sol";
 
-/// @notice The deploy script, settling through the given protocol adapter instead of the recorded one. The records are
-/// compiled in, so they name no test deployment.
+/// @notice The deploy script, settling through the given protocol adapter instead of the recorded one. The records hold
+/// only the deployments on the chains, not a test deployment.
 contract DeployGenericCallForwarderMock is DeployGenericCallForwarder {
     address internal immutable _PROTOCOL_ADAPTER;
 

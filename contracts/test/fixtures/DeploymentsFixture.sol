@@ -3,15 +3,13 @@ pragma solidity ^0.8.30;
 
 import {ILogicRefSpecific} from "anoma-forwarder-bases-3.1.0/src/interfaces/ILogicRefSpecific.sol";
 import {IProtocolAdapterSpecific} from "anoma-forwarder-bases-3.1.0/src/interfaces/IProtocolAdapterSpecific.sol";
-import {
-    RecordedDeployments as ProtocolAdapterDeployments
-} from "anoma-pa-evm-2.0.0-rc.16/generated/RecordedDeployments.sol";
 import {Test} from "forge-std-1.17.0/src/Test.sol";
 import {LibString} from "solady-0.1.26/src/utils/LibString.sol";
 
-import {RecordedDeployments} from "../../generated/RecordedDeployments.sol";
 import {DeployGenericCallForwarder} from "../../script/DeployGenericCallForwarder.s.sol";
 import {Parameters} from "../../script/Parameters.sol";
+import {ProtocolAdapterDeployments} from "../../script/ProtocolAdapterDeployments.sol";
+import {RecordedDeployments} from "../../script/RecordedDeployments.sol";
 
 /// @notice A test fixture providing the generic call forwarder deployments recorded per environment in
 /// `deployments.json` — the single source of truth for the deterministic deployments — through the generated
@@ -75,7 +73,7 @@ abstract contract DeploymentsFixture is Test {
             );
             assertEq(logicRef, Parameters.LOGIC_REF, string.concat(context, ": logic ref differs"));
 
-            // The prediction reads the protocol adapter that the records name for `block.chainid`.
+            // The prediction reads the recorded protocol adapter of `block.chainid`.
             vm.chainId(chainId);
             address predicted = new DeployGenericCallForwarder().predict({isProduction: isProduction});
             assertEq(predicted, recorded, string.concat(context, ": recorded address differs from the prediction"));
@@ -104,7 +102,7 @@ abstract contract DeploymentsFixture is Test {
     /// @return deployments The recorded deployments.
     function _recordedDeployments(bool isProduction)
         internal
-        pure
+        view
         returns (RecordedDeployments.Deployment[] memory deployments)
     {
         deployments = isProduction ? RecordedDeployments.production() : RecordedDeployments.staging();

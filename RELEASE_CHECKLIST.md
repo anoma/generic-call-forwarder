@@ -26,7 +26,7 @@ The generic call forwarder runs in two environments, recorded per chain in [`./c
 | `staging`    | `GenericCallForwarderStaging`    | `staging` |
 | `production` | `GenericCallForwarderProduction` | `main`    |
 
-The forwarder is immutable and unowned, so the environments differ only in the CREATE2 salt and the protocol adapter they settle through: each environment's forwarder is constructed with the protocol adapter proxy of the **same** environment, which the deploy script reads from the records of the `anoma-pa-evm` package in [`./contracts/foundry.toml`](./contracts/foundry.toml).
+The forwarder is immutable and unowned, so the environments differ only in the CREATE2 salt and the protocol adapter they settle through: each environment's forwarder is constructed with the protocol adapter proxy of the **same** environment, which the deploy script reads from `deployments.json` of the `anoma-pa-evm-bindings` dependency in [`./contracts/foundry.toml`](./contracts/foundry.toml). The dependency names the same pa-evm tag as [`./Cargo.toml`](./Cargo.toml).
 
 Changes flow one way, `next` → `staging` → `main`, and the promotion pull request is the gate:
 
@@ -108,7 +108,7 @@ A release candidate and a release go through the same cycle. Steps 1 to 5 are re
 
 - [ ] Bump the `bindings` package version in [`./crates/bindings/Cargo.toml`](./crates/bindings/Cargo.toml) to `A.0.0-rc.N`, where `A` is the last `MAJOR` version number incremented by 1.
 
-- [ ] Regenerate the recorded deployments library and the bindings with `just contracts-gen`, then run `just bindings-build` and check that the `Cargo.lock` file reflects the version number change.
+- [ ] Regenerate the bindings with `just contracts-gen-bindings`, then run `just bindings-build` and check that the `Cargo.lock` file reflects the version number change.
 
 - [ ] Open a pull request into `next` and merge it once green. The deploy is a separate mechanical step afterwards.
 
@@ -131,7 +131,7 @@ A release candidate and a release go through the same cycle. Steps 1 to 5 are re
 For each chain in the `staging` section of the record:
 
 - [ ] Check the two values the forwarder commits to. The deploy script reads both itself:
-  - the protocol adapter proxy of the **same** environment on this chain, from the records of the `anoma-pa-evm` package in [`./contracts/foundry.toml`](./contracts/foundry.toml). The script reverts with `ProtocolAdapterNotRecorded` if the package records none, so bump the package first.
+  - the protocol adapter proxy of the **same** environment on this chain, from `deployments.json` of the `anoma-pa-evm-bindings` dependency in [`./contracts/foundry.toml`](./contracts/foundry.toml). The script reverts with `ProtocolAdapterNotRecorded` if the environment records none, so bump the dependency first: its `version` and `tag`, the two paths in `fs_permissions`, and `_DIRECTORY` in [`ProtocolAdapterDeployments`](./contracts/script/ProtocolAdapterDeployments.sol).
   - `LOGIC_REF` in [`Parameters.sol`](./contracts/script/Parameters.sol), which `just bindings-test` checks against the `GENERIC_CALL_ID` of the [`generic_call_library`](https://github.com/anoma/generic-call-resource) version pinned in [`./Cargo.toml`](./Cargo.toml).
 
 - [ ] **Simulate** the deployment by running
@@ -163,14 +163,6 @@ For each chain in the `staging` section of the record:
 - [ ] Replace the chain's entry in the `staging` section of [`./crates/bindings/deployments.json`](./crates/bindings/deployments.json) with the new address.
 
 After the last chain:
-
-- [ ] Regenerate the library the deployment tests read the record through, and the bindings, with
-
-  ```sh
-  just contracts-gen
-  ```
-
-  The contracts package ships without `deployments.json`, so the contracts read the records from the generated [`./contracts/generated/RecordedDeployments.sol`](./contracts/generated/RecordedDeployments.sol). CI reruns the generator and fails on any diff.
 
 - [ ] Confirm the promotion gate locally by running
 
@@ -234,8 +226,6 @@ After the last chain:
   ```
 
 - [ ] For each chain in the `production` section of the record, simulate, deploy, verify, and replace the chain's entry as in step 3. The deploy script reads the **production** protocol adapter proxy from the records.
-
-- [ ] After the last chain, regenerate the recorded deployments library and the bindings with `just contracts-gen`.
 
 - [ ] Confirm the promotion gate locally by running
 
@@ -302,13 +292,7 @@ For **both**:
   }
   ```
 
-- [ ] Regenerate the library the deployment tests read the record through, and the bindings, with
-
-  ```sh
-  just contracts-gen
-  ```
-
-  and commit the changes alongside the record. CI reruns the generator and fails on any diff.
+  The scripts and tests read the records from this file, and the bindings crate embeds it, so a record needs no regeneration.
 
 - [ ] Bump the `bindings` package version in [`./crates/bindings/Cargo.toml`](./crates/bindings/Cargo.toml) to `A.B.0`, where `A` is the last `MAJOR` version and `B` is the last `MINOR` version number incremented by 1.
 

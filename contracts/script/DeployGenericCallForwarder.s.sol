@@ -1,19 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
-import {
-    RecordedDeployments as ProtocolAdapterDeployments
-} from "anoma-pa-evm-2.0.0-rc.16/generated/RecordedDeployments.sol";
 import {Script} from "forge-std-1.17.0/src/Script.sol";
 
 import {GenericCallForwarder} from "../src/GenericCallForwarder.sol";
 import {Parameters} from "./Parameters.sol";
+import {ProtocolAdapterDeployments} from "./ProtocolAdapterDeployments.sol";
 
 /// @title DeployGenericCallForwarder
 /// @author Anoma Foundation, 2026
 /// @notice A script to deploy the generic call forwarder deterministically on supported networks. The forwarder is
 /// immutable and unowned, so the environments differ only in the CREATE2 salt and the protocol adapter proxy they
-/// settle through, which the protocol adapter package records for the same environment on the chain.
+/// settle through: the recorded protocol adapter proxy of the same environment on the chain.
 /// @custom:security-contact security@anoma.foundation
 contract DeployGenericCallForwarder is Script {
     /// @notice The CREATE2 salt for the staging environment deployment.
@@ -22,8 +20,8 @@ contract DeployGenericCallForwarder is Script {
     /// @notice The CREATE2 salt for the production environment deployment.
     bytes32 public constant FORWARDER_SALT_PRODUCTION = Parameters.FORWARDER_SALT_PRODUCTION;
 
-    /// @notice Thrown if the protocol adapter package records no protocol adapter proxy of the environment for this
-    /// chain, i.e. the forwarder has no protocol adapter to settle through.
+    /// @notice Thrown if the environment records no protocol adapter proxy for this chain, i.e. the forwarder has no
+    /// protocol adapter to settle through.
     error ProtocolAdapterNotRecorded(string environment, uint256 chainId);
 
     /// @notice Thrown if the forwarder of this source version is already deployed.
@@ -64,8 +62,8 @@ contract DeployGenericCallForwarder is Script {
         name = isProduction ? "production" : "staging";
     }
 
-    /// @notice Returns the protocol adapter proxy that the protocol adapter package records for the environment on this
-    /// chain, which the forwarder settles through, and reverts unless the package records one.
+    /// @notice Returns the recorded protocol adapter proxy of the environment on this chain, which the forwarder
+    /// settles through, and reverts if the environment records none.
     /// @param isProduction Whether to return the production or the staging environment protocol adapter proxy.
     /// @return protocolAdapter The recorded protocol adapter proxy.
     function _protocolAdapter(bool isProduction) internal view virtual returns (address protocolAdapter) {
