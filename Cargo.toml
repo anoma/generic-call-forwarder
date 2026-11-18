@@ -11,7 +11,7 @@ homepage = "https://anoma.net/"
 edition = "2024"
 
 [workspace.dependencies]
-alloy = { version = "2.5.0", features = ["full", "eip712", "node-bindings"] }
+alloy = { version = "2.6.1", features = ["full", "eip712", "node-bindings"] }
 alloy-chains = "0.2.39"
 # The circuit crates are pinned exactly: another build has another logic ref, and so another kind.
 anoma-generic-call-library = "=2.0.0-rc.5"
