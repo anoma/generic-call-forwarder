@@ -189,21 +189,12 @@ contract GenericCallForwarderTest is Test {
         assertEq(_genericCallFwd.isValidSignature(hash, signature), IERC1271.isValidSignature.selector);
     }
 
-    function test_check_that_the_current_version_is_not_a_major_release() public view {
-        int256 lt = -1;
-        //int256 eq = 0;
-        int256 gt = 1;
+    /// @dev Fails on a major version bump, so that the bump is deliberate.
+    function test_VERSION_has_the_major_version_2() public view {
+        bytes32 version = LibString.toSmallString(_genericCallFwd.VERSION());
 
-        assertEq(
-            SemVerLib.cmp(LibString.toSmallString(_genericCallFwd.VERSION()), "1.0.0"),
-            gt,
-            "version should be greater than 1.0.0"
-        );
-        assertEq(
-            SemVerLib.cmp(LibString.toSmallString(_genericCallFwd.VERSION()), "2.0.0"),
-            lt,
-            "version should be less than 2.0.0"
-        );
+        assertGe(SemVerLib.cmp(version, "2.0.0"), 0, "the version is below 2.0.0");
+        assertLt(SemVerLib.cmp(version, "3.0.0"), 0, "the version is 3.0.0 or above");
     }
 
     /// @dev `toSmallString` reverts if the version does not fit into `bytes32`, which `SemVerLib` comparisons
