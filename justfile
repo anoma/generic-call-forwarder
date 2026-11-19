@@ -62,9 +62,12 @@ contracts-test *args:
 
 # Regenerate Rust bindings from contracts
 contracts-gen-bindings:
-    # `forge bind` builds without bytecode, which drops the `deploy` helpers, so
-    # build first and let it read those artifacts.
-    cd contracts && forge clean && forge build --skip test --skip script && forge bind \
+    # Only the files of the contracts in `--select`: with via_ir, the compiled file set changes the bytecode, and a verifier compiles a contract with its own imports only.
+    # `forge bind` builds without bytecode, so it reads these artifacts.
+    cd contracts && forge clean && forge build \
+        src/GenericCallForwarder.sol \
+        test/DeploymentParameters.sol \
+        && forge bind \
         --skip-build \
         --select '^(GenericCallForwarder|DeploymentParameters)$' \
         --bindings-path ../crates/bindings/src/generated/ \
