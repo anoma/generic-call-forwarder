@@ -16,24 +16,23 @@ integrity = "1a08068b2fe262d4f6ae80e0be44965480b1a532d40722c80634d8963337743d"
 
 [[dependencies]]
 name = "anoma-forwarder-bases"
-version = "3.1.0"
-url = "https://soldeer-revisions.s3.amazonaws.com/anoma-forwarder-bases/3_1_0_22-10-2026_12:15:38_contracts.zip"
-checksum = "8bf86a162ddb2f59d8e2ebff1763660e8796d486cf91e883367c6aabc559ca7d"
-integrity = "0ad41f829796f2a75e0553ba6962e28b70433293bc417de387f481798f15f04a"
+version = "3.1.1"
+url = "https://soldeer-revisions.s3.amazonaws.com/anoma-forwarder-bases/3_1_1_18-11-2026_20:08:14_contracts.zip"
+checksum = "f8f1c11c0242b67fa0105fc64e4146048d26abdb43f6854c64f68be8825ec9af"
+integrity = "8525fe0aead22242f99a432e578ff46cc8a9d17d4fcc6e74886acfab4490612e"
 
 [[dependencies]]
-name = "anoma-pa-evm"
-version = "2.0.0-rc.16"
-url = "https://soldeer-revisions.s3.amazonaws.com/anoma-pa-evm/2_0_0-rc_16_12-11-2026_20:22:56_contracts.zip"
-checksum = "c5894583671855f922886c86a7e580262a65314745d04f3b7a2d0661a24b3d43"
-integrity = "f2d0c3e5e74800b6d672da94c3475c2929c90bc97508b0f420e104ac791f4f04"
+name = "anoma-pa-evm-bindings"
+version = "3.0.0"
+git = "https://github.com/anoma/pa-evm.git"
+rev = "d65dbf5b1f04ba379550b181eb2515ec3db0bf3f"
 
 [[dependencies]]
 name = "anomapay-erc20-forwarder"
-version = "2.0.0-rc.10"
-url = "https://soldeer-revisions.s3.amazonaws.com/anomapay-erc20-forwarder/2_0_0-rc_10_12-11-2026_22:22:13_contracts.zip"
-checksum = "3b9a3e8d289a4cf0c08c13d791e15268db98d8ba8e706a10223a8631e909798f"
-integrity = "5d5bb0400c22c6dee85273fae4a992c76a36f12389bb98e1af2c8332e04ece06"
+version = "2.0.0"
+url = "https://soldeer-revisions.s3.amazonaws.com/anomapay-erc20-forwarder/2_0_0_19-11-2026_22:13:34_contracts.zip"
+checksum = "1cb7b624c3a4b02de45e4a7cbbb437606864ff996515baebbfc7fec0b15c13e2"
+integrity = "a41f7c89339dec6d6c019f1d305301ebcb6e9ae91b4bd24720e5178fe44a9e92"
 
 [[dependencies]]
 name = "forge-std"

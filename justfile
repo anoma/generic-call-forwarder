@@ -23,6 +23,10 @@ contracts-deps:
 contracts-deps-clean:
     cd contracts && forge soldeer clean
 
+# Install the contract tooling from the lockfile
+contracts-tooling:
+    cd contracts && bun install --frozen-lockfile
+
 # Clean contracts
 contracts-clean:
     cd contracts && forge clean
@@ -37,7 +41,6 @@ contracts-lint:
     cd contracts && bunx --bun solhint --config .solhint.json 'src/**/*.sol'
     cd contracts && bunx --bun solhint --config .solhint.other.json 'test/**/*.sol'
     cd contracts && bunx --bun solhint --config .solhint.other.json 'script/**/*.sol'
-    cd contracts && bunx --bun solhint --config .solhint.other.json 'generated/**/*.sol'
 
 # Run slither on contracts
 contracts-static-analysis:
@@ -57,15 +60,14 @@ contracts-fmt-check:
 contracts-test *args:
     cd contracts && forge test {{ args }}
 
-# Regenerate the recorded deployments library from the deployment records
-contracts-gen-deployments:
-    ./scripts/generate-recorded-deployments.sh
-
 # Regenerate Rust bindings from contracts
 contracts-gen-bindings:
-    # `forge bind` builds without bytecode, which drops the `deploy` helpers, so
-    # build first and let it read those artifacts.
-    cd contracts && forge clean && forge build --skip test --skip script && forge bind \
+    # Only the files of the contracts in `--select`: with via_ir, the compiled file set changes the bytecode, and a verifier compiles a contract with its own imports only.
+    # `forge bind` builds without bytecode, so it reads these artifacts.
+    cd contracts && forge clean && forge build \
+        src/GenericCallForwarder.sol \
+        test/DeploymentParameters.sol \
+        && forge bind \
         --skip-build \
         --select '^(GenericCallForwarder|DeploymentParameters)$' \
         --bindings-path ../crates/bindings/src/generated/ \
@@ -77,9 +79,6 @@ contracts-gen-gas-report:
     # Fuzz and invariant tests use other inputs on each run, so the report counts only the `test_` unit tests.
     # `sed` keeps the gas tables of the output.
     cd contracts && forge test --force --gas-report --md --match-test '^test_' | sed -n '/^|/,/^$/p' > ../docs/gas-report.md
-
-# Regenerate the recorded deployments library, then the Rust bindings
-contracts-gen: contracts-gen-deployments contracts-gen-bindings
 
 # Simulate the deterministic forwarder deployment (dry-run)
 contracts-simulate chain *args:
@@ -162,10 +161,6 @@ bindings-test *args:
 # Check bindings are up-to-date
 bindings-check: contracts-gen-bindings
     git diff --exit-code crates/bindings/src/generated/
-
-# Check the recorded deployments library is up-to-date
-contracts-deployments-check: contracts-gen-deployments
-    git diff --exit-code contracts/generated/RecordedDeployments.sol
 
 # Check the gas report is up-to-date
 contracts-gas-report-check: contracts-gen-gas-report
@@ -266,8 +261,6 @@ all-check:
     @just all-fmt-check
     @echo "==> Linting..."
     @just all-lint
-    @echo "==> Checking the recorded deployments library is up-to-date..."
-    @just contracts-deployments-check
     @echo "==> Checking bindings are up-to-date..."
     @just bindings-check
     @echo "==> Checking the gas report is up-to-date..."
