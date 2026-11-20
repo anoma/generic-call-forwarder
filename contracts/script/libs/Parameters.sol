@@ -15,5 +15,5 @@ library Parameters {
     bytes32 internal constant FORWARDER_SALT_PRODUCTION = "GenericCallForwarderProduction";
 
     /// @notice The logic ref of the generic call circuit, which the forwarders are constructed with.
-    bytes32 internal constant LOGIC_REF = 0x1534f842d9d987287cafb85b3547aee064c06140f17a5d45e914a2861a66826d;
+    bytes32 internal constant LOGIC_REF = 0x3f3c5332e8a24ab34a30884f6761e1cb4eca8293f991e5a3a141b8e5a3ccf09f;
 }

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
-import {ILogicRefSpecific} from "anoma-forwarder-bases-3.1.0/src/interfaces/ILogicRefSpecific.sol";
-import {IProtocolAdapterSpecific} from "anoma-forwarder-bases-3.1.0/src/interfaces/IProtocolAdapterSpecific.sol";
+import {ILogicRefSpecific} from "anoma-forwarder-bases-3.1.1/src/interfaces/ILogicRefSpecific.sol";
+import {IProtocolAdapterSpecific} from "anoma-forwarder-bases-3.1.1/src/interfaces/IProtocolAdapterSpecific.sol";
 import {Test} from "forge-std-1.17.0/src/Test.sol";
 import {LibString} from "solady-0.1.26/src/utils/LibString.sol";
 
