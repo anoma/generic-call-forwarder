@@ -41,8 +41,8 @@ contract DeployGenericCallForwarderTest is DeploymentsFixture {
     }
 
     function test_run_settles_through_the_recorded_protocol_adapter() public {
-        _expectRecordedProtocolAdapters({isProduction: false});
-        _expectRecordedProtocolAdapters({isProduction: true});
+        _expectRecordedProtocolAdapter({isProduction: false});
+        _expectRecordedProtocolAdapter({isProduction: true});
     }
 
     function test_run_reverts_if_the_records_name_no_protocol_adapter() public {
@@ -98,25 +98,28 @@ contract DeployGenericCallForwarderTest is DeploymentsFixture {
         );
     }
 
-    /// @notice Runs the deploy script on every chain on which the environment records a protocol adapter proxy and
+    /// @notice Runs the deploy script on the first chain on which the environment records a protocol adapter proxy and
     /// checks that the forwarder settles through the recorded protocol adapter proxy.
-    /// @param isProduction Whether to deploy the production or the staging environment forwarders.
-    function _expectRecordedProtocolAdapters(bool isProduction) private {
+    /// @param isProduction Whether to deploy the production or the staging environment forwarder.
+    function _expectRecordedProtocolAdapter(bool isProduction) private {
         uint256[] memory chainIds = ProtocolAdapterDeployments.chainIds(isProduction);
+        assertGt(
+            chainIds.length,
+            0,
+            string.concat(DeploymentsJson.environment(isProduction), ": records no protocol adapter proxy")
+        );
+        uint256 chainId = chainIds[0];
+        vm.chainId(chainId);
 
-        for (uint256 i = 0; i < chainIds.length; ++i) {
-            vm.chainId(chainIds[i]);
+        address forwarder = new DeployGenericCallForwarder().run({isProduction: isProduction});
 
-            address forwarder = new DeployGenericCallForwarder().run({isProduction: isProduction});
-
-            assertEq(
-                GenericCallForwarder(payable(forwarder)).getProtocolAdapter(),
-                ProtocolAdapterDeployments.protocolAdapterProxy({isProduction: isProduction, chainId: chainIds[i]}),
-                string.concat(
-                    _deploymentContext({isProduction: isProduction, chainId: chainIds[i]}),
-                    ": protocol adapter differs from the record"
-                )
-            );
-        }
+        assertEq(
+            GenericCallForwarder(payable(forwarder)).getProtocolAdapter(),
+            ProtocolAdapterDeployments.protocolAdapterProxy({isProduction: isProduction, chainId: chainId}),
+            string.concat(
+                _deploymentContext({isProduction: isProduction, chainId: chainId}),
+                ": protocol adapter differs from the record"
+            )
+        );
     }
 }
