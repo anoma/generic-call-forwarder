@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
-import {IERC20} from "@openzeppelin-contracts-5.6.1/token/ERC20/IERC20.sol";
-import {SafeERC20} from "@openzeppelin-contracts-5.6.1/token/ERC20/utils/SafeERC20.sol";
-import {SafeCast} from "@openzeppelin-contracts-5.6.1/utils/math/SafeCast.sol";
+import {IERC20} from "@openzeppelin-contracts-5.7.0/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@openzeppelin-contracts-5.7.0/token/ERC20/utils/SafeERC20.sol";
+import {SafeCast} from "@openzeppelin-contracts-5.7.0/utils/math/SafeCast.sol";
 
 import {
     IAllowanceTransfer
@@ -12,6 +12,9 @@ import {
     ISignatureTransfer
 } from "uniswap-permit2-0x000000000022D473030F116dDEE9F6B43aC78BA3/src/interfaces/ISignatureTransfer.sol";
 
+/// @notice A minimal DEX router mock swapping `amountIn` of `tokenIn` for a fixed `amountOutMin` of `tokenOut`.
+/// The variants differ only in how the input token is pulled from the caller: a classic ERC-20 allowance,
+/// a Permit2 allowance, or a Permit2 signature.
 contract DexRouterMock {
     using SafeERC20 for IERC20;
 
@@ -66,12 +69,11 @@ contract DexRouterMock {
         ISignatureTransfer.PermitTransferFrom calldata permit,
         bytes calldata signature
     ) external returns (uint256 amountOut) {
-        ISignatureTransfer(_PERMIT2)
-            .permitTransferFrom({
+        ISignatureTransfer(_PERMIT2).permitTransferFrom({
             permit: permit,
             transferDetails: ISignatureTransfer.SignatureTransferDetails({
-            to: address(this), requestedAmount: permit.permitted.amount
-        }),
+                to: address(this), requestedAmount: permit.permitted.amount
+            }),
             owner: msg.sender,
             signature: signature
         });

@@ -1,0 +1,42 @@
+{
+  "production": [
+    {
+      "chainId": 1,
+      "contractAddress": "0xB88c50CB5FDE1869416767E5e6B44B7320d69091"
+    },
+    {
+      "chainId": 56,
+      "contractAddress": "0xd6809e7FEE86A353986ddDa268D081559B722Bcc"
+    },
+    {
+      "chainId": 143,
+      "contractAddress": "0x0BB329833719092ed6725B5fA93A5b4DdB53DC5C"
+    },
+    {
+      "chainId": 8453,
+      "contractAddress": "0x3D1B38A35233F5Ea0f5A5D52784d9aBa7559b18c"
+    },
+    {
+      "chainId": 42161,
+      "contractAddress": "0x3D1B38A35233F5Ea0f5A5D52784d9aBa7559b18c"
+    }
+  ],
+  "staging": [
+    {
+      "chainId": 56,
+      "contractAddress": "0x283216664594B1E99727cE36d611E62F1afbf911"
+    },
+    {
+      "chainId": 143,
+      "contractAddress": "0x52cF84BB029d3cFDe5327303b7669F5C496a5bA3"
+    },
+    {
+      "chainId": 84532,
+      "contractAddress": "0xf9D9BFd86F4bAE01dC7E2480F393D45a0C130203"
+    },
+    {
+      "chainId": 11155111,
+      "contractAddress": "0x5a2B61a9774DD99Cb325AF0c8D5f2787beC4f7A4"
+    }
+  ]
+}

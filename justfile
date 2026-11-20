@@ -1,6 +1,14 @@
 # Show commands before running (helps debug failures)
 set shell := ["bash", "-euo", "pipefail", "-c"]
 
+# Recipes read `ALCHEMY_API_KEY` (fork tests, deploys) from the environment;
+# forge does not load this file itself. The file is absent in CI, where the
+# values come from secrets instead, so loading it stays optional.
+# `IS_PRODUCTION` is deliberately not kept here — see the release
+# checklist, which exports it once per deployment session.
+set dotenv-path := "contracts/.env"
+set dotenv-required := false
+
 # Default recipe
 default:
     @just --list
@@ -15,6 +23,10 @@ contracts-deps:
 contracts-deps-clean:
     cd contracts && forge soldeer clean
 
+# Install the contract tooling from the lockfile
+contracts-tooling:
+    cd contracts && bun install --frozen-lockfile
+
 # Clean contracts
 contracts-clean:
     cd contracts && forge clean
@@ -23,9 +35,9 @@ contracts-clean:
 contracts-build *args:
     cd contracts && forge build {{ args }}
 
-# Lint contracts (forge lint + solhint)
+# Lint contracts: forge lint, then solhint for the rules that forge lint lacks
 contracts-lint:
-    cd contracts && forge lint --deny warnings
+    cd contracts && forge lint --deny notes
     cd contracts && bunx --bun solhint --config .solhint.json 'src/**/*.sol'
     cd contracts && bunx --bun solhint --config .solhint.other.json 'test/**/*.sol'
     cd contracts && bunx --bun solhint --config .solhint.other.json 'script/**/*.sol'
@@ -50,83 +62,118 @@ contracts-test *args:
 
 # Regenerate Rust bindings from contracts
 contracts-gen-bindings:
-    cd contracts && forge clean && forge bind \
-        --skip test --skip script \
-        --select '^(GenericCallForwarder)$' \
-        --bindings-path ../bindings/src/generated/ \
+    # Only the files of the contracts in `--select`: with via_ir, the compiled file set changes the bytecode, and a verifier compiles a contract with its own imports only.
+    # `forge bind` builds without bytecode, so it reads these artifacts.
+    cd contracts && forge clean && forge build \
+        src/GenericCallForwarder.sol \
+        test/DeploymentParameters.sol \
+        && forge bind \
+        --skip-build \
+        --select '^(GenericCallForwarder|DeploymentParameters)$' \
+        --bindings-path ../crates/bindings/src/generated/ \
         --module \
         --overwrite
 
-# Simulate deployment (dry-run)
-contracts-simulate generic-call-circuit-id chain protocol-adapter *args:
-    @echo "IS_TEST_DEPLOYMENT: $IS_TEST_DEPLOYMENT"
+# Regenerate the gas report of the contracts that `gas_reports` in foundry.toml lists
+contracts-gen-gas-report:
+    # Fuzz and invariant tests use other inputs on each run, so the report counts only the `test_` unit tests.
+    # `sed` keeps the gas tables of the output.
+    cd contracts && forge test --force --gas-report --md --match-test '^test_' | sed -n '/^|/,/^$/p' > ../docs/gas-report.md
+
+# Simulate the deterministic forwarder deployment (dry-run)
+contracts-simulate chain *args:
+    @echo "IS_PRODUCTION: $IS_PRODUCTION"
     @echo "Cleaning contracts to ensure reproducible build..."
     @just contracts-clean
     cd contracts && forge script script/DeployGenericCallForwarder.s.sol:DeployGenericCallForwarder \
-        --sig "run(bool,address,bytes32)" $IS_TEST_DEPLOYMENT {{protocol-adapter}} {{generic-call-circuit-id}} \
+        --sig "run(bool)" $IS_PRODUCTION \
         --rpc-url {{chain}} {{ args }}
 
-# Deploy Generic Call Forwarder
-contracts-deploy deployer generic-call-circuit-id chain protocol-adapter *args:
+# Deploy the forwarder deterministically to the environment selected by IS_PRODUCTION
+contracts-deploy deployer chain *args:
     @echo "Cleaning contracts to ensure reproducible build..."
     @just contracts-clean
     cd contracts && forge script script/DeployGenericCallForwarder.s.sol:DeployGenericCallForwarder \
-        --sig "run(bool,address,bytes32)" $IS_TEST_DEPLOYMENT {{protocol-adapter}} {{generic-call-circuit-id}} \
-         --broadcast --rpc-url {{chain}} --account {{deployer}} {{ args }}
+        --sig "run(bool)" $IS_PRODUCTION \
+        --broadcast --rpc-url {{chain}} --account {{deployer}} {{ args }}
 
-# Verify on sourcify
+# Verify the generic call forwarder on sourcify
 contracts-verify-sourcify address chain *args:
     cd contracts && env -u ETHERSCAN_API_KEY forge verify-contract {{address}} \
         src/GenericCallForwarder.sol:GenericCallForwarder \
         --chain {{chain}} --verifier sourcify --watch {{ args }}
 
-# Verify on etherscan
+# Verify the generic call forwarder on etherscan. Reads the constructor args from the on-chain creation code and
+# forces submission past a prior similar match.
 contracts-verify-etherscan address chain *args:
     cd contracts && forge verify-contract {{address}} \
         src/GenericCallForwarder.sol:GenericCallForwarder \
-        --chain {{chain}} --verifier etherscan --watch {{ args }}
+        --chain {{chain}} --verifier etherscan --watch \
+        --rpc-url {{chain}} --guess-constructor-args --skip-is-verified-check {{ args }}
 
-# Verify on custom explorer
+# Verify the generic call forwarder on a custom explorer
 contracts-verify-custom address chain verifier-url *args:
     cd contracts && forge verify-contract {{address}} \
         src/GenericCallForwarder.sol:GenericCallForwarder \
-        --chain {{chain}} --verifier-url {{verifier-url}}  --watch {{ args }}
+        --chain {{chain}} --verifier-url {{verifier-url}} --watch {{ args }}
 
-# Verify on both sourcify and etherscan
-contracts-verify address chain: (contracts-verify-sourcify address chain) (contracts-verify-etherscan address chain)
+# Verify the generic call forwarder on both sourcify and etherscan; a failure on one explorer does not stop the other
+contracts-verify address chain:
+    #!/usr/bin/env bash
+    set -uo pipefail
+    failed=""
+    for explorer in sourcify etherscan; do
+        just contracts-verify-$explorer {{address}} {{chain}} || failed+=" $explorer"
+    done
+    if [ -n "$failed" ]; then echo "Verification of {{address}} failed on:$failed" >&2; exit 1; fi
 
-# Publish contracts to soldeer. VERSION must be semver (e.g. 1.2.0).
-# Flags such as --dry-run go AFTER the version: `just contracts-publish 1.2.0 --dry-run`.
-contracts-publish version *args:
-    @[[ "{{version}}" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+ ]] || { echo "error: invalid version '{{version}}'. Expected semver like 1.2.0. Usage: just contracts-publish <version> [flags] (put --dry-run AFTER the version)." >&2; exit 1; }
-    cd contracts && forge soldeer push anoma-generic-call-forwarder~{{version}} {{ args }}
+# Publish contracts at the version `GenericCallForwarder` compiles to
+contracts-publish *args:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "Cleaning contracts to ensure reproducible build..."
+    just contracts-clean
+    just contracts-build
+    cd contracts
+    version="$(forge script script/PrintGenericCallForwarderVersion.s.sol:PrintGenericCallForwarderVersion --sig 'run()(string)' --json \
+        | jq -ser '[.[] | select(has("returns")) | .returns.version.value] | if length == 1 then .[0] else error("expected one version, found \(length)") end')"
+    if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+        printf '{{RED}}The generic call forwarder reports "%s", which is not a version.{{NORMAL}}\n' "$version"
+        exit 1
+    fi
+    printf '{{GREEN}}Publishing anoma-generic-call-forwarder~%s{{NORMAL}}\n' "$version"
+    forge soldeer push "anoma-generic-call-forwarder~$version" {{ args }}
 
 # --- Bindings ---
 
 # Clean bindings
 bindings-clean:
-    cd bindings && cargo clean
+    cd crates/bindings && cargo clean
 
 # Build bindings
 bindings-build *args:
-    cd bindings && cargo build {{ args }}
+    cd crates/bindings && cargo build {{ args }}
 
 # Test bindings
 bindings-test *args:
-    cd bindings && cargo test {{ args }}
+    cd crates/bindings && cargo test {{ args }}
 
 # Check bindings are up-to-date
 bindings-check: contracts-gen-bindings
-    git diff --exit-code bindings/src/generated/
+    git diff --exit-code crates/bindings/src/generated/
+
+# Check the gas report is up-to-date
+contracts-gas-report-check: contracts-gen-gas-report
+    git diff --exit-code docs/gas-report.md
 
 # Publish bindings
 bindings-publish *args:
-    cd bindings && cargo publish {{ args }}
+    cd crates/bindings && cargo publish {{ args }}
 
 # Lint bindings (clippy)
 bindings-lint:
-    cd bindings && cargo clippy --no-deps -- -Dwarnings
-    cd bindings && cargo clippy --no-deps --tests -- -Dwarnings
+    cd crates/bindings && cargo clippy --no-deps -- -Dwarnings
+    cd crates/bindings && cargo clippy --no-deps --tests -- -Dwarnings
 
 # Format bindings
 bindings-fmt:
@@ -136,42 +183,74 @@ bindings-fmt:
 bindings-fmt-check:
     cargo fmt -- --check
 
+# --- Crates (workspace-wide Rust) ---
+
+# Clean all crates
+crates-clean:
+    cargo clean
+
+# Build all crates
+crates-build *args:
+    cargo build {{ args }}
+
+# Test all crates
+crates-test *args:
+    cargo test {{ args }}
+
+# Test the e2e cases on a fork of `E2E_CHAIN_ID` (Sepolia by default), proven by the queue at `QUEUE_BASE_URL`.
+# One thread, unlike the local cases: the queue's CDN blocks bursts.
+crates-test-e2e *args:
+    RUST_TEST_THREADS=1 cargo test --features e2e e2e_test {{ args }}
+
+# Lint all crates (clippy)
+crates-lint:
+    cargo clippy --all-targets --no-deps -- -Dwarnings
+    cargo clippy --all-targets --features e2e --no-deps -- -Dwarnings
+
+# Format all crates
+crates-fmt *args:
+    cargo fmt --all {{ args }}
+
+# Check all crates formatting
+crates-fmt-check:
+    cargo fmt --all -- --check
+
 # --- All ---
 
-# Lint all (contracts + bindings)
+# Lint all (contracts + crates)
 all-lint:
     @echo "==> Linting contracts..."
     @just contracts-lint
-    @echo "==> Linting bindings..."
-    @just bindings-lint
+    @echo "==> Linting crates..."
+    @just crates-lint
 
-# Format all (contracts + bindings)
+# Format all (contracts + crates)
 all-fmt:
     @echo "==> Formatting contracts..."
     @just contracts-fmt
-    @echo "==> Formatting bindings..."
-    @just bindings-fmt
+    @echo "==> Formatting crates..."
+    @just crates-fmt
 
-# Check formatting for all (contracts + bindings)
+# Check formatting for all (contracts + crates)
 all-fmt-check:
     @echo "==> Checking contract formatting..."
     @just contracts-fmt-check
-    @echo "==> Checking bindings formatting..."
-    @just bindings-fmt-check
+    @echo "==> Checking crates formatting..."
+    @just crates-fmt-check
 
-# Build all (contracts + bindings)
+# Build all (contracts + crates)
 all-build:
     @echo "==> Building contracts..."
     @just contracts-build
-    @echo "==> Building bindings..."
-    @just bindings-build
+    @echo "==> Building crates..."
+    @just crates-build
 
-# Test all (contracts + bindings)
+# Test all (contracts + crates)
 all-test:
     @echo "==> Testing contracts..."
     @just contracts-test
-    @echo "==> Testing bindings..."
-    @just bindings-test
+    @echo "==> Testing crates..."
+    @just crates-test
 
 # Prerequisites check (mirrors CI)
 all-check:
@@ -184,3 +263,5 @@ all-check:
     @just all-lint
     @echo "==> Checking bindings are up-to-date..."
     @just bindings-check
+    @echo "==> Checking the gas report is up-to-date..."
+    @just contracts-gas-report-check

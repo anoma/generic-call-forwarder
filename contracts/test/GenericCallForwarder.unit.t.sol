@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
-import {IERC20Errors} from "@openzeppelin-contracts-5.6.1/interfaces/draft-IERC6093.sol";
-import {IERC1271} from "@openzeppelin-contracts-5.6.1/interfaces/IERC1271.sol";
-import {IERC20} from "@openzeppelin-contracts-5.6.1/token/ERC20/IERC20.sol";
-import {Errors} from "@openzeppelin-contracts-5.6.1/utils/Errors.sol";
-import {ReentrancyGuardTransient} from "@openzeppelin-contracts-5.6.1/utils/ReentrancyGuardTransient.sol";
-import {IVersion} from "anoma-forwarder-bases-1.0.0/src/interfaces/IVersion.sol";
-import {ERC20Example} from "anoma-forwarder-bases-1.0.0/test/examples/ERC20Example.sol";
+import {IERC20Errors} from "@openzeppelin-contracts-5.7.0/interfaces/draft-IERC6093.sol";
+import {IERC1271} from "@openzeppelin-contracts-5.7.0/interfaces/IERC1271.sol";
+import {IERC20} from "@openzeppelin-contracts-5.7.0/token/ERC20/IERC20.sol";
+import {Errors} from "@openzeppelin-contracts-5.7.0/utils/Errors.sol";
+import {ReentrancyGuardTransient} from "@openzeppelin-contracts-5.7.0/utils/ReentrancyGuardTransient.sol";
+import {ERC20Example} from "anoma-forwarder-bases-3.1.1/test/examples/ERC20Example.sol";
 
-import {Test} from "forge-std-1.16.1/src/Test.sol";
+import {Test} from "forge-std-1.17.0/src/Test.sol";
 
 import {WETH} from "solady-0.1.26/src/tokens/WETH.sol";
+import {LibString} from "solady-0.1.26/src/utils/LibString.sol";
 import {SemVerLib} from "solady-0.1.26/src/utils/SemVerLib.sol";
 
 import {GenericCallForwarder} from "../src/GenericCallForwarder.sol";
@@ -189,13 +189,18 @@ contract GenericCallForwarderTest is Test {
         assertEq(_genericCallFwd.isValidSignature(hash, signature), IERC1271.isValidSignature.selector);
     }
 
-    function test_check_that_the_current_version_is_a_not_a_major_release() public view {
-        int256 lt = -1;
-        //int256 eq = 0;
-        int256 gt = 1;
+    /// @dev Fails on a major version bump, so that the bump is deliberate.
+    function test_VERSION_has_the_major_version_2() public view {
+        bytes32 version = LibString.toSmallString(_genericCallFwd.VERSION());
 
-        assertEq(SemVerLib.cmp(IVersion(address(_genericCallFwd)).getVersion(), "1.0.0"), gt);
-        assertEq(SemVerLib.cmp(IVersion(address(_genericCallFwd)).getVersion(), "2.0.0"), lt);
+        assertGe(SemVerLib.cmp(version, "2.0.0"), 0, "the version is below 2.0.0");
+        assertLt(SemVerLib.cmp(version, "3.0.0"), 0, "the version is 3.0.0 or above");
+    }
+
+    /// @dev `toSmallString` reverts if the version does not fit into `bytes32`, which `SemVerLib` comparisons
+    /// and the deployment canaries rely on.
+    function test_VERSION_fits_into_bytes32() public view {
+        LibString.toSmallString(_genericCallFwd.VERSION());
     }
 }
 

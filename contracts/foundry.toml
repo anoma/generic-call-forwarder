@@ -1,6 +1,6 @@
 # Full reference https://github.com/foundry-rs/foundry/tree/master/crates/config
 [profile.default]
-solc = "0.8.35"
+solc = "0.8.38"
 auto_detect_solc = false
 evm_version = "osaka"
 gas_reports = ["GenericCallForwarder"]
@@ -8,42 +8,57 @@ optimizer = true
 via_ir = true
 optimizer_runs = 10_000
 allow_internal_expect_revert = true
+# Let scripts and tests read the deployment records of the forwarder and of the protocol adapter, each with the
+# `Cargo.toml` that names its package.
+fs_permissions = [
+    { access = "read", path = "../crates/bindings/deployments.json" },
+    { access = "read", path = "../crates/bindings/Cargo.toml" },
+    { access = "read", path = "dependencies/anoma-pa-evm-bindings-3.0.0/crates/bindings/deployments.json" },
+    { access = "read", path = "dependencies/anoma-pa-evm-bindings-3.0.0/crates/bindings/Cargo.toml" },
+]
 # Deterministic deployment settings (https://book.getfoundry.sh/guides/deterministic-deployments-using-create2#configuring-your-foundrytoml)
 # We intentionally omit `cbor_metadata = false` since the metadata helps verification. 
 # Instead we ensure that only the files required for the deploy script are built within the justfile.
 bytecode_hash = "none"
 
-
 src = "src"
 test = "test"
 out = "out"
 script = "script"
-fs_permissions = [{ access = "read", path = "./" }]
 libs = ["dependencies"]
 auto_detect_remappings = false
 remappings = [
-    "@openzeppelin-contracts-5.6.1/=dependencies/@openzeppelin-contracts-5.6.1/",
-    "anoma-forwarder-bases-1.0.0/=dependencies/anoma-forwarder-bases-1.0.0/",
-    "anoma-pa-evm-1.2.0-rc.0/=dependencies/anomapay-erc20-forwarder-1.1.0-rc.5/dependencies/anoma-pa-evm-1.2.0-rc.0/",
-    "anomapay-erc20-forwarder-1.1.0-rc.5/=dependencies/anomapay-erc20-forwarder-1.1.0-rc.5/",
-    "anomapay-erc20-forwarder-1.1.0-rc.5/=dependencies/anomapay-erc20-forwarder-1.1.0-rc.5/",
-    "elliptic-curve-solidity-0.2.5/=dependencies/anomapay-erc20-forwarder-1.1.0-rc.5/dependencies/anoma-pa-evm-1.2.0-rc.0/dependencies/elliptic-curve-solidity-0.2.5/",
-    "forge-std-1.16.1/=dependencies/forge-std-1.16.1/",
-    "openzeppelin/contracts/=dependencies/anomapay-erc20-forwarder-1.1.0-rc.5/dependencies/anoma-pa-evm-1.2.0-rc.0/dependencies/risc0-risc0-ethereum-3.0.1/lib/openzeppelin-contracts/contracts/",
+    "@openzeppelin-contracts-5.7.0/=dependencies/@openzeppelin-contracts-5.7.0/",
+    "@openzeppelin-contracts-upgradeable-5.7.0/=dependencies/@openzeppelin-contracts-upgradeable-5.7.0/",
+    "@openzeppelin/contracts/=dependencies/@openzeppelin-contracts-5.7.0/",
+    "anoma-forwarder-bases-3.1.1/=dependencies/anoma-forwarder-bases-3.1.1/",
+    "anoma-pa-evm-bindings-3.0.0/=dependencies/anoma-pa-evm-bindings-3.0.0/",
+    "anomapay-erc20-forwarder-2.0.0/=dependencies/anomapay-erc20-forwarder-2.0.0/",
+    "forge-std-1.17.0/=dependencies/forge-std-1.17.0/",
     "solady-0.1.26/=dependencies/solady-0.1.26/",
     "solmate/=dependencies/uniswap-permit2-0x000000000022D473030F116dDEE9F6B43aC78BA3/lib/solmate/",
     "uniswap-permit2-0x000000000022D473030F116dDEE9F6B43aC78BA3/=dependencies/uniswap-permit2-0x000000000022D473030F116dDEE9F6B43aC78BA3/",
 ]
 ignored_warnings_from = [
-    "dependencies/@openzeppelin-contracts-5.6.1/utils", # Warning 6335: "error" will be promoted to keyword in the future and will not be allowed as an identifier anymore.
-    "dependencies/anomapay-erc20-forwarder-1.1.0-rc.5/dependencies/anoma-pa-evm-1.2.0-rc.0/dependencies/risc0-risc0-ethereum-3.0.1/contracts/src", # Warning 9170: Comparison of variables of contract type is deprecated
+    "dependencies/@openzeppelin-contracts-5.7.0/utils", # Warning 6335: "error" will be promoted to keyword in the future and will not be allowed as an identifier anymore.
 ]
 
+[lint]
+severity = ["high", "medium", "low", "info", "gas", "code-size"] # The default leaves out info, gas, and code-size.
+exclude_lints = [
+    "internal-function-used-once", # Counts the call sites of `src` alone, because `ignore` hides those of the tests.
+    "reentrancy-events",           # Reports events that no external call precedes; Slither checks this instead.
+    "require-revert-in-loop",      # The loops revert on purpose: one invalid call must abort the whole transaction.
+]
+ignore = ["test/**/*.sol"] # Relaxed the way `.solhint.other.json` relaxes them.
+
 [dependencies]
-"@openzeppelin-contracts" = "5.6.1"
-"anoma-forwarder-bases" = "1.0.0"
-"anomapay-erc20-forwarder" = "1.1.0-rc.5"
-"forge-std" = "1.16.1"
+"@openzeppelin-contracts" = "5.7.0"
+"@openzeppelin-contracts-upgradeable" = "5.7.0"
+"anoma-forwarder-bases" = "3.1.1"
+"anoma-pa-evm-bindings" = { version = "3.0.0", git = "https://github.com/anoma/pa-evm.git", tag = "bindings/v3.0.0" }
+"anomapay-erc20-forwarder" = "2.0.0"
+"forge-std" = "1.17.0"
 "solady" = "0.1.26"
 "uniswap-permit2" = "0x000000000022D473030F116dDEE9F6B43aC78BA3"
 

@@ -1,0 +1,22 @@
+[package]
+name = "anoma-generic-call-forwarder-bindings"
+version = "2.0.0"
+description = "The generic call forwarder contract bindings and deployments."
+keywords.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+edition.workspace = true
+
+[dependencies]
+alloy = { workspace = true, features = ["eip712", "node-bindings"] }
+alloy-chains = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+anoma-generic-call-library = { workspace = true }
+anoma-pa-evm-bindings = { workspace = true }
+tokio = { workspace = true }
