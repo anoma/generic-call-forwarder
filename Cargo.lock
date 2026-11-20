@@ -1078,7 +1078,7 @@ dependencies = [
 
 [[package]]
 name = "anoma-generic-call-forwarder-bindings"
-version = "2.0.0-rc.9"
+version = "2.0.0"
 dependencies = [
  "alloy",
  "alloy-chains",
